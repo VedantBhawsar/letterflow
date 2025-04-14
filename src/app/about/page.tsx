@@ -2,7 +2,6 @@ import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
 
 export const metadata = {
   title: "About Us | Letterflow",
@@ -145,56 +144,45 @@ export default function AboutPage() {
                   name: "Alex Rodriguez",
                   role: "Co-Founder & CEO",
                   bio: "Former newsletter creator with over 100,000 subscribers. Alex brings a deep understanding of creators' needs.",
-                  image:
-                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=500&auto=format&fit=crop",
+                  image: "/alex-rodriguez.jpg",
                 },
                 {
                   name: "Jamie Chen",
                   role: "Co-Founder & CTO",
                   bio: "Tech veteran who previously built publishing tools at major tech companies. Focused on making complex technology accessible.",
-                  image:
-                    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=500&auto=format&fit=crop",
+                  image: "/jamie-chen.jpg",
                 },
                 {
                   name: "Taylor Morgan",
                   role: "Co-Founder & Head of Product",
                   bio: "Product designer with a background in UX research. Passionate about creating intuitive, beautiful newsletter experiences.",
-                  image:
-                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=500&auto=format&fit=crop",
+                  image: "/taylor-morgan.jpg",
                 },
                 {
                   name: "Sam Wilson",
                   role: "Lead Developer",
                   bio: "Full-stack engineer who specializes in creating scalable, high-performance web applications.",
-                  image:
-                    "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=500&auto=format&fit=crop",
+                  image: "/sam-wilson.jpg",
                 },
                 {
                   name: "Nia Johnson",
                   role: "Head of Customer Success",
                   bio: "Former newsletter strategist who has helped dozens of publications grow their audiences and engagement.",
-                  image:
-                    "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=500&auto=format&fit=crop",
+                  image: "/nia-johnson.jpg",
                 },
                 {
                   name: "Raj Patel",
                   role: "Analytics Lead",
                   bio: "Data scientist with expertise in audience analytics and content optimization for digital publishers.",
-                  image:
-                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=500&auto=format&fit=crop",
+                  image: "/raj-patel.jpg",
                 },
               ].map((member, index) => (
                 <div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-6 flex flex-col items-center text-center"
                 >
-                  <div className="w-24 h-24 rounded-full mb-4 relative overflow-hidden">
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      fill
-                      className="object-cover"
-                    />
+                  <div className="w-24 h-24 rounded-full bg-muted mb-4 flex items-center justify-center text-muted-foreground">
+                    Photo
                   </div>
                   <h3 className="font-semibold text-lg">{member.name}</h3>
                   <p className="text-primary text-sm font-medium mb-2">
