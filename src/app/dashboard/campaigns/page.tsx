@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   PlusCircle,
   Search,
@@ -9,71 +9,148 @@ import {
   MousePointer,
   Calendar,
   MoreHorizontal,
+  Filter,
+  Loader2,
+  ArrowUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
-// Sample campaign data
-const campaigns = [
-  {
-    id: 1,
-    name: "Weekly Newsletter #32",
-    subject: "Latest Updates and Featured Content",
-    date: "2023-10-15",
-    status: "Sent",
-    opens: 264,
-    clicks: 82,
-    recipients: 1000,
-  },
-  {
-    id: 2,
-    name: "Product Update",
-    subject: "New Features Released",
-    date: "2023-10-08",
-    status: "Sent",
-    opens: 321,
-    clicks: 145,
-    recipients: 1000,
-  },
-  {
-    id: 3,
-    name: "Feature Announcement",
-    subject: "Introducing Our Latest Feature",
-    date: "2023-10-01",
-    status: "Sent",
-    opens: 287,
-    clicks: 96,
-    recipients: 1000,
-  },
-  {
-    id: 4,
-    name: "Upcoming Webinar",
-    subject: "Join Our Exclusive Webinar",
-    date: "2023-10-22",
-    status: "Draft",
-    opens: 0,
-    clicks: 0,
-    recipients: 0,
-  },
-  {
-    id: 5,
-    name: "Black Friday Sale",
-    subject: "Special Offers Inside",
-    date: "2023-11-24",
-    status: "Scheduled",
-    opens: 0,
-    clicks: 0,
-    recipients: 1200,
-  },
-];
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CreateCampaignForm } from "@/components/campaigns/create-campaign-form";
+import { Campaign } from "@/lib/types";
+import { formatDistanceToNow } from "date-fns";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { format } from "date-fns";
+import { CampaignsTable } from "@/components/campaigns/campaigns-table";
+import { DateRange } from "react-day-picker";
 
 export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  }>({
+    key: "createdAt",
+    direction: "desc",
+  });
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredCampaigns = campaigns.filter((campaign) =>
-    campaign.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Fetch campaigns with filters
+  useEffect(() => {
+    async function fetchCampaigns() {
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams();
+
+        if (statusFilter && statusFilter !== "all") {
+          params.append("status", statusFilter);
+        }
+
+        if (searchQuery) {
+          params.append("search", searchQuery);
+        }
+
+        if (dateRange && dateRange.from) {
+          params.append("fromDate", dateRange.from.toISOString());
+        }
+
+        if (dateRange && dateRange.to) {
+          params.append("toDate", dateRange.to.toISOString());
+        }
+
+        params.append("sortKey", sortConfig.key);
+        params.append("sortDirection", sortConfig.direction);
+
+        const response = await fetch(`/api/campaigns?${params.toString()}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch campaigns");
+        }
+
+        const data = await response.json();
+        setCampaigns(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching campaigns:", err);
+        setError("Failed to load campaigns. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    // Debounce the search query
+    const timeoutId = setTimeout(() => {
+      fetchCampaigns();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [statusFilter, searchQuery, dateRange, sortConfig]);
+
+  // Filter campaigns by search query
+  const filteredCampaigns = campaigns;
+
+  // Handle create campaign success
+  const handleCreateSuccess = (campaign: Campaign) => {
+    setCampaigns((prev) => [campaign, ...prev]);
+    setIsCreateDialogOpen(false);
+  };
+
+  // Handle sorting
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  // Format date
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return "N/A";
+    return formatDistanceToNow(new Date(date), { addSuffix: true });
+  };
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading campaigns...</span>
+      </div>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,7 +161,7 @@ export default function CampaignsPage() {
             Create and manage your email campaigns
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Campaign
         </Button>
@@ -100,105 +177,64 @@ export default function CampaignsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline">Filters</Button>
+        <DateRangePicker value={dateRange} onChange={setDateRange} />
+        <div className="w-[180px]">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full">
+              <div className="flex items-center">
+                <Filter className="mr-2 h-4 w-4" />
+                <span>
+                  {statusFilter && statusFilter !== "all"
+                    ? `Status: ${statusFilter}`
+                    : "All Statuses"}
+                </span>
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="scheduled">Scheduled</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <Card>
-        <div className="rounded-md border">
-          <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50 transition-colors">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    Name
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      Date
-                    </div>
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Mail className="h-4 w-4" />
-                      Recipients
-                    </div>
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      Opens
-                    </div>
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <MousePointer className="h-4 w-4" />
-                      Clicks
-                    </div>
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                    Status
-                  </th>
-                  <th className="h-12 w-[50px] px-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCampaigns.map((campaign) => (
-                  <tr
-                    key={campaign.id}
-                    className="border-b transition-colors hover:bg-muted/50"
-                  >
-                    <td className="p-4 align-middle font-medium">
-                      <div>
-                        <div>{campaign.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {campaign.subject}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      {new Date(campaign.date).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 align-middle">{campaign.recipients}</td>
-                    <td className="p-4 align-middle">
-                      {campaign.status === "Sent"
-                        ? `${campaign.opens} (${Math.round(
-                            (campaign.opens / campaign.recipients) * 100
-                          )}%)`
-                        : "-"}
-                    </td>
-                    <td className="p-4 align-middle">
-                      {campaign.status === "Sent"
-                        ? `${campaign.clicks} (${Math.round(
-                            (campaign.clicks / campaign.recipients) * 100
-                          )}%)`
-                        : "-"}
-                    </td>
-                    <td className="p-4 align-middle">
-                      <div
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          campaign.status === "Sent"
-                            ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400"
-                            : campaign.status === "Draft"
-                            ? "bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400"
-                            : "bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400"
-                        }`}
-                      >
-                        {campaign.status}
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {filteredCampaigns.length === 0 ? (
+        <div className="text-center p-8 border rounded-md bg-muted/20">
+          <Mail className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+          <h3 className="mt-4 text-lg font-medium">No campaigns found</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {searchQuery || statusFilter
+              ? "Try adjusting your search or filter to find what you're looking for."
+              : "Get started by creating your first campaign."}
+          </p>
+          <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Campaign
+          </Button>
         </div>
-      </Card>
+      ) : (
+        <CampaignsTable
+          campaigns={filteredCampaigns}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+        />
+      )}
+
+      {/* Create Campaign Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Campaign</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new email campaign.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateCampaignForm onSuccess={handleCreateSuccess} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
