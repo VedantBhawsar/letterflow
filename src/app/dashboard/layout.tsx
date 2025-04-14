@@ -42,54 +42,72 @@ export default function DashboardLayout({
   const SidebarContent = () => (
     <div className="flex h-full flex-col gap-4">
       <div className="flex h-14 items-center border-b px-4">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 font-semibold"
-        >
-          <span className="text-primary">Letterflow</span>
+        <Link href={"/dashboard"} className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-primary"
+          >
+            <path d="M6.8 22 12 19l5.2 3V7.8l-5.2-3-5.2 3Z" />
+            <path d="m19 7.8 2-1.2V18l-2.2 1.2" />
+            <path d="M5 7.8 3 6.6V18l2 1.2" />
+            <path d="m12 10.5-5-3" />
+            <path d="m17 7.5-5 3" />
+            <path d="M12 13v6" />
+          </svg>
+          <span className="text-xl font-bold">Letterflow</span>
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 px-2">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium bg-primary/10 text-primary"
-        >
-          <Home className="h-4 w-4" />
-          Dashboard
-        </Link>
+      <nav className="flex justify-between flex-col h-full px-2">
+        <div className="flex-1 space-y-1">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium bg-primary/10 text-primary"
+          >
+            <Home className="h-4 w-4" />
+            Dashboard
+          </Link>
 
-        <Link
-          href="/dashboard/campaigns"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <Mail className="h-4 w-4" />
-          Campaigns
-        </Link>
+          <Link
+            href="/dashboard/campaigns"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <Mail className="h-4 w-4" />
+            Campaigns
+          </Link>
 
-        <Link
-          href="/dashboard/subscribers"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <Users className="h-4 w-4" />
-          Subscribers
-        </Link>
+          <Link
+            href="/dashboard/subscribers"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <Users className="h-4 w-4" />
+            Subscribers
+          </Link>
 
-        <Link
-          href="/dashboard/analytics"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <BarChart2 className="h-4 w-4" />
-          Analytics
-        </Link>
+          <Link
+            href="/dashboard/analytics"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <BarChart2 className="h-4 w-4" />
+            Analytics
+          </Link>
 
-        <Link
-          href="/dashboard/settings"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <Settings className="h-4 w-4" />
-          Settings
-        </Link>
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </Link>
+        </div>
 
         <button
           onClick={() => router.push("/api/auth/signout")}

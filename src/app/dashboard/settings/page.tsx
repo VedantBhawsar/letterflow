@@ -105,26 +105,26 @@ export default function SettingsPage() {
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-5">
           <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <User className="h-4 w-fit" />
             <span className="hidden sm:inline">Profile</span>
           </TabsTrigger>
           <TabsTrigger value="password" className="flex items-center gap-2">
-            <Key className="h-4 w-4" />
+            <Key className="h-4 w-fit" />
             <span className="hidden sm:inline">Password</span>
           </TabsTrigger>
           <TabsTrigger
             value="notifications"
             className="flex items-center gap-2"
           >
-            <Bell className="h-4 w-4" />
+            <Bell className="h-4 w-fit" />
             <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
           <TabsTrigger value="billing" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
+            <CreditCard className="h-4 w-fit" />
             <span className="hidden sm:inline">Billing</span>
           </TabsTrigger>
           <TabsTrigger value="api" className="flex items-center gap-2">
-            <Key className="h-4 w-4" />
+            <Key className="h-4 w-fit" />
             <span className="hidden sm:inline">API</span>
           </TabsTrigger>
         </TabsList>

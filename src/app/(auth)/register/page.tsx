@@ -1,12 +1,13 @@
+// pages/register.tsx OR app/register/page.tsx (adjust path as needed)
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +20,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { signIn } from "next-auth/react";
 
+// Schema remains the same
 const registerSchema = z
   .object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -49,7 +52,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema) as any,
+    resolver: zodResolver(registerSchema), // Removed 'as any' - should work now
     defaultValues: {
       name: "",
       email: "",
@@ -64,21 +67,45 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      // In a real application, you would call an API endpoint to register the user
-      // For this example, we'll simulate success and redirect to login
+      // Call the registration API endpoint
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Send only necessary data (name, email, password)
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        }),
+      });
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await response.json();
 
-      // Redirect to login page with success message
+      if (!response.ok) {
+        // Handle errors from the API (e.g., user already exists, validation errors)
+        throw new Error(
+          data.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      // Registration successful
+      toast.success("Account created successfully! Please log in.");
+      // Redirect to login page with success indicator
       router.push("/login?registered=true");
-    } catch (error) {
-      setError("An unexpected error occurred during registration");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      const errorMessage =
+        error.message || "An unexpected error occurred during registration";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ... rest of the component remains the same (JSX)
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md space-y-8">
@@ -195,12 +222,14 @@ export default function RegisterPage() {
                         <FormLabel>
                           I agree to the{" "}
                           <Link
-                            href="/terms"
+                            href="/terms" // Make sure this page exists or remove link
                             className="text-primary hover:text-primary/90"
                           >
                             terms and conditions
                           </Link>
                         </FormLabel>
+                        {/* Display Zod error message for terms directly if needed */}
+                        <FormMessage />
                       </div>
                     </FormItem>
                   )}
@@ -212,6 +241,7 @@ export default function RegisterPage() {
               </form>
             </Form>
 
+            {/* Social login buttons remain the same */}
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -219,7 +249,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
-                    Or continue with
+                    Or sign up with
                   </span>
                 </div>
               </div>
@@ -229,10 +259,13 @@ export default function RegisterPage() {
                   variant="outline"
                   type="button"
                   onClick={() =>
+                    // Use signIn directly for OAuth registration/login
                     signIn("google", { callbackUrl: "/dashboard" })
                   }
                   className="w-full"
+                  disabled={isLoading} // Disable while form is submitting
                 >
+                  {/* Google SVG */}
                   <svg
                     className="mr-2 h-4 w-4"
                     aria-hidden="true"
@@ -255,10 +288,13 @@ export default function RegisterPage() {
                   variant="outline"
                   type="button"
                   onClick={() =>
+                    // Use signIn directly for OAuth registration/login
                     signIn("github", { callbackUrl: "/dashboard" })
                   }
                   className="w-full"
+                  disabled={isLoading} // Disable while form is submitting
                 >
+                  {/* Github SVG */}
                   <svg
                     className="mr-2 h-4 w-4"
                     aria-hidden="true"

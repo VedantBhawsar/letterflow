@@ -1,12 +1,14 @@
+// pages/login.tsx OR app/login/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,23 +22,37 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-  remember: z.boolean().default(false),
-});
+const loginSchema = z
+  .object({
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+    remember: z.boolean(),
+  })
+  .required();
 
 type LoginFormValues = z.infer<typeof loginSchema>;
+// LoginFormValues is { email: string; password: string; remember: boolean }
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const registered = searchParams.get("registered");
+
+  useEffect(() => {
+    if (registered === "true") {
+      toast.success(
+        "Registration successful! Please log in with your new account."
+      );
+    }
+  }, [registered]);
+
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema) as any,
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -45,6 +61,7 @@ export default function LoginPage() {
   });
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (values) => {
+    // ... rest of the onSubmit function remains the same
     setIsLoading(true);
     setError(null);
 
@@ -56,13 +73,28 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        if (result.error === "CredentialsSignin") {
+          setError("Invalid email or password");
+          toast.error("Invalid email or password");
+        } else {
+          setError(`Login failed: ${result.error}`);
+          toast.error(`Login failed: ${result.error}`);
+        }
         return;
       }
 
-      router.push("/dashboard");
-    } catch (error) {
-      setError("An unexpected error occurred");
+      if (result?.ok && !result?.error) {
+        toast.success("Login successful!");
+        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+        router.push(callbackUrl);
+      } else {
+        setError("An unexpected error occurred during login.");
+        toast.error("An unexpected error occurred during login.");
+      }
+    } catch (error: any) {
+      console.error("Login submit error:", error);
+      setError("An unexpected error occurred. Please try again.");
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -113,6 +145,7 @@ export default function LoginPage() {
                             type="email"
                             placeholder="you@example.com"
                             {...field}
+                            autoComplete="email" // Add autocomplete
                           />
                         </FormControl>
                         <FormMessage />
@@ -131,6 +164,7 @@ export default function LoginPage() {
                             type="password"
                             placeholder="••••••••"
                             {...field}
+                            autoComplete="current-password" // Add autocomplete
                           />
                         </FormControl>
                         <FormMessage />
@@ -148,17 +182,20 @@ export default function LoginPage() {
                             <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              id="remember-me" // Add id for label association
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
-                            <FormLabel>Remember me</FormLabel>
+                            <FormLabel htmlFor="remember-me">
+                              Remember me
+                            </FormLabel>
                           </div>
                         </FormItem>
                       )}
                     />
                     <div className="text-sm">
                       <Link
-                        href="/auth/forgot-password"
+                        href="/forgot-password" // Make sure this page exists
                         className="font-medium text-primary hover:text-primary/90"
                       >
                         Forgot your password?
@@ -173,6 +210,7 @@ export default function LoginPage() {
               </Form>
             </div>
 
+            {/* Social login buttons remain the same */}
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -190,10 +228,15 @@ export default function LoginPage() {
                   variant="outline"
                   type="button"
                   onClick={() =>
-                    signIn("google", { callbackUrl: "/dashboard" })
+                    signIn("google", {
+                      callbackUrl:
+                        searchParams.get("callbackUrl") || "/dashboard",
+                    })
                   }
                   className="w-full"
+                  disabled={isLoading} // Disable while form is submitting
                 >
+                  {/* Google SVG */}
                   <svg
                     className="mr-2 h-4 w-4"
                     aria-hidden="true"
@@ -216,10 +259,15 @@ export default function LoginPage() {
                   variant="outline"
                   type="button"
                   onClick={() =>
-                    signIn("github", { callbackUrl: "/dashboard" })
+                    signIn("github", {
+                      callbackUrl:
+                        searchParams.get("callbackUrl") || "/dashboard",
+                    })
                   }
                   className="w-full"
+                  disabled={isLoading} // Disable while form is submitting
                 >
+                  {/* Github SVG */}
                   <svg
                     className="mr-2 h-4 w-4"
                     aria-hidden="true"
