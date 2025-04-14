@@ -14,6 +14,8 @@ import {
 import { useEffect, useState } from "react";
 import { AnalyticsResponse } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AnalyticsSkeleton } from "@/components/sections/Analytics";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -89,9 +91,55 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading dashboard data...</span>
+      <div className="space-y-6">
+        <div className="flex flex-col space-y-2">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Welcome back, {session?.user?.name || "Guest"}
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index} className="p-4">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-10 w-10 rounded-md" />
+                <Skeleton className="h-4 w-16 rounded-md" />
+              </div>
+              <div className="mt-3">
+                <Skeleton className="h-4 w-24 rounded-md mb-2" />
+                <Skeleton className="h-6 w-12 rounded-md" />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+          <Card className="p-4">
+            <Skeleton className="h-6 w-40 rounded-md" />
+            <div className="mt-4 space-y-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between rounded-md border p-3"
+                >
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32 rounded-md" />
+                    <Skeleton className="h-4 w-40 rounded-md" />
+                  </div>
+                  <Skeleton className="h-4 w-20 rounded-md" />
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <Skeleton className="h-6 w-40 rounded-md" />
+            <div className="mt-4 h-[200px] flex flex-col gap-4 p-4">
+              <Skeleton className="h-full w-full rounded-md" />
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }

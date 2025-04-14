@@ -11,7 +11,10 @@ import {
   Users,
   Mail,
   MousePointer,
+  Loader2,
 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data for analytics
 const topPerformingCampaigns = [
@@ -86,6 +89,105 @@ function MetricCard({ title, value, change, trend, icon }: MetricCardProps) {
 }
 
 export default function AnalyticsPage() {
+  const [loading, setLoading] = useState(true);
+
+  // Simulate loading state for demonstration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Analytics</h1>
+            <p className="text-muted-foreground">
+              Track and analyze your newsletter performance
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32 rounded-md" />
+            <Skeleton className="h-10 w-32 rounded-md" />
+          </div>
+        </div>
+
+        <div className="w-full max-w-md mb-6">
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index} className="p-4">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-10 w-10 rounded-md" />
+                <Skeleton className="h-4 w-16 rounded-md" />
+              </div>
+              <div className="mt-3">
+                <Skeleton className="h-4 w-24 rounded-md mb-2" />
+                <Skeleton className="h-6 w-12 rounded-md" />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="p-6">
+            <Skeleton className="h-6 w-48 rounded-md mb-4" />
+            <Skeleton className="h-[300px] w-full rounded-md" />
+          </Card>
+
+          <Card className="p-6">
+            <Skeleton className="h-6 w-48 rounded-md mb-4" />
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b pb-3 last:border-none"
+                >
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-40 rounded-md" />
+                    <div className="flex gap-3">
+                      <Skeleton className="h-4 w-20 rounded-md" />
+                      <Skeleton className="h-4 w-20 rounded-md" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-5 rounded-md" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="p-6">
+            <Skeleton className="h-6 w-48 rounded-md mb-4" />
+            <Skeleton className="h-[300px] w-full rounded-md" />
+          </Card>
+
+          <Card className="p-6">
+            <Skeleton className="h-6 w-48 rounded-md mb-4" />
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24 rounded-md" />
+                    <Skeleton className="h-4 w-32 rounded-md" />
+                  </div>
+                  <Skeleton className="h-2 w-full rounded-full" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

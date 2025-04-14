@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Campaign } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Define the form schema
 const formSchema = z.object({
@@ -39,6 +40,47 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+export function CreateCampaignFormSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-[200px] w-full" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-10 w-36" />
+      </div>
+    </div>
+  );
+}
 
 export function CreateCampaignForm({
   onSuccess,

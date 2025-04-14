@@ -1,27 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  PlusCircle,
-  Search,
-  Mail,
-  Eye,
-  MousePointer,
-  Calendar,
-  MoreHorizontal,
-  Filter,
-  Loader2,
-  ArrowUpDown,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { PlusCircle, Search, Mail, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Dialog,
@@ -33,15 +20,15 @@ import {
 import { CreateCampaignForm } from "@/components/campaigns/create-campaign-form";
 import { Campaign } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { format } from "date-fns";
-import { CampaignsTable } from "@/components/campaigns/campaigns-table";
-import { DateRange } from "react-day-picker";
+import {
+  CampaignsTable,
+  CampaignsTableSkeleton,
+} from "@/components/campaigns/campaigns-table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -67,14 +54,6 @@ export default function CampaignsPage() {
 
         if (searchQuery) {
           params.append("search", searchQuery);
-        }
-
-        if (dateRange && dateRange.from) {
-          params.append("fromDate", dateRange.from.toISOString());
-        }
-
-        if (dateRange && dateRange.to) {
-          params.append("toDate", dateRange.to.toISOString());
         }
 
         params.append("sortKey", sortConfig.key);
@@ -103,7 +82,7 @@ export default function CampaignsPage() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [statusFilter, searchQuery, dateRange, sortConfig]);
+  }, [statusFilter, searchQuery, sortConfig]);
 
   // Filter campaigns by search query
   const filteredCampaigns = campaigns;
@@ -131,9 +110,29 @@ export default function CampaignsPage() {
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading campaigns...</span>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Campaigns</h1>
+            <p className="text-muted-foreground">
+              Create and manage your email campaigns
+            </p>
+          </div>
+          <div className="w-[140px] h-10">
+            <Skeleton className="h-10 w-52 mb-1" />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-8">
+          <div className="relative flex-1">
+            <Skeleton className="w-full h-8" />
+          </div>
+          <div className="w-[180px]">
+            <Skeleton className="w-full h-8" />
+          </div>
+        </div>
+
+        <CampaignsTableSkeleton />
       </div>
     );
   }
@@ -177,7 +176,6 @@ export default function CampaignsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
         <div className="w-[180px]">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full">

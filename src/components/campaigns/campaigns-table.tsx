@@ -13,6 +13,7 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CampaignsTableProps {
   campaigns: Campaign[];
@@ -163,5 +164,87 @@ const CampaignsTable = React.memo(
 );
 
 CampaignsTable.displayName = "CampaignsTable";
+
+export function CampaignsTableSkeleton() {
+  return (
+    <Card>
+      <div className="rounded-md border">
+        <div className="relative w-full overflow-auto">
+          <table className="w-full caption-bottom text-sm">
+            <thead>
+              <tr className="border-b bg-muted/50 transition-colors">
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    Name
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    Date
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-4 w-4" />
+                    Recipients
+                  </div>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-4 w-4" />
+                    Opens
+                  </div>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <MousePointer className="h-4 w-4" />
+                    Clicks
+                  </div>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  Status
+                </th>
+                <th className="h-12 w-[50px] px-4"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index} className="border-b transition-colors">
+                  <td className="p-4 align-middle">
+                    <div>
+                      <Skeleton className="h-5 w-36 mb-1" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </td>
+                  <td className="p-4 align-middle">
+                    <Skeleton className="h-5 w-24" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <Skeleton className="h-5 w-10" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <Skeleton className="h-5 w-16" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <Skeleton className="h-5 w-16" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export { CampaignsTable };
