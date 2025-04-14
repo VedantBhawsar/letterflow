@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -28,24 +28,28 @@ const registerSchema = z
       .string()
       .min(8, { message: "Password must be at least 8 characters" }),
     confirmPassword: z.string(),
-    terms: z.literal(true, {
-      errorMap: () => ({ message: "You must accept the terms and conditions" }),
+    terms: z.boolean({
+      required_error: "You must accept the terms and conditions",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.terms === true, {
+    message: "You must accept the terms and conditions",
+    path: ["terms"],
   });
 
-type FormData = z.infer<typeof registerSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       name: "",
       email: "",
@@ -55,7 +59,7 @@ export default function RegisterPage() {
     },
   });
 
-  async function onSubmit(values: FormData) {
+  const onSubmit: SubmitHandler<RegisterFormValues> = async (values) => {
     setIsLoading(true);
     setError(null);
 
@@ -73,7 +77,7 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
