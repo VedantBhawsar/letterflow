@@ -15,6 +15,7 @@ import {
   Users,
   Settings,
   LogOut,
+  FileText,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -82,6 +83,14 @@ export default function DashboardLayout({
           >
             <Mail className="h-4 w-4" />
             Campaigns
+          </Link>
+
+          <Link
+            href="/dashboard/newsletters"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <FileText className="h-4 w-4" />
+            Newsletters
           </Link>
 
           <Link

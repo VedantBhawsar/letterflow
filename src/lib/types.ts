@@ -69,3 +69,36 @@ export interface AnalyticsResponse {
   recentCampaigns: Campaign[];
   subscriberGrowth: SubscriberGrowthData[];
 }
+
+// Newsletter types
+export interface NewsletterElement {
+  id: string;
+  type: string;
+  content?: string;
+  src?: string;
+  url?: string;
+  style?: {
+    [key: string]: string;
+  };
+  columns?: NewsletterElement[][];
+  personalizedFields?: {
+    fieldName: string;
+    defaultValue: string;
+  }[];
+}
+
+export interface Newsletter {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  status: "draft" | "published";
+  template: string;
+  elements: NewsletterElement[];
+  userId: string;
+}
+
+export interface NewsletterTemplate {
+  name: string;
+  elements: NewsletterElement[];
+}
