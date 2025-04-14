@@ -71,20 +71,22 @@ export interface AnalyticsResponse {
 }
 
 // Newsletter types
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
 export interface NewsletterElement {
   id: string;
   type: string;
   content?: string;
   src?: string;
   url?: string;
-  style?: {
-    [key: string]: string;
-  };
+  style?: Record<string, string>;
   columns?: NewsletterElement[][];
-  personalizedFields?: {
-    fieldName: string;
-    defaultValue: string;
-  }[];
+  personalizedFields?: { fieldName: string; defaultValue: string }[];
+  height?: string;
+  socialLinks?: SocialLink[];
 }
 
 export interface Newsletter {

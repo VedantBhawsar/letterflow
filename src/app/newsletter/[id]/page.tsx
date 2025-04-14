@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
 import {
   Save,
   Undo,
@@ -17,12 +16,18 @@ import {
   Type,
   Image as ImageIcon,
   Square as ButtonIcon,
-  Table,
   Columns,
   Heading,
-  AlignLeft,
   User as PersonalizationIcon,
-  Home,
+  Smartphone,
+  Tablet,
+  Monitor,
+  ArrowUpDown,
+  Braces,
+  Minus as Divider,
+  Share2,
+  Copy,
+  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,14 +40,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   newsletterTemplates,
   personalizationOptions,
 } from "@/components/newsletters/newsletter-templates";
-import { NewsletterElement } from "@/lib/types";
+import { NewsletterElement, SocialLink } from "@/lib/types";
 
 // Create a simple tooltip component as a fallback
 const TooltipProvider = ({ children }: { children: React.ReactNode }) =>
@@ -79,6 +83,18 @@ export default function NewsletterEditorPage() {
   const [activeTab, setActiveTab] = useState("elements");
   const builderRef = useRef<HTMLDivElement>(null);
 
+  // New state variables for added features
+  const [viewMode, setViewMode] = useState<"desktop" | "tablet" | "mobile">(
+    "desktop"
+  );
+  const [history, setHistory] = useState<NewsletterElement[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailPreviewText, setEmailPreviewText] = useState("");
+  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
+  const [draggingElement, setDraggingElement] = useState<string | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+
   // Initialize the newsletter with template data
   useEffect(() => {
     if (
@@ -88,6 +104,9 @@ export default function NewsletterEditorPage() {
       const template =
         newsletterTemplates[templateType as keyof typeof newsletterTemplates];
       setElements(template.elements);
+      // Initialize history with the template elements
+      setHistory([template.elements]);
+      setHistoryIndex(0);
     }
 
     // Simulate loading delay
@@ -95,6 +114,42 @@ export default function NewsletterEditorPage() {
       setLoading(false);
     }, 800);
   }, [templateType]);
+
+  // Save current state to history whenever elements change
+  useEffect(() => {
+    if (elements.length > 0 && historyIndex !== -1) {
+      // Only add to history if elements have changed
+      if (JSON.stringify(elements) !== JSON.stringify(history[historyIndex])) {
+        // Remove any future history if we're not at the end
+        const newHistory = history.slice(0, historyIndex + 1);
+        // Add current state to history
+        setHistory([...newHistory, elements]);
+        setHistoryIndex(newHistory.length);
+      }
+    }
+  }, [elements]);
+
+  // Handle undo
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setElements(history[historyIndex - 1]);
+      toast.info("Undo successful");
+    } else {
+      toast.error("Nothing to undo");
+    }
+  };
+
+  // Handle redo
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setElements(history[historyIndex + 1]);
+      toast.info("Redo successful");
+    } else {
+      toast.error("Nothing to redo");
+    }
+  };
 
   // Find the selected element in the elements array
   const findElementById = (
@@ -161,6 +216,25 @@ export default function NewsletterEditorPage() {
             },
           ],
         ];
+        break;
+      case "divider":
+        newElement.style = { borderTop: "1px solid #e5e7eb", margin: "20px 0" };
+        break;
+      case "spacer":
+        newElement.height = "40px";
+        break;
+      case "social":
+        newElement.socialLinks = [
+          { platform: "twitter", url: "#" },
+          { platform: "facebook", url: "#" },
+          { platform: "instagram", url: "#" },
+          { platform: "linkedin", url: "#" },
+        ];
+        newElement.style = { textAlign: "center", margin: "20px 0" };
+        break;
+      case "code":
+        newElement.content =
+          "<div style='padding: 20px; background-color: #f3f4f6;'>Custom HTML here</div>";
         break;
     }
 
@@ -276,6 +350,78 @@ export default function NewsletterEditorPage() {
     router.push("/dashboard/newsletters");
   };
 
+  // Handle duplicating an element
+  const handleDuplicateElement = (id: string) => {
+    const elementToDuplicate = findElementById(id, elements);
+    if (!elementToDuplicate) return;
+
+    // Create a deep copy of the element with a new ID
+    const duplicatedElement = JSON.parse(JSON.stringify(elementToDuplicate));
+    duplicatedElement.id = `${elementToDuplicate.type}-${Date.now()}`;
+
+    // Find the index of the original element
+    const elementIndex = elements.findIndex((e) => e.id === id);
+
+    // Insert the duplicated element after the original element
+    const newElements = [...elements];
+    newElements.splice(elementIndex + 1, 0, duplicatedElement);
+
+    setElements(newElements);
+    setSelectedElement(duplicatedElement.id);
+    toast.success("Element duplicated");
+  };
+
+  // Handle element drag start for reordering
+  const handleElementDragStart = (e: React.DragEvent, id: string) => {
+    e.stopPropagation();
+    setDraggingElement(id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+
+    // Add some styling to the dragged element
+    const element = e.currentTarget as HTMLElement;
+    element.classList.add("opacity-50", "border-2", "border-primary");
+  };
+
+  // Handle element drag end
+  const handleElementDragEnd = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDraggingElement(null);
+    setDropTargetIndex(null);
+
+    // Remove styling
+    const element = e.currentTarget as HTMLElement;
+    element.classList.remove("opacity-50", "border-2", "border-primary");
+  };
+
+  // Handle element drag over
+  const handleElementDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropTargetIndex(index);
+  };
+
+  // Handle element drop for reordering
+  const handleElementDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (!sourceId || !draggingElement) return;
+
+    // Find the source element
+    const sourceIndex = elements.findIndex((e) => e.id === sourceId);
+    if (sourceIndex === -1) return;
+
+    // Create a new array with the reordered elements
+    const newElements = [...elements];
+    const [movedElement] = newElements.splice(sourceIndex, 1);
+    newElements.splice(targetIndex, 0, movedElement);
+
+    setElements(newElements);
+    setDraggingElement(null);
+    setDropTargetIndex(null);
+    toast.success("Element reordered");
+  };
+
   // Render loading state
   if (loading) {
     return (
@@ -319,9 +465,133 @@ export default function NewsletterEditorPage() {
               placeholder="Newsletter name"
             />
           </div>
+
+          {/* Undo/Redo buttons */}
+          <div className="flex space-x-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUndo}
+                    disabled={historyIndex <= 0}
+                  >
+                    <Undo className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Undo</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRedo}
+                    disabled={historyIndex >= history.length - 1}
+                  >
+                    <Redo className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Redo</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
+          {/* Device view mode switcher */}
+          <div className="flex border rounded-md">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === "mobile" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="px-2 h-8"
+                    onClick={() => setViewMode("mobile")}
+                  >
+                    <Smartphone className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Mobile view</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === "tablet" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="px-2 h-8"
+                    onClick={() => setViewMode("tablet")}
+                  >
+                    <Tablet className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Tablet view</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewMode === "desktop" ? "secondary" : "ghost"}
+                    size="sm"
+                    className="px-2 h-8"
+                    onClick={() => setViewMode("desktop")}
+                  >
+                    <Monitor className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Desktop view</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
 
         <div className="flex space-x-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setActiveTab(activeTab === "create" ? "elements" : "create")
+                  }
+                >
+                  <Layout className="h-4 w-4 mr-1" />
+                  Create
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Create new content</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setActiveTab(
+                      activeTab === "settings" ? "elements" : "settings"
+                    )
+                  }
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Settings
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Email settings</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -363,13 +633,154 @@ export default function NewsletterEditorPage() {
         </div>
       </div>
 
+      {/* Email settings modal/tab content */}
+      {activeTab === "settings" && (
+        <div className="border-b bg-white p-4 space-y-4">
+          <h3 className="text-sm font-medium">Email Settings</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium">Email Subject:</label>
+              <Input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Enter email subject line"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium">Preview Text:</label>
+              <Input
+                value={emailPreviewText}
+                onChange={(e) => setEmailPreviewText(e.target.value)}
+                placeholder="Enter email preview text"
+              />
+              <p className="text-xs text-muted-foreground">
+                This text will appear in the inbox preview on most email
+                clients.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create content tab */}
+      {activeTab === "create" && (
+        <div className="border-b bg-white p-4 space-y-4">
+          <h3 className="text-sm font-medium">Create Content</h3>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <div className="text-xs font-medium">Basic Elements</div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { type: "heading", icon: Heading, label: "Heading" },
+                  { type: "text", icon: Type, label: "Text" },
+                  { type: "image", icon: ImageIcon, label: "Image" },
+                  { type: "button", icon: ButtonIcon, label: "Button" },
+                ].map((item) => (
+                  <div
+                    key={item.type}
+                    className="flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => {
+                      handleAddElement(item.type);
+                      setActiveTab("elements");
+                    }}
+                  >
+                    <item.icon className="h-5 w-5 mb-1" />
+                    <span className="text-xs">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs font-medium">Layout Elements</div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { type: "columns", icon: Columns, label: "Columns" },
+                  { type: "divider", icon: Divider, label: "Divider" },
+                  { type: "spacer", icon: ArrowUpDown, label: "Spacer" },
+                  { type: "code", icon: Braces, label: "HTML" },
+                ].map((item) => (
+                  <div
+                    key={item.type}
+                    className="flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => {
+                      handleAddElement(item.type);
+                      setActiveTab("elements");
+                    }}
+                  >
+                    <item.icon className="h-5 w-5 mb-1" />
+                    <span className="text-xs">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs font-medium">Social Elements</div>
+              <div className="grid grid-cols-2 gap-2">
+                {[{ type: "social", icon: Share2, label: "Social Links" }].map(
+                  (item) => (
+                    <div
+                      key={item.type}
+                      className="flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => {
+                        handleAddElement(item.type);
+                        setActiveTab("elements");
+                      }}
+                    >
+                      <item.icon className="h-5 w-5 mb-1" />
+                      <span className="text-xs">{item.label}</span>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs font-medium">Templates</div>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(newsletterTemplates)
+                  .slice(0, 4)
+                  .map(([key, template]) => (
+                    <div
+                      key={key}
+                      className="border rounded-md p-2 cursor-pointer hover:border-primary"
+                      onClick={() => {
+                        setElements(template.elements);
+                        setActiveTab("elements");
+                        toast.success(`Applied ${template.name} template`);
+                      }}
+                    >
+                      <div className="h-16 bg-muted rounded-md mb-1 flex items-center justify-center">
+                        <Layout className="h-6 w-6 text-muted-foreground/60" />
+                      </div>
+                      <p className="text-xs text-center">{template.name}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab("elements")}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Builder interface */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-0 h-[calc(100vh-64px)]">
         {/* Left sidebar */}
         <div className="bg-muted/30 p-4 overflow-y-auto border-r">
           <Tabs
             defaultValue="elements"
-            value={activeTab}
+            value={activeTab === "settings" ? "elements" : activeTab}
             onValueChange={setActiveTab}
             className="w-full"
           >
@@ -388,6 +799,10 @@ export default function NewsletterEditorPage() {
                   { type: "image", icon: ImageIcon, label: "Image" },
                   { type: "button", icon: ButtonIcon, label: "Button" },
                   { type: "columns", icon: Columns, label: "Columns" },
+                  { type: "divider", icon: Divider, label: "Divider" },
+                  { type: "spacer", icon: ArrowUpDown, label: "Spacer" },
+                  { type: "social", icon: Share2, label: "Social" },
+                  { type: "code", icon: Braces, label: "HTML" },
                 ].map((item) => (
                   <div
                     key={item.type}
@@ -400,6 +815,59 @@ export default function NewsletterEditorPage() {
                     <span className="text-xs">{item.label}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <div className="text-sm font-medium mb-2">Templates:</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => setTemplateGalleryOpen(true)}
+                >
+                  <Layout className="h-4 w-4 mr-2" />
+                  Template Gallery
+                </Button>
+
+                {templateGalleryOpen && (
+                  <div className="mt-2 border rounded-md p-2 bg-white">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-sm font-medium">Select a template</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => setTemplateGalleryOpen(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(newsletterTemplates).map(
+                        ([key, template]) => (
+                          <div
+                            key={key}
+                            className="border rounded-md p-2 cursor-pointer hover:border-primary"
+                            onClick={() => {
+                              setElements(template.elements);
+                              setTemplateGalleryOpen(false);
+                              toast.success(
+                                `Applied ${template.name} template`
+                              );
+                            }}
+                          >
+                            <div className="h-20 bg-muted rounded-md mb-1 flex items-center justify-center">
+                              <Layout className="h-8 w-8 text-muted-foreground/60" />
+                            </div>
+                            <p className="text-xs text-center">
+                              {template.name}
+                            </p>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4">
@@ -459,17 +927,39 @@ export default function NewsletterEditorPage() {
                         {selectedElementData.type === "columns" && (
                           <Columns className="h-4 w-4" />
                         )}
+                        {selectedElementData.type === "divider" && (
+                          <Divider className="h-4 w-4" />
+                        )}
+                        {selectedElementData.type === "spacer" && (
+                          <ArrowUpDown className="h-4 w-4" />
+                        )}
+                        {selectedElementData.type === "social" && (
+                          <Share2 className="h-4 w-4" />
+                        )}
+                        {selectedElementData.type === "code" && (
+                          <Braces className="h-4 w-4" />
+                        )}
                       </div>
                       {selectedElementData.type} Element
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-destructive"
-                      onClick={() => handleRemoveElement(selectedElement)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-muted-foreground"
+                        onClick={() => handleDuplicateElement(selectedElement)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-destructive"
+                        onClick={() => handleRemoveElement(selectedElement)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Element-specific properties */}
@@ -542,6 +1032,126 @@ export default function NewsletterEditorPage() {
                           alt="Preview"
                           className="max-w-full h-auto"
                         />
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedElementData.type === "spacer" && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Height:</label>
+                      <Select
+                        value={selectedElementData.height || "40px"}
+                        onValueChange={(value) =>
+                          setElements((prev) =>
+                            prev.map((element) =>
+                              element.id === selectedElement
+                                ? { ...element, height: value }
+                                : element
+                            )
+                          )
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Height" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="20px">Small (20px)</SelectItem>
+                          <SelectItem value="40px">Medium (40px)</SelectItem>
+                          <SelectItem value="60px">Large (60px)</SelectItem>
+                          <SelectItem value="80px">X-Large (80px)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {selectedElementData.type === "divider" && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Style:</label>
+                      <Select
+                        value={
+                          selectedElementData.style?.borderTop ||
+                          "1px solid #e5e7eb"
+                        }
+                        onValueChange={(value) =>
+                          handleElementStyleChange(
+                            selectedElement,
+                            "borderTop",
+                            value
+                          )
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Divider style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1px solid #e5e7eb">
+                            Solid
+                          </SelectItem>
+                          <SelectItem value="1px dashed #e5e7eb">
+                            Dashed
+                          </SelectItem>
+                          <SelectItem value="2px solid #e5e7eb">
+                            Thick
+                          </SelectItem>
+                          <SelectItem value="3px double #e5e7eb">
+                            Double
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {selectedElementData.type === "social" && (
+                    <div className="space-y-4">
+                      {selectedElementData.socialLinks?.map(
+                        (link: SocialLink, index: number) => (
+                          <div key={index} className="space-y-2 border-b pb-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-medium capitalize">
+                                {link.platform}:
+                              </label>
+                            </div>
+                            <Input
+                              value={link.url || "#"}
+                              onChange={(e) => {
+                                const newLinks = [
+                                  ...(selectedElementData.socialLinks || []),
+                                ];
+                                newLinks[index].url = e.target.value;
+                                setElements((prev) =>
+                                  prev.map((element) =>
+                                    element.id === selectedElement
+                                      ? { ...element, socialLinks: newLinks }
+                                      : element
+                                  )
+                                );
+                              }}
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+
+                  {selectedElementData.type === "code" && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">
+                        Custom HTML:
+                      </label>
+                      <Textarea
+                        value={selectedElementData.content || ""}
+                        onChange={(e) =>
+                          handleElementContentChange(
+                            selectedElement,
+                            e.target.value
+                          )
+                        }
+                        rows={8}
+                        className="font-mono text-xs"
+                      />
+                      <div className="text-xs text-muted-foreground">
+                        Warning: Custom HTML may be stripped by some email
+                        clients.
                       </div>
                     </div>
                   )}
@@ -848,11 +1458,32 @@ export default function NewsletterEditorPage() {
         {/* Main content area */}
         <div className="md:col-span-4 bg-white p-6 overflow-y-auto flex items-center justify-center">
           <div
-            className="max-w-2xl w-full min-h-[500px] border border-dashed rounded-lg flex flex-col"
+            className={`${
+              viewMode === "desktop"
+                ? "max-w-2xl"
+                : viewMode === "tablet"
+                ? "max-w-md"
+                : "max-w-xs"
+            } w-full min-h-[500px] border border-dashed rounded-lg flex flex-col relative`}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             ref={builderRef}
           >
+            {/* Device frame indicator */}
+            {viewMode !== "desktop" && (
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 flex items-center bg-muted text-xs py-1 px-3 rounded-t-md">
+                {viewMode === "tablet" ? (
+                  <>
+                    <Tablet className="h-3 w-3 mr-1" /> Tablet View
+                  </>
+                ) : (
+                  <>
+                    <Smartphone className="h-3 w-3 mr-1" /> Mobile View
+                  </>
+                )}
+              </div>
+            )}
+
             {elements.length === 0 ? (
               <div className="h-[500px] flex flex-col items-center justify-center text-muted-foreground">
                 <Layout className="h-16 w-16 mb-4 text-muted-foreground/60" />
@@ -865,20 +1496,66 @@ export default function NewsletterEditorPage() {
               </div>
             ) : (
               <div className="p-4">
-                {elements.map((element) => (
+                {elements.map((element, index) => (
                   <div
                     key={element.id}
-                    className={`my-2 relative ${
+                    className={`my-2 relative group ${
                       selectedElement === element.id
                         ? "ring-2 ring-primary"
                         : "hover:outline hover:outline-muted"
+                    } ${
+                      dropTargetIndex === index
+                        ? "border-t-2 border-primary"
+                        : ""
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedElement(element.id);
                       setActiveTab("properties");
                     }}
+                    draggable
+                    onDragStart={(e) => handleElementDragStart(e, element.id)}
+                    onDragEnd={handleElementDragEnd}
+                    onDragOver={(e) => handleElementDragOver(e, index)}
+                    onDrop={(e) => handleElementDrop(e, index)}
                   >
+                    {/* Element controls that appear on hover */}
+                    <div className="absolute top-0 right-0 hidden group-hover:flex bg-white shadow-sm border rounded-bl-md z-10">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDuplicateElement(element.id);
+                        }}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveElement(element.id);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+
+                    {/* Drag handle */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-4 hidden group-hover:flex bg-white shadow border rounded-full cursor-move">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground"
+                      >
+                        <Menu className="h-3 w-3" />
+                      </Button>
+                    </div>
+
                     {element.type === "heading" && (
                       <h2 style={element.style}>{element.content}</h2>
                     )}
@@ -898,11 +1575,53 @@ export default function NewsletterEditorPage() {
                     {element.type === "button" && (
                       <a
                         href={element.url}
-                        style={element.style}
+                        style={{
+                          display: "inline-block",
+                          textDecoration: "none",
+                          borderRadius: "4px",
+                          ...element.style,
+                        }}
                         onClick={(e) => e.preventDefault()}
                       >
                         {element.content}
                       </a>
+                    )}
+
+                    {element.type === "divider" && <hr style={element.style} />}
+
+                    {element.type === "spacer" && (
+                      <div style={{ height: element.height }} />
+                    )}
+
+                    {element.type === "social" && (
+                      <div
+                        style={element.style}
+                        className="flex justify-center space-x-4"
+                      >
+                        {element.socialLinks?.map(
+                          (link: SocialLink, i: number) => (
+                            <a
+                              key={i}
+                              href={link.url}
+                              onClick={(e) => e.preventDefault()}
+                              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+                            >
+                              <span className="uppercase font-bold text-xs">
+                                {link.platform.charAt(0)}
+                              </span>
+                            </a>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {element.type === "code" && (
+                      <div
+                        className="border border-dashed p-2 bg-muted/20"
+                        dangerouslySetInnerHTML={{
+                          __html: element.content || "",
+                        }}
+                      />
                     )}
 
                     {element.type === "columns" && element.columns && (
