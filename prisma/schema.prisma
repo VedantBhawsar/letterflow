@@ -21,6 +21,7 @@ model User {
   campaigns     Campaign[]
   subscribers   Subscriber[]
   templates     EmailTemplate[]
+  newsletters   Newsletter[]
 }
 
 model Account {
@@ -116,4 +117,19 @@ model EmailTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Newsletter {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  elements    Json
+  subject     String?
+  previewText String?
+  status      String   @default("draft") // Possible values: "draft", "published"
+  userId      String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation to User
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
