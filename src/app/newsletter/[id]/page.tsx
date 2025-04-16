@@ -30,6 +30,7 @@ import {
   Mail,
   AlertCircle,
   X,
+  SendHorizonal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
@@ -57,6 +59,7 @@ import {
   personalizationOptions,
 } from "@/components/newsletters/newsletter-templates";
 import { NewsletterElement, SocialLink } from "@/lib/types";
+import { Label } from "@/components/ui/label";
 
 // Keep Tooltip fallback components
 const TooltipProvider = ({ children }: { children: React.ReactNode }) => children;
@@ -97,6 +100,12 @@ export default function NewsletterEditorPage() {
   const [isSending, setIsSending] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<null | {
+    sentCount: number;
+    failedCount: number;
+  }>(null);
 
   // Initialize the newsletter with template data or load existing newsletter
   useEffect(() => {
@@ -554,6 +563,46 @@ export default function NewsletterEditorPage() {
     }
   };
 
+  // Handle publish newsletter to subscribers
+  const handlePublishNewsletter = async () => {
+    setIsPublishing(true);
+    setPublishResult(null);
+
+    try {
+      // Make sure newsletter is saved and marked as published first
+      if (newsletterStatus !== "published") {
+        setNewsletterStatus("published");
+        await handleSave();
+      }
+
+      // Send to all subscribers
+      const response = await fetch(`/api/newsletters/${id}/publish`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      setPublishResult({
+        sentCount: data.sentCount,
+        failedCount: data.failedCount,
+      });
+
+      toast.success(`Newsletter published to ${data.sentCount} subscribers`);
+    } catch (error: any) {
+      console.error("Error publishing newsletter:", error);
+      toast.error(error.message || "Failed to publish newsletter");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   // Render loading state (no changes needed)
   if (loading) {
     return (
@@ -951,7 +1000,7 @@ export default function NewsletterEditorPage() {
                         onClick={() => handleDuplicateElement(selectedElement)}
                         title="Duplicate Element"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -960,7 +1009,7 @@ export default function NewsletterEditorPage() {
                         onClick={() => handleRemoveElement(selectedElement)}
                         title="Remove Element"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
@@ -1642,59 +1691,99 @@ export default function NewsletterEditorPage() {
           <DialogHeader>
             <DialogTitle>Send Test Email</DialogTitle>
             <DialogDescription>
-              Send a test version of this newsletter to any email address.
+              Send a test email to verify how your newsletter will look before publishing it.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
+          <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Recipient Email:</label>
+              <Label htmlFor="testEmail">Email Address</Label>
               <Input
+                id="testEmail"
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
-                placeholder="Enter email address"
+                placeholder="Enter recipient email"
                 type="email"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email Subject:</label>
-              <Input
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                placeholder="Enter email subject"
-                disabled={isSending}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Preview Text:</label>
-              <Input
-                value={emailPreviewText}
-                onChange={(e) => setEmailPreviewText(e.target.value)}
-                placeholder="Enter preview text (optional)"
-                disabled={isSending}
-              />
+              <p className="text-sm text-muted-foreground">
+                The test email will be sent with subject:{" "}
+                <span className="font-medium">{emailSubject}</span>
+              </p>
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsSendDialogOpen(false)}
-              disabled={isSending}
-            >
+            <Button variant="outline" onClick={() => setIsSendDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSendTest} disabled={isSending}>
-              {isSending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Send Test
-                </>
-              )}
+            <Button onClick={handleSendTest} disabled={isSending || !testEmail}>
+              {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Send Test
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish to Subscribers Dialog */}
+      <Dialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Publish Newsletter</DialogTitle>
+            <DialogDescription>
+              This will send your newsletter to all active subscribers. Make sure you've tested it
+              first.
+            </DialogDescription>
+          </DialogHeader>
+
+          {publishResult ? (
+            <div className="space-y-4 py-2">
+              <div className="p-4 bg-primary/10 rounded-md">
+                <h3 className="font-medium text-center">Newsletter Published!</h3>
+                <div className="mt-2 flex justify-center space-x-8">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{publishResult.sentCount}</p>
+                    <p className="text-sm text-muted-foreground">Sent</p>
+                  </div>
+                  {publishResult.failedCount > 0 && (
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-destructive">
+                        {publishResult.failedCount}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Failed</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <p className="text-sm">
+                  You're about to publish <span className="font-medium">{newsletterName}</span> with
+                  subject: <span className="font-medium">{emailSubject}</span>
+                </p>
+
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Important</AlertTitle>
+                  <AlertDescription>
+                    This action will send your newsletter to all active subscribers immediately.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPublishDialogOpen(false)}>
+              {publishResult ? "Close" : "Cancel"}
+            </Button>
+            {!publishResult && (
+              <Button variant="default" onClick={handlePublishNewsletter} disabled={isPublishing}>
+                {isPublishing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Publish to Subscribers
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
