@@ -62,9 +62,6 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Registration Error:", error);
     // Generic error message for security
-    return NextResponse.json(
-      { message: "An internal server error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "An internal server error occurred" }, { status: 500 });
   }
 }

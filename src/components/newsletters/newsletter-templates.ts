@@ -18,8 +18,7 @@ export const newsletterTemplates: Record<string, NewsletterTemplate> = {
       {
         id: "text-1",
         type: "text",
-        content:
-          "Welcome to our newsletter! We're excited to share the latest updates with you.",
+        content: "Welcome to our newsletter! We're excited to share the latest updates with you.",
         style: { padding: "10px 20px", lineHeight: "1.6" },
       },
       {
@@ -76,8 +75,7 @@ export const newsletterTemplates: Record<string, NewsletterTemplate> = {
       {
         id: "text-1",
         type: "text",
-        content:
-          "We're thrilled to announce our newest feature that will transform how you work.",
+        content: "We're thrilled to announce our newest feature that will transform how you work.",
         style: {
           padding: "15px 20px",
           lineHeight: "1.6",
@@ -171,8 +169,7 @@ export const newsletterTemplates: Record<string, NewsletterTemplate> = {
       {
         id: "text-2",
         type: "text",
-        content:
-          "More details about what's been happening and what's coming up next.",
+        content: "More details about what's been happening and what's coming up next.",
         style: { padding: "10px 20px", lineHeight: "1.6" },
       },
       {

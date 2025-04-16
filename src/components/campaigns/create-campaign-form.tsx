@@ -82,11 +82,7 @@ export function CreateCampaignFormSkeleton() {
   );
 }
 
-export function CreateCampaignForm({
-  onSuccess,
-}: {
-  onSuccess?: (campaign: Campaign) => void;
-}) {
+export function CreateCampaignForm({ onSuccess }: { onSuccess?: (campaign: Campaign) => void }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -151,9 +147,7 @@ export function CreateCampaignForm({
               <FormControl>
                 <Input placeholder="Monthly Newsletter" {...field} />
               </FormControl>
-              <FormDescription>
-                Give your campaign a descriptive name
-              </FormDescription>
+              <FormDescription>Give your campaign a descriptive name</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -168,9 +162,7 @@ export function CreateCampaignForm({
               <FormControl>
                 <Input placeholder="Your November Updates" {...field} />
               </FormControl>
-              <FormDescription>
-                The subject line recipients will see in their inbox
-              </FormDescription>
+              <FormDescription>The subject line recipients will see in their inbox</FormDescription>
               <FormMessage />
             </FormItem>
           )}

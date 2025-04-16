@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CheckCircle,
   MousePointer,
   LayoutTemplate,
   Users,
@@ -23,20 +22,17 @@ const features = [
   {
     icon: <MousePointer className="h-5 w-5" />,
     title: "Drag & Drop Builder",
-    description:
-      "Create beautiful emails with our intuitive drag and drop interface.",
+    description: "Create beautiful emails with our intuitive drag and drop interface.",
   },
   {
     icon: <LayoutTemplate className="h-5 w-5" />,
     title: "1,000+ Templates",
-    description:
-      "Access our library of professionally designed email templates.",
+    description: "Access our library of professionally designed email templates.",
   },
   {
     icon: <Users className="h-5 w-5" />,
     title: "Nested Segmentation",
-    description:
-      "Target the right audience with advanced segmentation options.",
+    description: "Target the right audience with advanced segmentation options.",
   },
   {
     icon: <TestTube className="h-5 w-5" />,
@@ -99,9 +95,7 @@ export default function EmailBuilder() {
   const [activeFeature, setActiveFeature] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredElement, setHoveredElement] = useState<number | null>(null);
-  const [droppedElements, setDroppedElements] = useState<
-    Array<{ type: string; id: number }>
-  >([]);
+  const [droppedElements, setDroppedElements] = useState<Array<{ type: string; id: number }>>([]);
   const [nextId, setNextId] = useState(1);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [showDemo, setShowDemo] = useState(false);
@@ -150,8 +144,8 @@ export default function EmailBuilder() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
-                Create engaging newsletters that convert with our powerful and
-                easy-to-use email builder.
+                Create engaging newsletters that convert with our powerful and easy-to-use email
+                builder.
               </motion.p>
             </div>
 
@@ -168,9 +162,7 @@ export default function EmailBuilder() {
                 >
                   <motion.div
                     className={`flex-shrink-0 rounded-full ${
-                      activeFeature === index
-                        ? "bg-primary/80"
-                        : "bg-primary/20"
+                      activeFeature === index ? "bg-primary/80" : "bg-primary/20"
                     } p-2 text-white`}
                     whileHover={{ scale: 1.1, rotate: 5 }}
                   >
@@ -190,10 +182,7 @@ export default function EmailBuilder() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <Button
-                onClick={toggleDemo}
-                className="bg-primary hover:bg-primary/90 text-white"
-              >
+              <Button onClick={toggleDemo} className="bg-primary hover:bg-primary/90 text-white">
                 {showDemo ? "Reset Builder" : "Try Interactive Demo"}
               </Button>
             </motion.div>
@@ -220,9 +209,7 @@ export default function EmailBuilder() {
                   <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                   <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 </div>
-                <div className="text-white/50 text-xs mx-auto">
-                  Letterflow Email Builder
-                </div>
+                <div className="text-white/50 text-xs mx-auto">Letterflow Email Builder</div>
               </div>
 
               <div className="grid grid-cols-12 h-[480px]">
@@ -277,9 +264,7 @@ export default function EmailBuilder() {
                   onDrop={(e) => {
                     e.preventDefault();
                     if (showDemo && hoveredElement !== null) {
-                      handleElementDrop(
-                        templateElements[hoveredElement].name.toLowerCase()
-                      );
+                      handleElementDrop(templateElements[hoveredElement].name.toLowerCase());
                     }
                   }}
                 >
@@ -406,9 +391,7 @@ export default function EmailBuilder() {
                             animate="animate"
                             whileHover="hover"
                           >
-                            <p className="text-gray-600 text-center">
-                              {demoTemplate.text.content}
-                            </p>
+                            <p className="text-gray-600 text-center">{demoTemplate.text.content}</p>
                           </motion.div>
 
                           <motion.div
@@ -468,9 +451,7 @@ export default function EmailBuilder() {
                       <motion.button
                         key={idx}
                         className={`text-gray-600 hover:text-primary flex items-center gap-1 text-xs ${
-                          activeTool === tool.label.toLowerCase()
-                            ? "text-primary"
-                            : ""
+                          activeTool === tool.label.toLowerCase() ? "text-primary" : ""
                         }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -551,32 +532,24 @@ export default function EmailBuilder() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-blue-50 p-2 rounded">
-                      <div className="text-[10px] text-blue-500 font-medium mb-1">
-                        Version A
-                      </div>
+                      <div className="text-[10px] text-blue-500 font-medium mb-1">Version A</div>
                       <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-blue-500 rounded-full"
                           style={{ width: "65%" }}
                         ></div>
                       </div>
-                      <div className="text-[10px] mt-1 text-right">
-                        65% open rate
-                      </div>
+                      <div className="text-[10px] mt-1 text-right">65% open rate</div>
                     </div>
                     <div className="bg-green-50 p-2 rounded">
-                      <div className="text-[10px] text-green-500 font-medium mb-1">
-                        Version B
-                      </div>
+                      <div className="text-[10px] text-green-500 font-medium mb-1">Version B</div>
                       <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-green-500 rounded-full"
                           style={{ width: "72%" }}
                         ></div>
                       </div>
-                      <div className="text-[10px] mt-1 text-right">
-                        72% open rate
-                      </div>
+                      <div className="text-[10px] mt-1 text-right">72% open rate</div>
                     </div>
                   </div>
                 </motion.div>

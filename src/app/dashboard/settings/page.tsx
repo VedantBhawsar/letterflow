@@ -97,9 +97,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences
-        </p>
+        <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
@@ -112,10 +110,7 @@ export default function SettingsPage() {
             <Key className="h-4 w-fit" />
             <span className="hidden sm:inline">Password</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="notifications"
-            className="flex items-center gap-2"
-          >
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-fit" />
             <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
@@ -146,10 +141,7 @@ export default function SettingsPage() {
             )}
 
             <Form {...profileForm}>
-              <form
-                onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField
                     control={profileForm.control}
@@ -189,9 +181,7 @@ export default function SettingsPage() {
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
-                        <FormDescription>
-                          Optional: Your company or organization
-                        </FormDescription>
+                        <FormDescription>Optional: Your company or organization</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -233,10 +223,7 @@ export default function SettingsPage() {
             </div>
 
             <Form {...passwordForm}>
-              <form
-                onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
                 <FormField
                   control={passwordForm.control}
                   name="currentPassword"
@@ -298,9 +285,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">
-                Notification settings coming soon
-              </p>
+              <p className="text-muted-foreground">Notification settings coming soon</p>
             </div>
           </Card>
         </TabsContent>
@@ -315,9 +300,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">
-                Billing settings coming soon
-              </p>
+              <p className="text-muted-foreground">Billing settings coming soon</p>
             </div>
           </Card>
         </TabsContent>
@@ -341,9 +324,7 @@ export default function SettingsPage() {
       <Card className="p-6 border-red-200 dark:border-red-900/40">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-medium text-red-600 dark:text-red-400">
-              Danger Zone
-            </h3>
+            <h3 className="text-lg font-medium text-red-600 dark:text-red-400">Danger Zone</h3>
             <p className="text-sm text-muted-foreground">
               Permanently delete your account and all of your data
             </p>

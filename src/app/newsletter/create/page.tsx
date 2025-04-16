@@ -49,16 +49,10 @@ import {
 import { NewsletterElement, SocialLink } from "@/lib/types";
 
 // Tooltip fallback components (keep as is)
-const TooltipProvider = ({ children }: { children: React.ReactNode }) =>
-  children;
+const TooltipProvider = ({ children }: { children: React.ReactNode }) => children;
 const Tooltip = ({ children }: { children: React.ReactNode }) => children;
-const TooltipTrigger = ({
-  asChild,
-  children,
-}: {
-  asChild?: boolean;
-  children: React.ReactNode;
-}) => children;
+const TooltipTrigger = ({ asChild, children }: { asChild?: boolean; children: React.ReactNode }) =>
+  children;
 const TooltipContent = ({ children }: { children: React.ReactNode }) => null;
 
 export default function NewsletterCreatePage() {
@@ -74,9 +68,7 @@ export default function NewsletterCreatePage() {
   const [activeTab, setActiveTab] = useState("elements");
   const builderRef = useRef<HTMLDivElement>(null);
 
-  const [viewMode, setViewMode] = useState<"desktop" | "tablet" | "mobile">(
-    "desktop"
-  );
+  const [viewMode, setViewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [history, setHistory] = useState<NewsletterElement[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   // State for subject and preview text (already exists)
@@ -88,6 +80,7 @@ export default function NewsletterCreatePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSavedOnce, setHasSavedOnce] = useState(false);
+  const [newsletterId, setNewsletterId] = useState<string | null>(null);
 
   // Initialize the newsletter with template data
   useEffect(() => {
@@ -102,9 +95,7 @@ export default function NewsletterCreatePage() {
       setHistory([template.elements]);
       setHistoryIndex(0);
     } else {
-      toast.error(
-        `Template "${templateType}" not found. Using blank template.`
-      );
+      toast.error(`Template "${templateType}" not found. Using blank template.`);
       setNewsletterName("New Blank Newsletter");
       setElements(newsletterTemplates.blank.elements);
       setHistory([newsletterTemplates.blank.elements]);
@@ -181,9 +172,7 @@ export default function NewsletterCreatePage() {
   };
 
   // Get the currently selected element (no changes needed)
-  const selectedElementData = selectedElement
-    ? findElementById(selectedElement, elements)
-    : null;
+  const selectedElementData = selectedElement ? findElementById(selectedElement, elements) : null;
 
   // Handle adding a new element (no changes needed)
   const handleAddElement = (type: string) => {
@@ -198,8 +187,7 @@ export default function NewsletterCreatePage() {
         newElement.content = "Heading";
         break;
       case "image":
-        newElement.src =
-          "https://placehold.co/600x400/e6e6e6/999999?text=Image";
+        newElement.src = "https://placehold.co/600x400/e6e6e6/999999?text=Image";
         break;
       case "button":
         newElement.content = "Button";
@@ -263,18 +251,12 @@ export default function NewsletterCreatePage() {
   // Handle updating element content (no changes needed)
   const handleElementContentChange = (elementId: string, content: string) => {
     setElements((prev) =>
-      prev.map((element) =>
-        element.id === elementId ? { ...element, content } : element
-      )
+      prev.map((element) => (element.id === elementId ? { ...element, content } : element))
     );
   };
 
   // Handle updating element style (no changes needed)
-  const handleElementStyleChange = (
-    elementId: string,
-    property: string,
-    value: string
-  ) => {
+  const handleElementStyleChange = (elementId: string, property: string, value: string) => {
     setElements((prev) =>
       prev.map((element) =>
         element.id === elementId
@@ -292,18 +274,14 @@ export default function NewsletterCreatePage() {
 
   // Handle adding personalization to a text element (no changes needed)
   const handleAddPersonalization = (elementId: string, fieldId: string) => {
-    const field = personalizationOptions.find(
-      (option) => option.id === fieldId
-    );
+    const field = personalizationOptions.find((option) => option.id === fieldId);
     if (!field) return;
 
     const elementToUpdate = findElementById(elementId, elements);
 
     if (!elementToUpdate || !("content" in elementToUpdate)) return;
 
-    const updatedContent = `${elementToUpdate.content || ""} ${
-      field.defaultValue
-    }`;
+    const updatedContent = `${elementToUpdate.content || ""} ${field.defaultValue}`;
 
     setElements((prev) =>
       prev.map((element) =>
@@ -351,9 +329,7 @@ export default function NewsletterCreatePage() {
   // Handle save newsletter (POST request, includes subject/preview)
   const handleSave = async () => {
     if (hasSavedOnce) {
-      toast.warning(
-        "Newsletter already saved. Please edit from the dashboard."
-      );
+      toast.warning("Newsletter already saved. Please edit from the dashboard.");
       return;
     }
     setIsSaving(true);
@@ -392,26 +368,21 @@ export default function NewsletterCreatePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || `HTTP error! status: ${response.status}`
-        );
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
-
+      setNewsletterId(data.id);
       setHasSavedOnce(true);
       toast.success("Newsletter created successfully!");
 
       if (data.id) {
         router.push(`/newsletter/${data.id}`);
       } else {
-        toast.warning(
-          "Newsletter created, but could not redirect to edit page."
-        );
+        toast.warning("Newsletter created, but could not redirect to edit page.");
         router.push("/dashboard/newsletters");
       }
     } catch (error: any) {
       console.error("Newsletter save error:", error);
-      const errorMessage =
-        error.message || "An unexpected error occurred while saving newsletter";
+      const errorMessage = error.message || "An unexpected error occurred while saving newsletter";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -452,11 +423,7 @@ export default function NewsletterCreatePage() {
     setDraggingElement(elementId);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", elementId);
-    (e.currentTarget as HTMLElement).classList.add(
-      "opacity-50",
-      "border-2",
-      "border-primary"
-    );
+    (e.currentTarget as HTMLElement).classList.add("opacity-50", "border-2", "border-primary");
   };
 
   // Handle element drag end (no changes needed)
@@ -464,11 +431,7 @@ export default function NewsletterCreatePage() {
     e.preventDefault();
     setDraggingElement(null);
     setDropTargetIndex(null);
-    (e.currentTarget as HTMLElement).classList.remove(
-      "opacity-50",
-      "border-2",
-      "border-primary"
-    );
+    (e.currentTarget as HTMLElement).classList.remove("opacity-50", "border-2", "border-primary");
   };
 
   // Handle element drag over (no changes needed)
@@ -494,8 +457,7 @@ export default function NewsletterCreatePage() {
 
     const newElements = [...elements];
     const [movedElement] = newElements.splice(sourceIndex, 1);
-    const adjustedTargetIndex =
-      sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+    const adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
     newElements.splice(adjustedTargetIndex, 0, movedElement);
 
     setElements(newElements);
@@ -588,7 +550,7 @@ export default function NewsletterCreatePage() {
                   <Button
                     variant={viewMode === "mobile" ? "secondary" : "ghost"}
                     size="sm"
-                    className="px-2 h-8"
+                    className="px-2 h-8 transition-all duration-300"
                     onClick={() => setViewMode("mobile")}
                   >
                     <Smartphone className="h-4 w-4" />
@@ -634,11 +596,7 @@ export default function NewsletterCreatePage() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActiveTab("settings")}
-                >
+                <Button variant="outline" size="sm" onClick={() => setActiveTab("settings")}>
                   <Settings className="h-4 w-4 mr-1" />
                   Settings
                 </Button>
@@ -652,7 +610,14 @@ export default function NewsletterCreatePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => toast.info("Preview mode not implemented yet")}
+                  onClick={() => {
+                    if (hasSavedOnce) {
+                      router.push(`/newsletter/preview/${newsletterId}`);
+                    } else {
+                      toast.warning("Save the newsletter first to preview it");
+                    }
+                  }}
+                  disabled={!hasSavedOnce}
                 >
                   <Eye className="h-4 w-4 mr-1" />
                   Preview
@@ -666,9 +631,7 @@ export default function NewsletterCreatePage() {
             size="sm"
             onClick={handleSave}
             disabled={isSaving || hasSavedOnce} // Disable if saving or already saved
-            title={
-              hasSavedOnce ? "Newsletter already saved" : "Save newsletter"
-            }
+            title={hasSavedOnce ? "Newsletter already saved" : "Save newsletter"}
           >
             {isSaving ? (
               <>
@@ -687,15 +650,9 @@ export default function NewsletterCreatePage() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() =>
-                    toast.info("Send functionality not implemented yet")
-                  }
+                  onClick={() => toast.info("Send functionality not implemented yet")}
                   disabled={!hasSavedOnce} // Can only send after initial save
-                  title={
-                    !hasSavedOnce
-                      ? "Save the newsletter first"
-                      : "Send newsletter"
-                  }
+                  title={!hasSavedOnce ? "Save the newsletter first" : "Send newsletter"}
                 >
                   <Send className="h-4 w-4 mr-1" />
                   Send
@@ -709,9 +666,7 @@ export default function NewsletterCreatePage() {
 
       {/* Show error message if save failed */}
       {error && (
-        <div className="bg-destructive/15 text-destructive text-sm p-2 px-4">
-          Error: {error}
-        </div>
+        <div className="bg-destructive/15 text-destructive text-sm p-2 px-4">Error: {error}</div>
       )}
 
       {/* Email settings section */}
@@ -775,8 +730,8 @@ export default function NewsletterCreatePage() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Draft newsletters are saved but not visible to subscribers.
-                Published newsletters can be sent to subscribers.
+                Draft newsletters are saved but not visible to subscribers. Published newsletters
+                can be sent to subscribers.
               </p>
             </div>
           </div>
@@ -835,8 +790,7 @@ export default function NewsletterCreatePage() {
                 <div className="text-sm font-medium mb-2">Personalization:</div>
                 <div className="space-y-2">
                   <div className="text-xs text-muted-foreground mb-2">
-                    Select a text element first, then add personalization
-                    fields:
+                    Select a text element first, then add personalization fields:
                   </div>
                   {personalizationOptions.map((field) => (
                     <Button
@@ -845,18 +799,13 @@ export default function NewsletterCreatePage() {
                       size="sm"
                       className="w-full justify-start text-xs"
                       onClick={() => {
-                        if (
-                          selectedElement &&
-                          selectedElementData?.type === "text"
-                        ) {
+                        if (selectedElement && selectedElementData?.type === "text") {
                           handleAddPersonalization(selectedElement, field.id);
                         } else {
                           toast.error("Select a text element first");
                         }
                       }}
-                      disabled={
-                        !selectedElement || selectedElementData?.type !== "text"
-                      }
+                      disabled={!selectedElement || selectedElementData?.type !== "text"}
                     >
                       <PersonalizationIcon className="h-3 w-3 mr-1" />
                       {field.label}
@@ -875,33 +824,19 @@ export default function NewsletterCreatePage() {
                     <div className="text-sm font-medium capitalize flex items-center">
                       {/* Icon mapping */}
                       <div className="bg-primary/10 p-1 rounded-md mr-2">
-                        {selectedElementData.type === "heading" && (
-                          <Heading className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "text" && (
-                          <Type className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "image" && (
-                          <ImageIcon className="h-4 w-4" />
-                        )}
+                        {selectedElementData.type === "heading" && <Heading className="h-4 w-4" />}
+                        {selectedElementData.type === "text" && <Type className="h-4 w-4" />}
+                        {selectedElementData.type === "image" && <ImageIcon className="h-4 w-4" />}
                         {selectedElementData.type === "button" && (
                           <ButtonIcon className="h-4 w-4" />
                         )}
-                        {selectedElementData.type === "columns" && (
-                          <Columns className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "divider" && (
-                          <Divider className="h-4 w-4" />
-                        )}
+                        {selectedElementData.type === "columns" && <Columns className="h-4 w-4" />}
+                        {selectedElementData.type === "divider" && <Divider className="h-4 w-4" />}
                         {selectedElementData.type === "spacer" && (
                           <ArrowUpDown className="h-4 w-4" />
                         )}
-                        {selectedElementData.type === "social" && (
-                          <Share2 className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "code" && (
-                          <Braces className="h-4 w-4" />
-                        )}
+                        {selectedElementData.type === "social" && <Share2 className="h-4 w-4" />}
+                        {selectedElementData.type === "code" && <Braces className="h-4 w-4" />}
                       </div>
                       {selectedElementData.type} Element
                     </div>
@@ -937,20 +872,14 @@ export default function NewsletterCreatePage() {
                         <Input
                           value={selectedElementData.content || ""}
                           onChange={(e) =>
-                            handleElementContentChange(
-                              selectedElement,
-                              e.target.value
-                            )
+                            handleElementContentChange(selectedElement, e.target.value)
                           }
                         />
                       ) : (
                         <Textarea
                           value={selectedElementData.content || ""}
                           onChange={(e) =>
-                            handleElementContentChange(
-                              selectedElement,
-                              e.target.value
-                            )
+                            handleElementContentChange(selectedElement, e.target.value)
                           }
                           rows={4}
                         />
@@ -1035,34 +964,19 @@ export default function NewsletterCreatePage() {
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Style:</label>
                       <Select
-                        value={
-                          selectedElementData.style?.borderTop ||
-                          "1px solid #e5e7eb"
-                        }
+                        value={selectedElementData.style?.borderTop || "1px solid #e5e7eb"}
                         onValueChange={(value) =>
-                          handleElementStyleChange(
-                            selectedElement,
-                            "borderTop",
-                            value
-                          )
+                          handleElementStyleChange(selectedElement, "borderTop", value)
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Divider style" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1px solid #e5e7eb">
-                            Solid
-                          </SelectItem>
-                          <SelectItem value="1px dashed #e5e7eb">
-                            Dashed
-                          </SelectItem>
-                          <SelectItem value="2px solid #e5e7eb">
-                            Thick
-                          </SelectItem>
-                          <SelectItem value="3px double #e5e7eb">
-                            Double
-                          </SelectItem>
+                          <SelectItem value="1px solid #e5e7eb">Solid</SelectItem>
+                          <SelectItem value="1px dashed #e5e7eb">Dashed</SelectItem>
+                          <SelectItem value="2px solid #e5e7eb">Thick</SelectItem>
+                          <SelectItem value="3px double #e5e7eb">Double</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1070,56 +984,47 @@ export default function NewsletterCreatePage() {
 
                   {selectedElementData.type === "social" && (
                     <div className="space-y-4">
-                      {selectedElementData.socialLinks?.map(
-                        (link: SocialLink, index: number) => (
-                          <div key={index} className="space-y-2 border-b pb-2">
-                            <label className="text-xs font-medium capitalize">
-                              {link.platform} URL:
-                            </label>
-                            <Input
-                              value={link.url || "#"}
-                              onChange={(e) => {
-                                const newLinks = [
-                                  ...(selectedElementData.socialLinks || []),
-                                ];
-                                newLinks[index] = {
-                                  ...newLinks[index],
-                                  url: e.target.value,
-                                };
-                                setElements((prev) =>
-                                  prev.map((element) =>
-                                    element.id === selectedElement
-                                      ? { ...element, socialLinks: newLinks }
-                                      : element
-                                  )
-                                );
-                              }}
-                            />
-                          </div>
-                        )
-                      )}
+                      {selectedElementData.socialLinks?.map((link: SocialLink, index: number) => (
+                        <div key={index} className="space-y-2 border-b pb-2">
+                          <label className="text-xs font-medium capitalize">
+                            {link.platform} URL:
+                          </label>
+                          <Input
+                            value={link.url || "#"}
+                            onChange={(e) => {
+                              const newLinks = [...(selectedElementData.socialLinks || [])];
+                              newLinks[index] = {
+                                ...newLinks[index],
+                                url: e.target.value,
+                              };
+                              setElements((prev) =>
+                                prev.map((element) =>
+                                  element.id === selectedElement
+                                    ? { ...element, socialLinks: newLinks }
+                                    : element
+                                )
+                              );
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
 
                   {selectedElementData.type === "code" && (
                     <div className="space-y-2">
-                      <label className="text-xs font-medium">
-                        Custom HTML:
-                      </label>
+                      <label className="text-xs font-medium">Custom HTML:</label>
                       <Textarea
                         value={selectedElementData.content || ""}
                         onChange={(e) =>
-                          handleElementContentChange(
-                            selectedElement,
-                            e.target.value
-                          )
+                          handleElementContentChange(selectedElement, e.target.value)
                         }
                         rows={8}
                         className="font-mono text-xs"
                       />
                       <div className="text-xs text-muted-foreground">
-                        Warning: Custom HTML may be stripped by some email
-                        clients. Use with caution.
+                        Warning: Custom HTML may be stripped by some email clients. Use with
+                        caution.
                       </div>
                     </div>
                   )}
@@ -1135,15 +1040,9 @@ export default function NewsletterCreatePage() {
                           <div>
                             <label className="text-xs">Text Align:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.textAlign || "left"
-                              }
+                              value={selectedElementData.style?.textAlign || "left"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "textAlign",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "textAlign", value)
                               }
                             >
                               <SelectTrigger>
@@ -1160,15 +1059,9 @@ export default function NewsletterCreatePage() {
                           <div>
                             <label className="text-xs">Font Size:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.fontSize || "16px"
-                              }
+                              value={selectedElementData.style?.fontSize || "16px"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "fontSize",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "fontSize", value)
                               }
                             >
                               <SelectTrigger>
@@ -1189,16 +1082,9 @@ export default function NewsletterCreatePage() {
                           <div>
                             <label className="text-xs">Font Weight:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.fontWeight ||
-                                "normal"
-                              }
+                              value={selectedElementData.style?.fontWeight || "normal"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "fontWeight",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "fontWeight", value)
                               }
                             >
                               <SelectTrigger>
@@ -1214,30 +1100,22 @@ export default function NewsletterCreatePage() {
                           <div>
                             <label className="text-xs">Text Color:</label>
                             <div className="flex space-x-2 mt-1">
-                              {[
-                                "#000000",
-                                "#1e40af",
-                                "#047857",
-                                "#b91c1c",
-                                "#4b5563",
-                              ].map((color) => (
-                                <div
-                                  key={color}
-                                  className={`h-5 w-5 rounded-full cursor-pointer ${
-                                    selectedElementData.style?.color === color
-                                      ? "ring-2 ring-primary"
-                                      : ""
-                                  }`}
-                                  style={{ backgroundColor: color }}
-                                  onClick={() =>
-                                    handleElementStyleChange(
-                                      selectedElement,
-                                      "color",
-                                      color
-                                    )
-                                  }
-                                />
-                              ))}
+                              {["#000000", "#1e40af", "#047857", "#b91c1c", "#4b5563"].map(
+                                (color) => (
+                                  <div
+                                    key={color}
+                                    className={`h-5 w-5 rounded-full cursor-pointer ${
+                                      selectedElementData.style?.color === color
+                                        ? "ring-2 ring-primary"
+                                        : ""
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                    onClick={() =>
+                                      handleElementStyleChange(selectedElement, "color", color)
+                                    }
+                                  />
+                                )
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1250,43 +1128,12 @@ export default function NewsletterCreatePage() {
                           <div>
                             <label className="text-xs">Button Color:</label>
                             <div className="flex space-x-2 mt-1">
-                              {[
-                                "#3b82f6",
-                                "#1e40af",
-                                "#059669",
-                                "#b91c1c",
-                                "#4b5563",
-                              ].map((color) => (
-                                <div
-                                  key={color}
-                                  className={`h-5 w-5 rounded-full cursor-pointer ${
-                                    selectedElementData.style
-                                      ?.backgroundColor === color
-                                      ? "ring-2 ring-primary"
-                                      : ""
-                                  }`}
-                                  style={{ backgroundColor: color }}
-                                  onClick={() =>
-                                    handleElementStyleChange(
-                                      selectedElement,
-                                      "backgroundColor",
-                                      color
-                                    )
-                                  }
-                                />
-                              ))}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-xs">Text Color:</label>
-                            <div className="flex space-x-2 mt-1">
-                              {["#ffffff", "#f3f4f6", "#000000"].map(
+                              {["#3b82f6", "#1e40af", "#059669", "#b91c1c", "#4b5563"].map(
                                 (color) => (
                                   <div
                                     key={color}
-                                    className={`h-5 w-5 rounded-full cursor-pointer border ${
-                                      selectedElementData.style?.color === color
+                                    className={`h-5 w-5 rounded-full cursor-pointer ${
+                                      selectedElementData.style?.backgroundColor === color
                                         ? "ring-2 ring-primary"
                                         : ""
                                     }`}
@@ -1294,7 +1141,7 @@ export default function NewsletterCreatePage() {
                                     onClick={() =>
                                       handleElementStyleChange(
                                         selectedElement,
-                                        "color",
+                                        "backgroundColor",
                                         color
                                       )
                                     }
@@ -1303,22 +1150,35 @@ export default function NewsletterCreatePage() {
                               )}
                             </div>
                           </div>
+
+                          <div>
+                            <label className="text-xs">Text Color:</label>
+                            <div className="flex space-x-2 mt-1">
+                              {["#ffffff", "#f3f4f6", "#000000"].map((color) => (
+                                <div
+                                  key={color}
+                                  className={`h-5 w-5 rounded-full cursor-pointer border ${
+                                    selectedElementData.style?.color === color
+                                      ? "ring-2 ring-primary"
+                                      : ""
+                                  }`}
+                                  style={{ backgroundColor: color }}
+                                  onClick={() =>
+                                    handleElementStyleChange(selectedElement, "color", color)
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="text-xs">Font Weight:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.fontWeight ||
-                                "normal"
-                              }
+                              value={selectedElementData.style?.fontWeight || "normal"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "fontWeight",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "fontWeight", value)
                               }
                             >
                               <SelectTrigger>
@@ -1334,16 +1194,9 @@ export default function NewsletterCreatePage() {
                           <div>
                             <label className="text-xs">Size:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.padding ||
-                                "10px 20px"
-                              }
+                              value={selectedElementData.style?.padding || "10px 20px"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "padding",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "padding", value)
                               }
                             >
                               <SelectTrigger>
@@ -1351,9 +1204,7 @@ export default function NewsletterCreatePage() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="5px 10px">Small</SelectItem>
-                                <SelectItem value="10px 20px">
-                                  Medium
-                                </SelectItem>
+                                <SelectItem value="10px 20px">Medium</SelectItem>
                                 <SelectItem value="12px 30px">Large</SelectItem>
                               </SelectContent>
                             </Select>
@@ -1369,11 +1220,7 @@ export default function NewsletterCreatePage() {
                           <Select
                             value={selectedElementData.style?.width || "100%"}
                             onValueChange={(value) =>
-                              handleElementStyleChange(
-                                selectedElement,
-                                "width",
-                                value
-                              )
+                              handleElementStyleChange(selectedElement, "width", value)
                             }
                           >
                             <SelectTrigger>
@@ -1392,11 +1239,7 @@ export default function NewsletterCreatePage() {
                           <Select
                             value={selectedElementData.style?.margin || "0"}
                             onValueChange={(value) =>
-                              handleElementStyleChange(
-                                selectedElement,
-                                "margin",
-                                value
-                              )
+                              handleElementStyleChange(selectedElement, "margin", value)
                             }
                           >
                             <SelectTrigger>
@@ -1427,12 +1270,8 @@ export default function NewsletterCreatePage() {
         <div className="md:col-span-4 bg-white p-6 overflow-y-auto flex items-center justify-center">
           {/* ... (Main content rendering remains the same as previous create version) ... */}
           <div
-            className={`${
-              viewMode === "desktop"
-                ? "max-w-2xl"
-                : viewMode === "tablet"
-                ? "max-w-md"
-                : "max-w-xs"
+            className={`transition-all duration-500 ease-in-out ${
+              viewMode === "desktop" ? "max-w-2xl" : viewMode === "tablet" ? "max-w-md" : "max-w-xs"
             } w-full min-h-[500px] border border-dashed rounded-lg flex flex-col relative bg-gray-50 shadow-inner`}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -1456,9 +1295,7 @@ export default function NewsletterCreatePage() {
             {elements.length === 0 ? (
               <div className="h-[500px] flex flex-col items-center justify-center text-muted-foreground p-4 text-center">
                 <Layout className="h-16 w-16 mb-4 text-muted-foreground/60" />
-                <h3 className="text-lg font-medium">
-                  Your newsletter is empty
-                </h3>
+                <h3 className="text-lg font-medium">Your newsletter is empty</h3>
                 <p className="text-sm mt-1">
                   Drag elements from the left panel to build your newsletter
                 </p>
@@ -1473,9 +1310,7 @@ export default function NewsletterCreatePage() {
                         ? "ring-2 ring-primary ring-offset-2"
                         : "hover:outline hover:outline-dashed hover:outline-muted"
                     } ${
-                      dropTargetIndex === index
-                        ? "border-t-2 border-primary pt-1"
-                        : ""
+                      dropTargetIndex === index ? "border-t-2 border-primary pt-1" : ""
                     } ${draggingElement === element.id ? "opacity-30" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1545,12 +1380,8 @@ export default function NewsletterCreatePage() {
                     </div>
 
                     {/* Render Element Content */}
-                    {element.type === "heading" && (
-                      <h2 style={element.style}>{element.content}</h2>
-                    )}
-                    {element.type === "text" && (
-                      <p style={element.style}>{element.content}</p>
-                    )}
+                    {element.type === "heading" && <h2 style={element.style}>{element.content}</h2>}
+                    {element.type === "text" && <p style={element.style}>{element.content}</p>}
                     {element.type === "image" && element.src && (
                       <img
                         src={element.src}
@@ -1580,48 +1411,33 @@ export default function NewsletterCreatePage() {
                       </div>
                     )}
                     {element.type === "divider" && <hr style={element.style} />}
-                    {element.type === "spacer" && (
-                      <div style={{ height: element.height }} />
-                    )}
+                    {element.type === "spacer" && <div style={{ height: element.height }} />}
                     {element.type === "social" && (
-                      <div
-                        style={element.style}
-                        className="flex justify-center space-x-4"
-                      >
-                        {element.socialLinks?.map(
-                          (link: SocialLink, i: number) => (
-                            <a
-                              key={i}
-                              href={link.url || "#"}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.preventDefault()}
-                              className="w-8 h-8 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center text-gray-700"
-                              title={link.platform}
-                            >
-                              {/* Basic icon representation */}
-                              {link.platform.toLowerCase().startsWith("tw") && (
-                                <span>TW</span>
-                              )}
-                              {link.platform.toLowerCase().startsWith("fa") && (
-                                <span>FB</span>
-                              )}
-                              {link.platform.toLowerCase().startsWith("in") && (
-                                <span>IN</span>
-                              )}
-                              {link.platform.toLowerCase().startsWith("li") && (
-                                <span>LI</span>
-                              )}
-                              {!["tw", "fa", "in", "li"].some((p) =>
-                                link.platform.toLowerCase().startsWith(p)
-                              ) && (
-                                <span className="uppercase font-bold text-xs">
-                                  {link.platform.charAt(0)}
-                                </span>
-                              )}
-                            </a>
-                          )
-                        )}
+                      <div style={element.style} className="flex justify-center space-x-4">
+                        {element.socialLinks?.map((link: SocialLink, i: number) => (
+                          <a
+                            key={i}
+                            href={link.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.preventDefault()}
+                            className="w-8 h-8 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center text-gray-700"
+                            title={link.platform}
+                          >
+                            {/* Basic icon representation */}
+                            {link.platform.toLowerCase().startsWith("tw") && <span>TW</span>}
+                            {link.platform.toLowerCase().startsWith("fa") && <span>FB</span>}
+                            {link.platform.toLowerCase().startsWith("in") && <span>IN</span>}
+                            {link.platform.toLowerCase().startsWith("li") && <span>LI</span>}
+                            {!["tw", "fa", "in", "li"].some((p) =>
+                              link.platform.toLowerCase().startsWith(p)
+                            ) && (
+                              <span className="uppercase font-bold text-xs">
+                                {link.platform.charAt(0)}
+                              </span>
+                            )}
+                          </a>
+                        ))}
                       </div>
                     )}
                     {element.type === "code" && (
@@ -1677,27 +1493,22 @@ export default function NewsletterCreatePage() {
 
                                 {/* Render nested element content */}
                                 {columnElement.type === "heading" && (
-                                  <h3 style={columnElement.style}>
-                                    {columnElement.content}
-                                  </h3>
+                                  <h3 style={columnElement.style}>{columnElement.content}</h3>
                                 )}
                                 {columnElement.type === "text" && (
-                                  <p style={columnElement.style}>
-                                    {columnElement.content}
-                                  </p>
+                                  <p style={columnElement.style}>{columnElement.content}</p>
                                 )}
-                                {columnElement.type === "image" &&
-                                  columnElement.src && (
-                                    <img
-                                      src={columnElement.src}
-                                      alt="Column image"
-                                      style={{
-                                        display: "block",
-                                        maxWidth: "100%",
-                                        ...columnElement.style,
-                                      }}
-                                    />
-                                  )}
+                                {columnElement.type === "image" && columnElement.src && (
+                                  <img
+                                    src={columnElement.src}
+                                    alt="Column image"
+                                    style={{
+                                      display: "block",
+                                      maxWidth: "100%",
+                                      ...columnElement.style,
+                                    }}
+                                  />
+                                )}
                                 {/* Add other nested element types if needed */}
                               </div>
                             ))}

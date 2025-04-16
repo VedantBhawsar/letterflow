@@ -40,10 +40,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(subscribers);
   } catch (error) {
     console.error("Error fetching subscribers:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch subscribers" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch subscribers" }, { status: 500 });
   }
 }
 
@@ -94,9 +91,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(subscriber);
   } catch (error) {
     console.error("Error creating subscriber:", error);
-    return NextResponse.json(
-      { error: "Failed to create subscriber" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create subscriber" }, { status: 500 });
   }
 }

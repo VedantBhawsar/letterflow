@@ -88,9 +88,7 @@ export default function SubscribersPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Subscribers</h1>
-          <p className="text-muted-foreground">
-            Manage your newsletter subscribers
-          </p>
+          <p className="text-muted-foreground">Manage your newsletter subscribers</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">
@@ -127,10 +125,7 @@ export default function SubscribersPage() {
               <thead>
                 <tr className="border-b bg-muted/50 transition-colors">
                   <th className="h-12 w-[60px] px-4 text-left align-middle font-medium text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
+                    <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     Name / Email
@@ -149,22 +144,14 @@ export default function SubscribersPage() {
               </thead>
               <tbody>
                 {filteredSubscribers.map((subscriber) => (
-                  <tr
-                    key={subscriber.id}
-                    className="border-b transition-colors hover:bg-muted/50"
-                  >
+                  <tr key={subscriber.id} className="border-b transition-colors hover:bg-muted/50">
                     <td className="p-4 align-middle">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300"
-                      />
+                      <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
                     </td>
                     <td className="p-4 align-middle font-medium">
                       <div>
                         <div>{subscriber.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {subscriber.email}
-                        </div>
+                        <div className="text-xs text-muted-foreground">{subscriber.email}</div>
                       </div>
                     </td>
                     <td className="p-4 align-middle">

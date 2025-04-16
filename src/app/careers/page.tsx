@@ -2,22 +2,9 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  Check,
-  Building2,
-  Users,
-  Timer,
-  Heart,
-  Lightbulb,
-  Globe,
-  Monitor,
-  Zap,
-  Coffee,
-  Briefcase,
-} from "lucide-react";
+import { Users, Heart, Lightbulb, Globe, Zap, Coffee } from "lucide-react";
 
 type JobOpening = {
   title: string;
@@ -170,12 +157,9 @@ export default function CareersPage() {
               animate="visible"
               variants={fadeIn}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                Join Our Team
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">Join Our Team</h1>
               <p className="text-xl text-muted-foreground">
-                Help us build the future of newsletter creation and audience
-                growth
+                Help us build the future of newsletter creation and audience growth
               </p>
             </motion.div>
           </div>
@@ -196,20 +180,18 @@ export default function CareersPage() {
                 <h2 className="text-3xl font-bold mb-6">Life at Letterflow</h2>
                 <div className="space-y-4 text-muted-foreground">
                   <p>
-                    At Letterflow, we're passionate about helping newsletter
-                    creators succeed. We're building a company where talented
-                    people can do their best work in a supportive and
-                    collaborative environment.
+                    At Letterflow, we're passionate about helping newsletter creators succeed. We're
+                    building a company where talented people can do their best work in a supportive
+                    and collaborative environment.
                   </p>
                   <p>
-                    We value diversity of thought, background, and experience.
-                    Our team is distributed across the globe, allowing us to
-                    bring together the best talent regardless of location.
+                    We value diversity of thought, background, and experience. Our team is
+                    distributed across the globe, allowing us to bring together the best talent
+                    regardless of location.
                   </p>
                   <p>
-                    We're a small but growing team, which means you'll have the
-                    opportunity to make a significant impact and grow your
-                    career as we scale.
+                    We're a small but growing team, which means you'll have the opportunity to make
+                    a significant impact and grow your career as we scale.
                   </p>
                 </div>
               </motion.div>
@@ -250,8 +232,8 @@ export default function CareersPage() {
             >
               <h2 className="text-3xl font-bold mb-4">Our Benefits</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                We believe in taking care of our team and providing an
-                environment where you can thrive.
+                We believe in taking care of our team and providing an environment where you can
+                thrive.
               </p>
             </motion.div>
 
@@ -326,9 +308,7 @@ export default function CareersPage() {
                           {job.type}
                         </span>
                       </div>
-                      <p className="mt-3 text-muted-foreground">
-                        {job.description}
-                      </p>
+                      <p className="mt-3 text-muted-foreground">{job.description}</p>
                     </div>
                     <div className="mt-4 md:mt-0">
                       <motion.div whileHover={{ scale: 1.05 }}>
@@ -354,9 +334,7 @@ export default function CareersPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-6 text-center">
-                Our Hiring Process
-              </h2>
+              <h2 className="text-3xl font-bold mb-6 text-center">Our Hiring Process</h2>
 
               <motion.ol
                 className="relative border-l border-primary/30 ml-3 mt-8 space-y-8"
@@ -378,8 +356,7 @@ export default function CareersPage() {
                   },
                   {
                     title: "Technical Assessment",
-                    description:
-                      "A practical assignment relevant to the role you're applying for.",
+                    description: "A practical assignment relevant to the role you're applying for.",
                   },
                   {
                     title: "Team Interviews",

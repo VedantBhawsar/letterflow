@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  async function onSubmit(values: FormData) {
+  async function onSubmit() {
     setIsLoading(true);
 
     try {
@@ -87,8 +87,8 @@ export default function ForgotPasswordPage() {
                   Check your email
                 </h3>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  We sent a password reset link to your email address. Please
-                  check your inbox and follow the instructions.
+                  We sent a password reset link to your email address. Please check your inbox and
+                  follow the instructions.
                 </p>
                 <div className="mt-6">
                   <Button
@@ -102,10 +102,7 @@ export default function ForgotPasswordPage() {
               </div>
             ) : (
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
                     control={form.control}
                     name="email"

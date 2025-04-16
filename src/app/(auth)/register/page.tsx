@@ -27,9 +27,7 @@ const registerSchema = z
   .object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
     email: z.string().email({ message: "Please enter a valid email address" }),
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters" }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters" }),
     confirmPassword: z.string(),
     terms: z.boolean({
       required_error: "You must accept the terms and conditions",
@@ -85,9 +83,7 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         // Handle errors from the API (e.g., user already exists, validation errors)
-        throw new Error(
-          data.message || `HTTP error! status: ${response.status}`
-        );
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       // Registration successful
@@ -96,8 +92,7 @@ export default function RegisterPage() {
       router.push("/login?registered=true");
     } catch (error: any) {
       console.error("Registration error:", error);
-      const errorMessage =
-        error.message || "An unexpected error occurred during registration";
+      const errorMessage = error.message || "An unexpected error occurred during registration";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -115,10 +110,7 @@ export default function RegisterPage() {
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-primary hover:text-primary/90"
-            >
+            <Link href="/login" className="font-medium text-primary hover:text-primary/90">
               Sign in
             </Link>
           </p>
@@ -127,15 +119,10 @@ export default function RegisterPage() {
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white dark:bg-gray-800 px-4 py-8 shadow sm:rounded-lg sm:px-10">
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {error && (
                   <div className="rounded-md bg-red-50 dark:bg-red-900/30 p-4">
-                    <div className="text-sm text-red-700 dark:text-red-400">
-                      {error}
-                    </div>
+                    <div className="text-sm text-red-700 dark:text-red-400">{error}</div>
                   </div>
                 )}
 
@@ -160,11 +147,7 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>Email address</FormLabel>
                       <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="you@example.com"
-                          {...field}
-                        />
+                        <Input type="email" placeholder="you@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -178,11 +161,7 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                        />
+                        <Input type="password" placeholder="••••••••" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -196,11 +175,7 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                        />
+                        <Input type="password" placeholder="••••••••" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -213,10 +188,7 @@ export default function RegisterPage() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>

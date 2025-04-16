@@ -95,8 +95,7 @@ export default function Integrations() {
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
       setScrollPosition(scrollLeft);
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
@@ -134,12 +133,9 @@ export default function Integrations() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Connect, Sync, and Automate
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Connect, Sync, and Automate</h2>
           <p className="text-lg text-gray-600">
-            Enhance your capabilities by integrating Letterflow with the tools
-            you already use
+            Enhance your capabilities by integrating Letterflow with the tools you already use
           </p>
         </motion.div>
 
@@ -148,9 +144,7 @@ export default function Integrations() {
           <div className="absolute -left-12 top-1/2 transform -translate-y-1/2 z-10">
             <motion.button
               className={`bg-white rounded-full p-2 shadow-md border border-gray-100 text-gray-400 ${
-                showLeftArrow
-                  ? "hover:text-primary"
-                  : "opacity-40 cursor-not-allowed"
+                showLeftArrow ? "hover:text-primary" : "opacity-40 cursor-not-allowed"
               }`}
               onClick={scrollLeft}
               disabled={!showLeftArrow}
@@ -166,9 +160,7 @@ export default function Integrations() {
           <div className="absolute -right-12 top-1/2 transform -translate-y-1/2 z-10">
             <motion.button
               className={`bg-white rounded-full p-2 shadow-md border border-gray-100 text-gray-400 ${
-                showRightArrow
-                  ? "hover:text-primary"
-                  : "opacity-40 cursor-not-allowed"
+                showRightArrow ? "hover:text-primary" : "opacity-40 cursor-not-allowed"
               }`}
               onClick={scrollRight}
               disabled={!showRightArrow}
@@ -213,10 +205,7 @@ export default function Integrations() {
                     onError={() => handleImageError(index)}
                   />
                 ) : (
-                  <LogoPlaceholder
-                    name={integration.name}
-                    color={integration.color}
-                  />
+                  <LogoPlaceholder name={integration.name} color={integration.color} />
                 )}
               </motion.div>
             ))}
@@ -231,8 +220,7 @@ export default function Integrations() {
                 <div
                   key={index}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    scrollPosition > index * 300 &&
-                    scrollPosition < (index + 1) * 300
+                    scrollPosition > index * 300 && scrollPosition < (index + 1) * 300
                       ? "w-6 bg-primary"
                       : "w-1.5 bg-gray-200"
                   }`}

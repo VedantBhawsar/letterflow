@@ -1,8 +1,6 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
 import {
   Save,
   Undo,
@@ -11,9 +9,8 @@ import {
   Eye,
   Settings,
   Send,
-  X,
   Trash2,
-  Layout, // Keep for icon consistency if needed elsewhere, but remove template functionality
+  Layout,
   Type,
   Image as ImageIcon,
   Square as ButtonIcon,
@@ -29,6 +26,10 @@ import {
   Share2,
   Copy,
   Menu,
+  Loader2,
+  Mail,
+  AlertCircle,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
@@ -50,16 +59,10 @@ import {
 import { NewsletterElement, SocialLink } from "@/lib/types";
 
 // Keep Tooltip fallback components
-const TooltipProvider = ({ children }: { children: React.ReactNode }) =>
-  children;
+const TooltipProvider = ({ children }: { children: React.ReactNode }) => children;
 const Tooltip = ({ children }: { children: React.ReactNode }) => children;
-const TooltipTrigger = ({
-  asChild,
-  children,
-}: {
-  asChild?: boolean;
-  children: React.ReactNode;
-}) => children;
+const TooltipTrigger = ({ asChild, children }: { asChild?: boolean; children: React.ReactNode }) =>
+  children;
 const TooltipContent = ({ children }: { children: React.ReactNode }) => null;
 
 export default function NewsletterEditorPage() {
@@ -68,10 +71,9 @@ export default function NewsletterEditorPage() {
   const id = params.id as string;
   const isNew = id === "new";
 
-  // Get template from query params if it's a new newsletter
-  const templateType = isNew ? "basic" : "blank"; // Default to basic for new newsletters
+  const templateType = isNew ? "basic" : "blank";
 
-  const [newsletterName, setNewsletterName] = useState("Loading..."); // Default name while loading
+  const [newsletterName, setNewsletterName] = useState("Loading...");
   const [elements, setElements] = useState<NewsletterElement[]>([]);
   const [loading, setLoading] = useState(true);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
@@ -80,19 +82,21 @@ export default function NewsletterEditorPage() {
   const builderRef = useRef<HTMLDivElement>(null);
 
   // State variables for features
-  const [viewMode, setViewMode] = useState<"desktop" | "tablet" | "mobile">(
-    "desktop"
-  );
+  const [viewMode, setViewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [history, setHistory] = useState<NewsletterElement[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [emailSubject, setEmailSubject] = useState("");
   const [emailPreviewText, setEmailPreviewText] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState("draft");
-  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [draggingElement, setDraggingElement] = useState<string | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Initialize the newsletter with template data or load existing newsletter
   useEffect(() => {
@@ -102,9 +106,8 @@ export default function NewsletterEditorPage() {
       // For new newsletters, use the template
       if (isNew) {
         const template =
-          newsletterTemplates[
-            templateType as keyof typeof newsletterTemplates
-          ] || newsletterTemplates.blank;
+          newsletterTemplates[templateType as keyof typeof newsletterTemplates] ||
+          newsletterTemplates.blank;
 
         setNewsletterName(`New ${template.name}`);
         setElements(template.elements);
@@ -204,9 +207,7 @@ export default function NewsletterEditorPage() {
   };
 
   // Get the currently selected element (no changes needed)
-  const selectedElementData = selectedElement
-    ? findElementById(selectedElement, elements)
-    : null;
+  const selectedElementData = selectedElement ? findElementById(selectedElement, elements) : null;
 
   // Handle adding a new element (no changes needed)
   const handleAddElement = (type: string) => {
@@ -221,8 +222,7 @@ export default function NewsletterEditorPage() {
         newElement.content = "Heading";
         break;
       case "image":
-        newElement.src =
-          "https://placehold.co/600x400/e6e6e6/999999?text=Image";
+        newElement.src = "https://placehold.co/600x400/e6e6e6/999999?text=Image";
         break;
       case "button":
         newElement.content = "Button";
@@ -286,18 +286,12 @@ export default function NewsletterEditorPage() {
   // Handle updating element content (no changes needed)
   const handleElementContentChange = (elementId: string, content: string) => {
     setElements((prev) =>
-      prev.map((element) =>
-        element.id === elementId ? { ...element, content } : element
-      )
+      prev.map((element) => (element.id === elementId ? { ...element, content } : element))
     );
   };
 
   // Handle updating element style (no changes needed)
-  const handleElementStyleChange = (
-    elementId: string,
-    property: string,
-    value: string
-  ) => {
+  const handleElementStyleChange = (elementId: string, property: string, value: string) => {
     setElements((prev) =>
       prev.map((element) =>
         element.id === elementId
@@ -315,18 +309,14 @@ export default function NewsletterEditorPage() {
 
   // Handle adding personalization to a text element (no changes needed)
   const handleAddPersonalization = (elementId: string, fieldId: string) => {
-    const field = personalizationOptions.find(
-      (option) => option.id === fieldId
-    );
+    const field = personalizationOptions.find((option) => option.id === fieldId);
     if (!field) return;
 
     const elementToUpdate = findElementById(elementId, elements);
 
     if (!elementToUpdate || !("content" in elementToUpdate)) return;
 
-    const updatedContent = `${elementToUpdate.content || ""} ${
-      field.defaultValue
-    }`;
+    const updatedContent = `${elementToUpdate.content || ""} ${field.defaultValue}`;
 
     setElements((prev) =>
       prev.map((element) =>
@@ -385,24 +375,19 @@ export default function NewsletterEditorPage() {
       };
 
       // Call the newsletter save API endpoint
-      const response = await fetch(
-        `/api/newsletters${id !== "new" ? `/${id}` : ""}`,
-        {
-          method: id !== "new" ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newsletterData),
-        }
-      );
+      const response = await fetch(`/api/newsletters${id !== "new" ? `/${id}` : ""}`, {
+        method: id !== "new" ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newsletterData),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
         // Handle errors from the API
-        throw new Error(
-          data.message || `HTTP error! status: ${response.status}`
-        );
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       // Newsletter saved successfully
@@ -414,8 +399,7 @@ export default function NewsletterEditorPage() {
       }
     } catch (error: any) {
       console.error("Newsletter save error:", error);
-      const errorMessage =
-        error.message || "An unexpected error occurred while saving newsletter";
+      const errorMessage = error.message || "An unexpected error occurred while saving newsletter";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -454,11 +438,7 @@ export default function NewsletterEditorPage() {
     setDraggingElement(elementId);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", elementId);
-    (e.currentTarget as HTMLElement).classList.add(
-      "opacity-50",
-      "border-2",
-      "border-primary"
-    );
+    (e.currentTarget as HTMLElement).classList.add("opacity-50", "border-2", "border-primary");
   };
 
   // Handle element drag end (no changes needed)
@@ -466,11 +446,7 @@ export default function NewsletterEditorPage() {
     e.preventDefault();
     setDraggingElement(null);
     setDropTargetIndex(null);
-    (e.currentTarget as HTMLElement).classList.remove(
-      "opacity-50",
-      "border-2",
-      "border-primary"
-    );
+    (e.currentTarget as HTMLElement).classList.remove("opacity-50", "border-2", "border-primary");
   };
 
   // Handle element drag over (no changes needed)
@@ -498,8 +474,7 @@ export default function NewsletterEditorPage() {
     const [movedElement] = newElements.splice(sourceIndex, 1);
 
     // Adjust target index if source was before target
-    const adjustedTargetIndex =
-      sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+    const adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
 
     newElements.splice(adjustedTargetIndex, 0, movedElement);
 
@@ -507,6 +482,76 @@ export default function NewsletterEditorPage() {
     setDraggingElement(null);
     setDropTargetIndex(null);
     toast.success("Element reordered");
+  };
+
+  // Handle send test email
+  const handleSendTest = async () => {
+    if (!testEmail || !emailSubject) {
+      toast.error("Email address and subject are required");
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      // Make sure we save the newsletter first
+      await handleSave();
+
+      // Prepare the request data
+      const requestData = {
+        testEmail,
+        subject: emailSubject,
+        previewText: emailPreviewText,
+      };
+
+      // Call the API to send the test email
+      const response = await fetch(`/api/newsletters/${id}/send-test`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      toast.success(`Test email sent to ${testEmail}`);
+      setIsSendDialogOpen(false);
+    } catch (error: any) {
+      console.error("Error sending test email:", error);
+      toast.error(error.message || "Failed to send test email");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // Handle delete newsletter
+  const handleDeleteNewsletter = async () => {
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/newsletters/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete newsletter");
+      }
+
+      toast.success("Newsletter deleted successfully");
+      setIsDeleteDialogOpen(false);
+      router.push("/dashboard/newsletters");
+    } catch (err: any) {
+      console.error("Error deleting newsletter:", err);
+      toast.error(err.message || "Failed to delete newsletter");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Render loading state (no changes needed)
@@ -537,9 +582,7 @@ export default function NewsletterEditorPage() {
   if (error && elements.length === 0) {
     return (
       <div className="h-screen flex flex-col items-center justify-center p-6">
-        <h2 className="text-xl font-semibold text-destructive mb-2">
-          Error Loading Newsletter
-        </h2>
+        <h2 className="text-xl font-semibold text-destructive mb-2">Error Loading Newsletter</h2>
         <p className="text-muted-foreground mb-4">{error}</p>
         <Button onClick={handleExit}>Go Back</Button>
       </div>
@@ -605,7 +648,7 @@ export default function NewsletterEditorPage() {
                   <Button
                     variant={viewMode === "mobile" ? "secondary" : "ghost"}
                     size="sm"
-                    className="px-2 h-8"
+                    className="px-2 h-8 transition-all duration-300"
                     onClick={() => setViewMode("mobile")}
                   >
                     <Smartphone className="h-4 w-4" />
@@ -621,7 +664,7 @@ export default function NewsletterEditorPage() {
                   <Button
                     variant={viewMode === "tablet" ? "secondary" : "ghost"}
                     size="sm"
-                    className="px-2 h-8"
+                    className="px-2 h-8 transition-all duration-300"
                     onClick={() => setViewMode("tablet")}
                   >
                     <Tablet className="h-4 w-4" />
@@ -637,7 +680,7 @@ export default function NewsletterEditorPage() {
                   <Button
                     variant={viewMode === "desktop" ? "secondary" : "ghost"}
                     size="sm"
-                    className="px-2 h-8"
+                    className="px-2 h-8 transition-all duration-300"
                     onClick={() => setViewMode("desktop")}
                   >
                     <Monitor className="h-4 w-4" />
@@ -650,7 +693,24 @@ export default function NewsletterEditorPage() {
         </div>
 
         <div className="flex space-x-2">
-          {/* Removed Create Button */}
+          {!isNew && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete newsletter</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -672,7 +732,7 @@ export default function NewsletterEditorPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => toast.info("Preview mode not implemented yet")}
+                  onClick={() => router.push(`/newsletter/preview/${id}`)}
                 >
                   <Eye className="h-4 w-4 mr-1" />
                   Preview
@@ -681,12 +741,7 @@ export default function NewsletterEditorPage() {
               <TooltipContent>Preview newsletter</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
+          <Button variant="default" size="sm" onClick={handleSave} disabled={isSaving}>
             {isSaving ? (
               <>
                 <span className="animate-pulse mr-1">Saving...</span>
@@ -704,9 +759,13 @@ export default function NewsletterEditorPage() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() =>
-                    toast.info("Send functionality not implemented yet")
-                  }
+                  onClick={() => {
+                    if (isNew) {
+                      toast.warning("Please save the newsletter first");
+                      return;
+                    }
+                    setIsSendDialogOpen(true);
+                  }}
                 >
                   <Send className="h-4 w-4 mr-1" />
                   Send
@@ -720,9 +779,7 @@ export default function NewsletterEditorPage() {
 
       {/* Show error message if save failed */}
       {error && (
-        <div className="bg-destructive/15 text-destructive text-sm p-2 px-4">
-          Error: {error}
-        </div>
+        <div className="bg-destructive/15 text-destructive text-sm p-2 px-4">Error: {error}</div>
       )}
 
       {/* Email settings modal/tab content */}
@@ -755,8 +812,7 @@ export default function NewsletterEditorPage() {
                 placeholder="Enter email preview text"
               />
               <p className="text-xs text-muted-foreground">
-                This text will appear in the inbox preview on most email
-                clients.
+                This text will appear in the inbox preview on most email clients.
               </p>
             </div>
             <div className="space-y-2">
@@ -774,8 +830,8 @@ export default function NewsletterEditorPage() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Draft newsletters are saved but not visible to subscribers.
-                Published newsletters can be sent to subscribers.
+                Draft newsletters are saved but not visible to subscribers. Published newsletters
+                can be sent to subscribers.
               </p>
             </div>
           </div>
@@ -838,8 +894,7 @@ export default function NewsletterEditorPage() {
                 <div className="text-sm font-medium mb-2">Personalization:</div>
                 <div className="space-y-2">
                   <div className="text-xs text-muted-foreground mb-2">
-                    Select a text element first, then add personalization
-                    fields:
+                    Select a text element first, then add personalization fields:
                   </div>
                   {personalizationOptions.map((field) => (
                     <Button
@@ -848,18 +903,13 @@ export default function NewsletterEditorPage() {
                       size="sm"
                       className="w-full justify-start text-xs"
                       onClick={() => {
-                        if (
-                          selectedElement &&
-                          selectedElementData?.type === "text"
-                        ) {
+                        if (selectedElement && selectedElementData?.type === "text") {
                           handleAddPersonalization(selectedElement, field.id);
                         } else {
                           toast.error("Select a text element first");
                         }
                       }}
-                      disabled={
-                        !selectedElement || selectedElementData?.type !== "text"
-                      }
+                      disabled={!selectedElement || selectedElementData?.type !== "text"}
                     >
                       <PersonalizationIcon className="h-3 w-3 mr-1" />
                       {field.label}
@@ -877,33 +927,19 @@ export default function NewsletterEditorPage() {
                     <div className="text-sm font-medium capitalize flex items-center">
                       {/* Icon mapping */}
                       <div className="bg-primary/10 p-1 rounded-md mr-2">
-                        {selectedElementData.type === "heading" && (
-                          <Heading className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "text" && (
-                          <Type className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "image" && (
-                          <ImageIcon className="h-4 w-4" />
-                        )}
+                        {selectedElementData.type === "heading" && <Heading className="h-4 w-4" />}
+                        {selectedElementData.type === "text" && <Type className="h-4 w-4" />}
+                        {selectedElementData.type === "image" && <ImageIcon className="h-4 w-4" />}
                         {selectedElementData.type === "button" && (
                           <ButtonIcon className="h-4 w-4" />
                         )}
-                        {selectedElementData.type === "columns" && (
-                          <Columns className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "divider" && (
-                          <Divider className="h-4 w-4" />
-                        )}
+                        {selectedElementData.type === "columns" && <Columns className="h-4 w-4" />}
+                        {selectedElementData.type === "divider" && <Divider className="h-4 w-4" />}
                         {selectedElementData.type === "spacer" && (
                           <ArrowUpDown className="h-4 w-4" />
                         )}
-                        {selectedElementData.type === "social" && (
-                          <Share2 className="h-4 w-4" />
-                        )}
-                        {selectedElementData.type === "code" && (
-                          <Braces className="h-4 w-4" />
-                        )}
+                        {selectedElementData.type === "social" && <Share2 className="h-4 w-4" />}
+                        {selectedElementData.type === "code" && <Braces className="h-4 w-4" />}
                       </div>
                       {selectedElementData.type} Element
                     </div>
@@ -939,20 +975,14 @@ export default function NewsletterEditorPage() {
                         <Input
                           value={selectedElementData.content || ""}
                           onChange={(e) =>
-                            handleElementContentChange(
-                              selectedElement,
-                              e.target.value
-                            )
+                            handleElementContentChange(selectedElement, e.target.value)
                           }
                         />
                       ) : (
                         <Textarea
                           value={selectedElementData.content || ""}
                           onChange={(e) =>
-                            handleElementContentChange(
-                              selectedElement,
-                              e.target.value
-                            )
+                            handleElementContentChange(selectedElement, e.target.value)
                           }
                           rows={4}
                         />
@@ -1037,34 +1067,19 @@ export default function NewsletterEditorPage() {
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Style:</label>
                       <Select
-                        value={
-                          selectedElementData.style?.borderTop ||
-                          "1px solid #e5e7eb"
-                        }
+                        value={selectedElementData.style?.borderTop || "1px solid #e5e7eb"}
                         onValueChange={(value) =>
-                          handleElementStyleChange(
-                            selectedElement,
-                            "borderTop",
-                            value
-                          )
+                          handleElementStyleChange(selectedElement, "borderTop", value)
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Divider style" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1px solid #e5e7eb">
-                            Solid
-                          </SelectItem>
-                          <SelectItem value="1px dashed #e5e7eb">
-                            Dashed
-                          </SelectItem>
-                          <SelectItem value="2px solid #e5e7eb">
-                            Thick
-                          </SelectItem>
-                          <SelectItem value="3px double #e5e7eb">
-                            Double
-                          </SelectItem>
+                          <SelectItem value="1px solid #e5e7eb">Solid</SelectItem>
+                          <SelectItem value="1px dashed #e5e7eb">Dashed</SelectItem>
+                          <SelectItem value="2px solid #e5e7eb">Thick</SelectItem>
+                          <SelectItem value="3px double #e5e7eb">Double</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1072,56 +1087,47 @@ export default function NewsletterEditorPage() {
 
                   {selectedElementData.type === "social" && (
                     <div className="space-y-4">
-                      {selectedElementData.socialLinks?.map(
-                        (link: SocialLink, index: number) => (
-                          <div key={index} className="space-y-2 border-b pb-2">
-                            <label className="text-xs font-medium capitalize">
-                              {link.platform} URL:
-                            </label>
-                            <Input
-                              value={link.url || "#"}
-                              onChange={(e) => {
-                                const newLinks = [
-                                  ...(selectedElementData.socialLinks || []),
-                                ];
-                                newLinks[index] = {
-                                  ...newLinks[index],
-                                  url: e.target.value,
-                                };
-                                setElements((prev) =>
-                                  prev.map((element) =>
-                                    element.id === selectedElement
-                                      ? { ...element, socialLinks: newLinks }
-                                      : element
-                                  )
-                                );
-                              }}
-                            />
-                          </div>
-                        )
-                      )}
+                      {selectedElementData.socialLinks?.map((link: SocialLink, index: number) => (
+                        <div key={index} className="space-y-2 border-b pb-2">
+                          <label className="text-xs font-medium capitalize">
+                            {link.platform} URL:
+                          </label>
+                          <Input
+                            value={link.url || "#"}
+                            onChange={(e) => {
+                              const newLinks = [...(selectedElementData.socialLinks || [])];
+                              newLinks[index] = {
+                                ...newLinks[index],
+                                url: e.target.value,
+                              };
+                              setElements((prev) =>
+                                prev.map((element) =>
+                                  element.id === selectedElement
+                                    ? { ...element, socialLinks: newLinks }
+                                    : element
+                                )
+                              );
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
 
                   {selectedElementData.type === "code" && (
                     <div className="space-y-2">
-                      <label className="text-xs font-medium">
-                        Custom HTML:
-                      </label>
+                      <label className="text-xs font-medium">Custom HTML:</label>
                       <Textarea
                         value={selectedElementData.content || ""}
                         onChange={(e) =>
-                          handleElementContentChange(
-                            selectedElement,
-                            e.target.value
-                          )
+                          handleElementContentChange(selectedElement, e.target.value)
                         }
                         rows={8}
                         className="font-mono text-xs"
                       />
                       <div className="text-xs text-muted-foreground">
-                        Warning: Custom HTML may be stripped by some email
-                        clients. Use with caution.
+                        Warning: Custom HTML may be stripped by some email clients. Use with
+                        caution.
                       </div>
                     </div>
                   )}
@@ -1138,15 +1144,9 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Text Align:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.textAlign || "left"
-                              }
+                              value={selectedElementData.style?.textAlign || "left"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "textAlign",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "textAlign", value)
                               }
                             >
                               <SelectTrigger>
@@ -1163,15 +1163,9 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Font Size:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.fontSize || "16px"
-                              }
+                              value={selectedElementData.style?.fontSize || "16px"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "fontSize",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "fontSize", value)
                               }
                             >
                               <SelectTrigger>
@@ -1192,16 +1186,9 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Font Weight:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.fontWeight ||
-                                "normal"
-                              }
+                              value={selectedElementData.style?.fontWeight || "normal"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "fontWeight",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "fontWeight", value)
                               }
                             >
                               <SelectTrigger>
@@ -1217,30 +1204,22 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Text Color:</label>
                             <div className="flex space-x-2 mt-1">
-                              {[
-                                "#000000",
-                                "#1e40af",
-                                "#047857",
-                                "#b91c1c",
-                                "#4b5563",
-                              ].map((color) => (
-                                <div
-                                  key={color}
-                                  className={`h-5 w-5 rounded-full cursor-pointer ${
-                                    selectedElementData.style?.color === color
-                                      ? "ring-2 ring-primary"
-                                      : ""
-                                  }`}
-                                  style={{ backgroundColor: color }}
-                                  onClick={() =>
-                                    handleElementStyleChange(
-                                      selectedElement,
-                                      "color",
-                                      color
-                                    )
-                                  }
-                                />
-                              ))}
+                              {["#000000", "#1e40af", "#047857", "#b91c1c", "#4b5563"].map(
+                                (color) => (
+                                  <div
+                                    key={color}
+                                    className={`h-5 w-5 rounded-full cursor-pointer ${
+                                      selectedElementData.style?.color === color
+                                        ? "ring-2 ring-primary"
+                                        : ""
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                    onClick={() =>
+                                      handleElementStyleChange(selectedElement, "color", color)
+                                    }
+                                  />
+                                )
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1254,43 +1233,12 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Button Color:</label>
                             <div className="flex space-x-2 mt-1">
-                              {[
-                                "#3b82f6",
-                                "#1e40af",
-                                "#059669",
-                                "#b91c1c",
-                                "#4b5563",
-                              ].map((color) => (
-                                <div
-                                  key={color}
-                                  className={`h-5 w-5 rounded-full cursor-pointer ${
-                                    selectedElementData.style
-                                      ?.backgroundColor === color
-                                      ? "ring-2 ring-primary"
-                                      : ""
-                                  }`}
-                                  style={{ backgroundColor: color }}
-                                  onClick={() =>
-                                    handleElementStyleChange(
-                                      selectedElement,
-                                      "backgroundColor",
-                                      color
-                                    )
-                                  }
-                                />
-                              ))}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-xs">Text Color:</label>
-                            <div className="flex space-x-2 mt-1">
-                              {["#ffffff", "#f3f4f6", "#000000"].map(
+                              {["#3b82f6", "#1e40af", "#059669", "#b91c1c", "#4b5563"].map(
                                 (color) => (
                                   <div
                                     key={color}
-                                    className={`h-5 w-5 rounded-full cursor-pointer border ${
-                                      selectedElementData.style?.color === color
+                                    className={`h-5 w-5 rounded-full cursor-pointer ${
+                                      selectedElementData.style?.backgroundColor === color
                                         ? "ring-2 ring-primary"
                                         : ""
                                     }`}
@@ -1298,7 +1246,7 @@ export default function NewsletterEditorPage() {
                                     onClick={() =>
                                       handleElementStyleChange(
                                         selectedElement,
-                                        "color",
+                                        "backgroundColor",
                                         color
                                       )
                                     }
@@ -1307,22 +1255,35 @@ export default function NewsletterEditorPage() {
                               )}
                             </div>
                           </div>
+
+                          <div>
+                            <label className="text-xs">Text Color:</label>
+                            <div className="flex space-x-2 mt-1">
+                              {["#ffffff", "#f3f4f6", "#000000"].map((color) => (
+                                <div
+                                  key={color}
+                                  className={`h-5 w-5 rounded-full cursor-pointer border ${
+                                    selectedElementData.style?.color === color
+                                      ? "ring-2 ring-primary"
+                                      : ""
+                                  }`}
+                                  style={{ backgroundColor: color }}
+                                  onClick={() =>
+                                    handleElementStyleChange(selectedElement, "color", color)
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="text-xs">Font Weight:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.fontWeight ||
-                                "normal"
-                              }
+                              value={selectedElementData.style?.fontWeight || "normal"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "fontWeight",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "fontWeight", value)
                               }
                             >
                               <SelectTrigger>
@@ -1338,16 +1299,9 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Size:</label>
                             <Select
-                              value={
-                                selectedElementData.style?.padding ||
-                                "10px 20px"
-                              }
+                              value={selectedElementData.style?.padding || "10px 20px"}
                               onValueChange={(value) =>
-                                handleElementStyleChange(
-                                  selectedElement,
-                                  "padding",
-                                  value
-                                )
+                                handleElementStyleChange(selectedElement, "padding", value)
                               }
                             >
                               <SelectTrigger>
@@ -1355,9 +1309,7 @@ export default function NewsletterEditorPage() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="5px 10px">Small</SelectItem>
-                                <SelectItem value="10px 20px">
-                                  Medium
-                                </SelectItem>
+                                <SelectItem value="10px 20px">Medium</SelectItem>
                                 <SelectItem value="12px 30px">Large</SelectItem>
                               </SelectContent>
                             </Select>
@@ -1374,11 +1326,7 @@ export default function NewsletterEditorPage() {
                           <Select
                             value={selectedElementData.style?.width || "100%"}
                             onValueChange={(value) =>
-                              handleElementStyleChange(
-                                selectedElement,
-                                "width",
-                                value
-                              )
+                              handleElementStyleChange(selectedElement, "width", value)
                             }
                           >
                             <SelectTrigger>
@@ -1397,11 +1345,7 @@ export default function NewsletterEditorPage() {
                           <Select
                             value={selectedElementData.style?.margin || "0"}
                             onValueChange={(value) =>
-                              handleElementStyleChange(
-                                selectedElement,
-                                "margin",
-                                value
-                              )
+                              handleElementStyleChange(selectedElement, "margin", value)
                             }
                           >
                             <SelectTrigger>
@@ -1431,13 +1375,9 @@ export default function NewsletterEditorPage() {
         {/* Main content area (no changes needed in structure) */}
         <div className="md:col-span-4 bg-white p-6 overflow-y-auto flex items-center justify-center">
           <div
-            className={`${
-              viewMode === "desktop"
-                ? "max-w-2xl"
-                : viewMode === "tablet"
-                ? "max-w-md"
-                : "max-w-xs"
-            } w-full min-h-[500px] border border-dashed rounded-lg flex flex-col relative bg-gray-50 shadow-inner`} // Added background/shadow
+            className={`transition-all duration-500 ease-in-out ${
+              viewMode === "desktop" ? "max-w-2xl" : viewMode === "tablet" ? "max-w-md" : "max-w-xs"
+            } w-full min-h-[500px] border border-dashed rounded-lg flex flex-col relative bg-gray-50 shadow-inner`}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             ref={builderRef}
@@ -1457,7 +1397,7 @@ export default function NewsletterEditorPage() {
               </div>
             )}
 
-            {elements.length === 0 && !loading ? ( // Show only if not loading and empty
+            {elements.length === 0 && !loading ? (
               <div className="h-[500px] flex flex-col items-center justify-center text-muted-foreground p-4 text-center">
                 <Layout className="h-16 w-16 mb-4 text-muted-foreground/60" />
                 <h3 className="text-lg font-medium">Newsletter is empty</h3>
@@ -1472,15 +1412,11 @@ export default function NewsletterEditorPage() {
                     key={element.id}
                     className={`my-2 relative group cursor-pointer ${
                       selectedElement === element.id
-                        ? "ring-2 ring-primary ring-offset-2" // Added offset
+                        ? "ring-2 ring-primary ring-offset-2"
                         : "hover:outline hover:outline-dashed hover:outline-muted"
                     } ${
-                      dropTargetIndex === index
-                        ? "border-t-2 border-primary pt-1" // Add padding top for visual cue
-                        : ""
-                    } ${
-                      draggingElement === element.id ? "opacity-30" : "" // Style dragged element itself
-                    }`}
+                      dropTargetIndex === index ? "border-t-2 border-primary pt-1" : ""
+                    } ${draggingElement === element.id ? "opacity-30" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedElement(element.id);
@@ -1502,7 +1438,7 @@ export default function NewsletterEditorPage() {
                     {/* Element controls */}
                     <div
                       className={`absolute top-0 right-0 hidden group-hover:flex bg-white shadow-sm border rounded-bl-md z-10 ${
-                        selectedElement === element.id ? "!flex" : "" // Always show for selected
+                        selectedElement === element.id ? "!flex" : ""
                       }`}
                     >
                       <Button
@@ -1551,12 +1487,8 @@ export default function NewsletterEditorPage() {
                     </div>
 
                     {/* Render Element Content */}
-                    {element.type === "heading" && (
-                      <h2 style={element.style}>{element.content}</h2>
-                    )}
-                    {element.type === "text" && (
-                      <p style={element.style}>{element.content}</p>
-                    )}
+                    {element.type === "heading" && <h2 style={element.style}>{element.content}</h2>}
+                    {element.type === "text" && <p style={element.style}>{element.content}</p>}
                     {element.type === "image" && element.src && (
                       <img
                         src={element.src}
@@ -1588,48 +1520,33 @@ export default function NewsletterEditorPage() {
                       </div>
                     )}
                     {element.type === "divider" && <hr style={element.style} />}
-                    {element.type === "spacer" && (
-                      <div style={{ height: element.height }} />
-                    )}
+                    {element.type === "spacer" && <div style={{ height: element.height }} />}
                     {element.type === "social" && (
-                      <div
-                        style={element.style}
-                        className="flex justify-center space-x-4"
-                      >
-                        {element.socialLinks?.map(
-                          (link: SocialLink, i: number) => (
-                            <a
-                              key={i}
-                              href={link.url || "#"}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.preventDefault()}
-                              className="w-8 h-8 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center text-gray-700"
-                              title={link.platform}
-                            >
-                              {/* Basic icon representation */}
-                              {link.platform.toLowerCase().startsWith("tw") && (
-                                <span>TW</span>
-                              )}
-                              {link.platform.toLowerCase().startsWith("fa") && (
-                                <span>FB</span>
-                              )}
-                              {link.platform.toLowerCase().startsWith("in") && (
-                                <span>IN</span>
-                              )}
-                              {link.platform.toLowerCase().startsWith("li") && (
-                                <span>LI</span>
-                              )}
-                              {!["tw", "fa", "in", "li"].some((p) =>
-                                link.platform.toLowerCase().startsWith(p)
-                              ) && (
-                                <span className="uppercase font-bold text-xs">
-                                  {link.platform.charAt(0)}
-                                </span>
-                              )}
-                            </a>
-                          )
-                        )}
+                      <div style={element.style} className="flex justify-center space-x-4">
+                        {element.socialLinks?.map((link: SocialLink, i: number) => (
+                          <a
+                            key={i}
+                            href={link.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.preventDefault()}
+                            className="w-8 h-8 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center text-gray-700"
+                            title={link.platform}
+                          >
+                            {/* Basic icon representation */}
+                            {link.platform.toLowerCase().startsWith("tw") && <span>TW</span>}
+                            {link.platform.toLowerCase().startsWith("fa") && <span>FB</span>}
+                            {link.platform.toLowerCase().startsWith("in") && <span>IN</span>}
+                            {link.platform.toLowerCase().startsWith("li") && <span>LI</span>}
+                            {!["tw", "fa", "in", "li"].some((p) =>
+                              link.platform.toLowerCase().startsWith(p)
+                            ) && (
+                              <span className="uppercase font-bold text-xs">
+                                {link.platform.charAt(0)}
+                              </span>
+                            )}
+                          </a>
+                        ))}
                       </div>
                     )}
                     {element.type === "code" && (
@@ -1688,27 +1605,22 @@ export default function NewsletterEditorPage() {
 
                                 {/* Render nested element content */}
                                 {columnElement.type === "heading" && (
-                                  <h3 style={columnElement.style}>
-                                    {columnElement.content}
-                                  </h3>
+                                  <h3 style={columnElement.style}>{columnElement.content}</h3>
                                 )}
                                 {columnElement.type === "text" && (
-                                  <p style={columnElement.style}>
-                                    {columnElement.content}
-                                  </p>
+                                  <p style={columnElement.style}>{columnElement.content}</p>
                                 )}
-                                {columnElement.type === "image" &&
-                                  columnElement.src && (
-                                    <img
-                                      src={columnElement.src}
-                                      alt="Column image"
-                                      style={{
-                                        display: "block",
-                                        maxWidth: "100%", // Ensure image fits column
-                                        ...columnElement.style,
-                                      }}
-                                    />
-                                  )}
+                                {columnElement.type === "image" && columnElement.src && (
+                                  <img
+                                    src={columnElement.src}
+                                    alt="Column image"
+                                    style={{
+                                      display: "block",
+                                      maxWidth: "100%", // Ensure image fits column
+                                      ...columnElement.style,
+                                    }}
+                                  />
+                                )}
                                 {/* Add other nested element types if needed */}
                               </div>
                             ))}
@@ -1723,6 +1635,103 @@ export default function NewsletterEditorPage() {
           </div>
         </div>
       </div>
+
+      {/* Send Test Email Dialog */}
+      <Dialog open={isSendDialogOpen} onOpenChange={setIsSendDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+            <DialogDescription>
+              Send a test version of this newsletter to any email address.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Recipient Email:</label>
+              <Input
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="Enter email address"
+                type="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email Subject:</label>
+              <Input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Enter email subject"
+                disabled={isSending}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Preview Text:</label>
+              <Input
+                value={emailPreviewText}
+                onChange={(e) => setEmailPreviewText(e.target.value)}
+                placeholder="Enter preview text (optional)"
+                disabled={isSending}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsSendDialogOpen(false)}
+              disabled={isSending}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSendTest} disabled={isSending}>
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Test
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Newsletter</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{newsletterName}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteNewsletter} disabled={isDeleting}>
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

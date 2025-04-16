@@ -21,9 +21,8 @@ export default function Cta() {
                 </h2>
 
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Take advantage of our powerful tools and start reaching your
-                  growth goals today. Join thousands of newsletter creators
-                  already succeeding with Letterflow.
+                  Take advantage of our powerful tools and start reaching your growth goals today.
+                  Join thousands of newsletter creators already succeeding with Letterflow.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">

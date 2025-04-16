@@ -4,12 +4,7 @@ import { useState, useEffect } from "react";
 import { PlusCircle, Search, Mail, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -20,10 +15,7 @@ import {
 import { CreateCampaignForm } from "@/components/campaigns/create-campaign-form";
 import { Campaign } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
-import {
-  CampaignsTable,
-  CampaignsTableSkeleton,
-} from "@/components/campaigns/campaigns-table";
+import { CampaignsTable, CampaignsTableSkeleton } from "@/components/campaigns/campaigns-table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CampaignsPage() {
@@ -114,9 +106,7 @@ export default function CampaignsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Campaigns</h1>
-            <p className="text-muted-foreground">
-              Create and manage your email campaigns
-            </p>
+            <p className="text-muted-foreground">Create and manage your email campaigns</p>
           </div>
           <div className="w-[140px] h-10">
             <Skeleton className="h-10 w-52 mb-1" />
@@ -156,9 +146,7 @@ export default function CampaignsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Campaigns</h1>
-          <p className="text-muted-foreground">
-            Create and manage your email campaigns
-          </p>
+          <p className="text-muted-foreground">Create and manage your email campaigns</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -214,11 +202,7 @@ export default function CampaignsPage() {
           </Button>
         </div>
       ) : (
-        <CampaignsTable
-          campaigns={filteredCampaigns}
-          onSort={handleSort}
-          sortConfig={sortConfig}
-        />
+        <CampaignsTable campaigns={filteredCampaigns} onSort={handleSort} sortConfig={sortConfig} />
       )}
 
       {/* Create Campaign Dialog */}

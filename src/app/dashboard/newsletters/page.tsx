@@ -12,12 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -114,9 +109,7 @@ export default function NewslettersPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Newsletters</h1>
-            <p className="text-muted-foreground">
-              Create and manage your email newsletters
-            </p>
+            <p className="text-muted-foreground">Create and manage your email newsletters</p>
           </div>
           <div className="w-[140px] h-10">
             <Skeleton className="h-10 w-52 mb-1" />
@@ -146,9 +139,7 @@ export default function NewslettersPage() {
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-destructive opacity-70" />
-          <h3 className="mt-4 text-lg font-semibold">
-            Error loading newsletters
-          </h3>
+          <h3 className="mt-4 text-lg font-semibold">Error loading newsletters</h3>
           <p className="text-destructive">{error}</p>
           <Button onClick={() => fetchNewsletters()} className="mt-4">
             Retry
@@ -163,9 +154,7 @@ export default function NewslettersPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Newsletters</h1>
-          <p className="text-muted-foreground">
-            Create and manage your email newsletters
-          </p>
+          <p className="text-muted-foreground">Create and manage your email newsletters</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -254,19 +243,12 @@ export default function NewslettersPage() {
                             : "bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-400"
                         }`}
                       >
-                        {newsletter?.status.charAt(0).toUpperCase() +
-                          newsletter?.status.slice(1)}
+                        {newsletter?.status.charAt(0).toUpperCase() + newsletter?.status.slice(1)}
                       </span>
                     </div>
                   </div>
                   <Link href={`/newsletter/${newsletter.id}`}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        router.push(`/newsletter/${newsletter.id}`)
-                      }
-                    >
+                    <Button variant="outline" size="sm">
                       Edit
                     </Button>
                   </Link>
@@ -288,9 +270,7 @@ export default function NewslettersPage() {
           </DialogHeader>
 
           <div className="py-4 space-y-4">
-            <div className="text-sm font-medium mb-2">
-              Choose a starting point:
-            </div>
+            <div className="text-sm font-medium mb-2">Choose a starting point:</div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <Link href="/newsletter/create?template=blank">
@@ -316,9 +296,7 @@ export default function NewslettersPage() {
                   <div className="flex items-center justify-center h-20 mb-4 bg-gray-100 rounded-md dark:bg-gray-800">
                     <LayoutTemplate className="h-8 w-8 text-primary/60" />
                   </div>
-                  <h4 className="text-base font-medium mb-1">
-                    Basic Newsletter
-                  </h4>
+                  <h4 className="text-base font-medium mb-1">Basic Newsletter</h4>
                   <p className="text-sm text-muted-foreground">
                     Start with our basic newsletter template
                   </p>

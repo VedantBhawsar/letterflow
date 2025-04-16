@@ -71,8 +71,7 @@ export default function FeaturesPage() {
                 Powerful Features for Newsletter Creators
               </h1>
               <p className="text-xl text-muted-foreground">
-                Everything you need to create, grow, and monetize your
-                newsletter in one platform.
+                Everything you need to create, grow, and monetize your newsletter in one platform.
               </p>
             </motion.div>
           </div>
@@ -93,12 +92,9 @@ export default function FeaturesPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-4 text-white">
-                Email Builder
-              </h2>
+              <h2 className="text-3xl font-bold mb-4 text-white">Email Builder</h2>
               <p className="text-lg text-white/70">
-                Create beautiful newsletters without writing a single line of
-                code.
+                Create beautiful newsletters without writing a single line of code.
               </p>
             </motion.div>
 
@@ -140,20 +136,17 @@ export default function FeaturesPage() {
                     {
                       icon: <LayoutTemplate className="h-5 w-5" />,
                       title: "1,000+ Templates",
-                      description:
-                        "Access our library of professionally designed email templates.",
+                      description: "Access our library of professionally designed email templates.",
                     },
                     {
                       icon: <Users className="h-5 w-5" />,
                       title: "Nested Segmentation",
-                      description:
-                        "Target the right audience with advanced segmentation options.",
+                      description: "Target the right audience with advanced segmentation options.",
                     },
                     {
                       icon: <TestTube className="h-5 w-5" />,
                       title: "A/B User Testing",
-                      description:
-                        "Optimize your emails with data-driven A/B testing.",
+                      description: "Optimize your emails with data-driven A/B testing.",
                     },
                   ].map((feature, index) => (
                     <motion.div
@@ -165,9 +158,7 @@ export default function FeaturesPage() {
                         {feature.icon}
                       </div>
                       <div>
-                        <h3 className="font-medium text-white">
-                          {feature.title}
-                        </h3>
+                        <h3 className="font-medium text-white">{feature.title}</h3>
                         <p className="text-white/70">{feature.description}</p>
                       </div>
                     </motion.div>
@@ -194,8 +185,7 @@ export default function FeaturesPage() {
             >
               <h2 className="text-3xl font-bold mb-4">Analytics & Insights</h2>
               <p className="text-lg text-muted-foreground">
-                Understand your audience and optimize your content with detailed
-                analytics.
+                Understand your audience and optimize your content with detailed analytics.
               </p>
             </motion.div>
 
@@ -212,8 +202,7 @@ export default function FeaturesPage() {
                     {
                       icon: <LineChart className="h-5 w-5" />,
                       title: "Growth Tracking",
-                      description:
-                        "Monitor subscriber growth over time with interactive charts.",
+                      description: "Monitor subscriber growth over time with interactive charts.",
                     },
                     {
                       icon: <BarChart className="h-5 w-5" />,
@@ -244,9 +233,7 @@ export default function FeaturesPage() {
                       </div>
                       <div>
                         <h3 className="font-medium">{feature.title}</h3>
-                        <p className="text-muted-foreground">
-                          {feature.description}
-                        </p>
+                        <p className="text-muted-foreground">{feature.description}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -291,8 +278,7 @@ export default function FeaturesPage() {
             >
               <h2 className="text-3xl font-bold mb-4">Seamless Integrations</h2>
               <p className="text-lg text-muted-foreground">
-                Connect with your favorite tools and services to streamline your
-                workflow.
+                Connect with your favorite tools and services to streamline your workflow.
               </p>
             </motion.div>
 
@@ -307,20 +293,17 @@ export default function FeaturesPage() {
                 {
                   icon: <Zap className="h-6 w-6" />,
                   title: "Zapier",
-                  description:
-                    "Connect with 3,000+ apps and automate your workflows.",
+                  description: "Connect with 3,000+ apps and automate your workflows.",
                 },
                 {
                   icon: <Laptop className="h-6 w-6" />,
                   title: "CMS Platforms",
-                  description:
-                    "Integrate with WordPress, Ghost, Webflow, and more.",
+                  description: "Integrate with WordPress, Ghost, Webflow, and more.",
                 },
                 {
                   icon: <Globe className="h-6 w-6" />,
                   title: "Social Media",
-                  description:
-                    "Share your newsletters automatically on social platforms.",
+                  description: "Share your newsletters automatically on social platforms.",
                 },
               ].map((integration, index) => (
                 <motion.div
@@ -332,20 +315,13 @@ export default function FeaturesPage() {
                   <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4 text-primary">
                     {integration.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {integration.title}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {integration.description}
-                  </p>
+                  <h3 className="text-xl font-semibold mb-2">{integration.title}</h3>
+                  <p className="text-muted-foreground">{integration.description}</p>
                 </motion.div>
               ))}
             </motion.div>
 
-            <motion.div
-              className="text-center mt-12"
-              whileHover={{ scale: 1.05 }}
-            >
+            <motion.div className="text-center mt-12" whileHover={{ scale: 1.05 }}>
               <Button variant="outline" asChild>
                 <Link href="#all-integrations">View All Integrations</Link>
               </Button>
@@ -366,9 +342,7 @@ export default function FeaturesPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-4">
-                More Powerful Features
-              </h2>
+              <h2 className="text-3xl font-bold mb-4">More Powerful Features</h2>
               <p className="text-lg text-muted-foreground">
                 Designed to help you at every stage of your newsletter journey.
               </p>
@@ -403,8 +377,7 @@ export default function FeaturesPage() {
                 {
                   icon: <Globe className="h-6 w-6" />,
                   title: "Custom Domains",
-                  description:
-                    "Use your own domain for a professional and branded experience.",
+                  description: "Use your own domain for a professional and branded experience.",
                 },
                 {
                   icon: <Layout className="h-6 w-6" />,
@@ -415,8 +388,7 @@ export default function FeaturesPage() {
                 {
                   icon: <Laptop className="h-6 w-6" />,
                   title: "Mobile Optimization",
-                  description:
-                    "All newsletters are automatically optimized for mobile devices.",
+                  description: "All newsletters are automatically optimized for mobile devices.",
                 },
               ].map((feature, index) => (
                 <motion.div
@@ -428,9 +400,7 @@ export default function FeaturesPage() {
                   <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4 text-primary">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {feature.title}
-                  </h3>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </motion.div>
               ))}
@@ -457,8 +427,7 @@ export default function FeaturesPage() {
                   Ready to Elevate Your Newsletter?
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-                  Start your 14-day free trial today and experience all these
-                  powerful features.
+                  Start your 14-day free trial today and experience all these powerful features.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   <motion.div whileHover={{ scale: 1.05 }}>

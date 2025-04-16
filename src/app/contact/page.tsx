@@ -1,13 +1,7 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Mail, MessageSquare, Phone, MapPin } from "lucide-react";
 
 export const metadata = {
@@ -29,12 +23,10 @@ export default function ContactPage() {
 
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                Get in Touch
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">Get in Touch</h1>
               <p className="text-xl text-muted-foreground">
-                We'd love to hear from you. Reach out with questions, feedback,
-                or partnership inquiries.
+                We'd love to hear from you. Reach out with questions, feedback, or partnership
+                inquiries.
               </p>
             </div>
           </div>
@@ -72,10 +64,7 @@ export default function ContactPage() {
                   href: "tel:+15551234567",
                 },
               ].map((item, index) => (
-                <Card
-                  key={index}
-                  className="backdrop-blur-sm bg-white/80 border-border/60"
-                >
+                <Card key={index} className="backdrop-blur-sm bg-white/80 border-border/60">
                   <CardHeader className="pb-2">
                     <div className="mb-4 rounded-full w-12 h-12 bg-primary/10 flex items-center justify-center text-primary">
                       {item.icon}
@@ -104,22 +93,16 @@ export default function ContactPage() {
             <div className="max-w-3xl mx-auto">
               <Card className="backdrop-blur-sm bg-white/80 border-border/60">
                 <CardHeader>
-                  <CardTitle className="text-center">
-                    Send us a Message
-                  </CardTitle>
+                  <CardTitle className="text-center">Send us a Message</CardTitle>
                   <CardDescription className="text-center">
-                    Fill out the form below and we'll get back to you as soon as
-                    possible.
+                    Fill out the form below and we'll get back to you as soon as possible.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label
-                          htmlFor="firstName"
-                          className="text-sm font-medium"
-                        >
+                        <label htmlFor="firstName" className="text-sm font-medium">
                           First Name
                         </label>
                         <input
@@ -130,10 +113,7 @@ export default function ContactPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label
-                          htmlFor="lastName"
-                          className="text-sm font-medium"
-                        >
+                        <label htmlFor="lastName" className="text-sm font-medium">
                           Last Name
                         </label>
                         <input
@@ -205,8 +185,7 @@ export default function ContactPage() {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Our Offices</h2>
               <p className="text-lg text-muted-foreground">
-                While we're primarily remote, we have physical locations in
-                these cities.
+                While we're primarily remote, we have physical locations in these cities.
               </p>
             </div>
 
@@ -250,9 +229,7 @@ export default function ContactPage() {
 
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8 text-center">
-                Frequently Asked Questions
-              </h2>
+              <h2 className="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
 
               <div className="space-y-6">
                 {[
@@ -281,9 +258,7 @@ export default function ContactPage() {
                     key={index}
                     className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"
                   >
-                    <h3 className="text-lg font-semibold mb-2">
-                      {faq.question}
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
                     <p className="text-muted-foreground">{faq.answer}</p>
                   </div>
                 ))}

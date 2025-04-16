@@ -12,11 +12,7 @@ export default function Hero() {
   const [currentFeature, setCurrentFeature] = useState(0);
   const controls = useAnimation();
 
-  const features = [
-    "Beautiful Templates",
-    "Advanced Analytics",
-    "Growth Tools",
-  ];
+  const features = ["Beautiful Templates", "Advanced Analytics", "Growth Tools"];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -100,9 +96,8 @@ export default function Hero() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Boost your newsletter growth with powerful analytics, beautiful
-              templates, and seamless integrations. Take your content to the
-              next level with Letterflow.
+              Boost your newsletter growth with powerful analytics, beautiful templates, and
+              seamless integrations. Take your content to the next level with Letterflow.
             </motion.p>
 
             <motion.div
@@ -111,15 +106,8 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  size="lg"
-                  asChild
-                  className="group relative overflow-hidden"
-                >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button size="lg" asChild className="group relative overflow-hidden">
                   <Link href="#contact" className="flex items-center gap-2">
                     Book a Call
                     <motion.div
@@ -133,10 +121,7 @@ export default function Hero() {
                 </Button>
               </motion.div>
 
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button variant="outline" size="lg" asChild className="group">
                   <Link href="#features" className="flex items-center gap-2">
                     Learn More
@@ -218,9 +203,7 @@ export default function Hero() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8 + i * 0.1 }}
                     style={{
-                      backgroundImage: `url(https://randomuser.me/api/portraits/men/${
-                        i + 20
-                      }.jpg)`,
+                      backgroundImage: `url(https://randomuser.me/api/portraits/men/${i + 20}.jpg)`,
                       backgroundSize: "cover",
                     }}
                   />

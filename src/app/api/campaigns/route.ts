@@ -78,10 +78,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(campaigns);
   } catch (error) {
     console.error("Error fetching campaigns:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch campaigns" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch campaigns" }, { status: 500 });
   }
 }
 
@@ -98,10 +95,7 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     if (!data.name || !data.subject) {
-      return NextResponse.json(
-        { error: "Name and subject are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name and subject are required" }, { status: 400 });
     }
 
     const campaign = await prisma.campaign.create({
@@ -126,10 +120,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(campaign);
   } catch (error) {
     console.error("Error creating campaign:", error);
-    return NextResponse.json(
-      { error: "Failed to create campaign" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create campaign" }, { status: 500 });
   }
 }
 

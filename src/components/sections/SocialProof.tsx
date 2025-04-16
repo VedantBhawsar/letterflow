@@ -8,32 +8,28 @@ const companies = [
     name: "Acme Inc.",
     logo: "👾",
     industry: "Technology",
-    quote:
-      "Letterflow transformed our newsletter strategy and increased our open rates by 35%.",
+    quote: "Letterflow transformed our newsletter strategy and increased our open rates by 35%.",
     author: "John Smith, Marketing Director",
   },
   {
     name: "Globex",
     logo: "🚀",
     industry: "Aerospace",
-    quote:
-      "The analytics provided by Letterflow gave us insights we never knew we needed.",
+    quote: "The analytics provided by Letterflow gave us insights we never knew we needed.",
     author: "Maria Chen, CEO",
   },
   {
     name: "Initech",
     logo: "💻",
     industry: "Software",
-    quote:
-      "We've doubled our subscriber base in just 3 months using Letterflow's growth tools.",
+    quote: "We've doubled our subscriber base in just 3 months using Letterflow's growth tools.",
     author: "Peter Gibbons, CTO",
   },
   {
     name: "Umbrella Corp",
     logo: "☂️",
     industry: "Healthcare",
-    quote:
-      "Letterflow has been vital in communicating complex information to our stakeholders.",
+    quote: "Letterflow has been vital in communicating complex information to our stakeholders.",
     author: "Alice Wong, Communications Lead",
   },
   {
@@ -56,8 +52,7 @@ const companies = [
     name: "Cyberdyne Systems",
     logo: "🤖",
     industry: "Robotics",
-    quote:
-      "Our newsletter engagement increased by 40% after switching to Letterflow.",
+    quote: "Our newsletter engagement increased by 40% after switching to Letterflow.",
     author: "Sarah Connor, Product Manager",
   },
   {
@@ -71,9 +66,7 @@ const companies = [
 ];
 
 // Get unique industries for filter
-const industries = Array.from(
-  new Set(companies.map((company) => company.industry))
-);
+const industries = Array.from(new Set(companies.map((company) => company.industry)));
 
 // Animation variants
 const containerVariants = {
@@ -106,9 +99,7 @@ export default function SocialProof() {
 
   // Filter companies based on selected industry and search query
   const filteredCompanies = companies.filter((company) => {
-    const matchesIndustry = selectedIndustry
-      ? company.industry === selectedIndustry
-      : true;
+    const matchesIndustry = selectedIndustry ? company.industry === selectedIndustry : true;
     const matchesSearch = searchQuery
       ? company.name.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
@@ -198,8 +189,8 @@ export default function SocialProof() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Join the growing list of companies using Letterflow to boost
-            engagement and grow their audience.
+            Join the growing list of companies using Letterflow to boost engagement and grow their
+            audience.
           </motion.p>
         </motion.div>
 
@@ -267,9 +258,7 @@ export default function SocialProof() {
                   min="20"
                   max="90"
                   value={spotlightIntensity}
-                  onChange={(e) =>
-                    setSpotlightIntensity(parseInt(e.target.value))
-                  }
+                  onChange={(e) => setSpotlightIntensity(parseInt(e.target.value))}
                   className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
                 <span className="text-xs text-gray-500">High</span>
@@ -291,12 +280,11 @@ export default function SocialProof() {
                 key={index}
                 variants={itemVariants}
                 className={`relative flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 ${
-                  spotlight &&
-                  (hoveredIndex === index || currentHighlight === index)
+                  spotlight && (hoveredIndex === index || currentHighlight === index)
                     ? "bg-white shadow-lg z-10 scale-110"
                     : spotlight
-                    ? `opacity-${100 - spotlightIntensity}`
-                    : "hover:bg-white hover:shadow-md"
+                      ? `opacity-${100 - spotlightIntensity}`
+                      : "hover:bg-white hover:shadow-md"
                 }`}
                 onHoverStart={() => setHoveredIndex(index)}
                 onHoverEnd={() => setHoveredIndex(null)}
@@ -333,9 +321,7 @@ export default function SocialProof() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <p className="text-gray-500">
-                No companies found matching your criteria.
-              </p>
+              <p className="text-gray-500">No companies found matching your criteria.</p>
               <button
                 className="mt-4 text-primary hover:underline"
                 onClick={() => {

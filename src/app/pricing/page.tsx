@@ -1,13 +1,7 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -52,8 +46,7 @@ const plans = [
     name: "Starter",
     price: "$15",
     period: "per month",
-    description:
-      "Perfect for creators just getting started with their newsletter.",
+    description: "Perfect for creators just getting started with their newsletter.",
     features: [
       "Up to 2,500 subscribers",
       "Unlimited newsletters",
@@ -69,8 +62,7 @@ const plans = [
     name: "Growth",
     price: "$39",
     period: "per month",
-    description:
-      "Everything you need to grow your audience and monetize your newsletter.",
+    description: "Everything you need to grow your audience and monetize your newsletter.",
     features: [
       "Up to 10,000 subscribers",
       "Unlimited newsletters",
@@ -89,8 +81,7 @@ const plans = [
     name: "Professional",
     price: "$99",
     period: "per month",
-    description:
-      "For serious creators with a large audience and advanced needs.",
+    description: "For serious creators with a large audience and advanced needs.",
     features: [
       "Up to 50,000 subscribers",
       "All Growth features",
@@ -125,12 +116,10 @@ export default function PricingPage() {
               animate="visible"
               variants={fadeIn}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                Simple, Transparent Pricing
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">Simple, Transparent Pricing</h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Choose the perfect plan for your newsletter needs. All plans
-                include a 14-day free trial.
+                Choose the perfect plan for your newsletter needs. All plans include a 14-day free
+                trial.
               </p>
               <div className="inline-flex items-center rounded-full border border-border p-1">
                 <button className="rounded-full px-4 py-2 text-sm font-medium bg-primary text-white">
@@ -166,9 +155,7 @@ export default function PricingPage() {
                 >
                   <Card
                     className={`flex flex-col w-full backdrop-blur-sm bg-white/80 border-border/60 ${
-                      plan.popular
-                        ? "relative shadow-xl border-primary/40 z-10"
-                        : "shadow-md"
+                      plan.popular ? "relative shadow-xl border-primary/40 z-10" : "shadow-md"
                     }`}
                   >
                     {plan.popular && (
@@ -180,13 +167,9 @@ export default function PricingPage() {
                       <CardTitle className="text-2xl">{plan.name}</CardTitle>
                       <div className="mt-2">
                         <span className="text-4xl font-bold">{plan.price}</span>
-                        <span className="text-muted-foreground ml-1">
-                          {plan.period}
-                        </span>
+                        <span className="text-muted-foreground ml-1">{plan.period}</span>
                       </div>
-                      <p className="text-muted-foreground mt-2">
-                        {plan.description}
-                      </p>
+                      <p className="text-muted-foreground mt-2">{plan.description}</p>
                     </CardHeader>
                     <CardContent className="flex-grow">
                       <ul className="space-y-3">
@@ -206,10 +189,7 @@ export default function PricingPage() {
                       </ul>
                     </CardContent>
                     <CardFooter>
-                      <motion.div
-                        className="w-full"
-                        whileHover={{ scale: 1.03 }}
-                      >
+                      <motion.div className="w-full" whileHover={{ scale: 1.03 }}>
                         <Button
                           variant={plan.popular ? "default" : "outline"}
                           size="lg"
@@ -248,8 +228,8 @@ export default function PricingPage() {
                   <div className="flex-grow">
                     <h2 className="text-3xl font-bold mb-4">Enterprise Plan</h2>
                     <p className="text-lg mb-6">
-                      Custom solutions for larger newsletters, media companies,
-                      and organizations with specific needs.
+                      Custom solutions for larger newsletters, media companies, and organizations
+                      with specific needs.
                     </p>
                     <ul className="space-y-2 mb-8 md:mb-0">
                       {[
@@ -275,9 +255,7 @@ export default function PricingPage() {
                     </ul>
                   </div>
                   <div className="flex-shrink-0 text-center md:text-right">
-                    <p className="text-lg font-medium mb-4">
-                      Contact us for custom pricing
-                    </p>
+                    <p className="text-lg font-medium mb-4">Contact us for custom pricing</p>
                     <motion.div whileHover={{ scale: 1.05 }}>
                       <Button size="lg" asChild>
                         <Link href="/contact">Get in Touch</Link>
@@ -302,9 +280,7 @@ export default function PricingPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-12 text-center">
-                Frequently Asked Questions
-              </h2>
+              <h2 className="text-3xl font-bold mb-12 text-center">Frequently Asked Questions</h2>
 
               <motion.div
                 className="space-y-6"
@@ -330,8 +306,7 @@ export default function PricingPage() {
                       "Yes, you can upgrade or downgrade your plan at any time. Upgrades take effect immediately, while downgrades will apply at the end of your current billing cycle.",
                   },
                   {
-                    question:
-                      "Do you offer discounts for non-profits or educational institutions?",
+                    question: "Do you offer discounts for non-profits or educational institutions?",
                     answer:
                       "Yes, we offer special pricing for verified non-profits, educational institutions, and student publications. Please contact us for more information.",
                   },
@@ -352,9 +327,7 @@ export default function PricingPage() {
                     variants={itemFadeIn}
                     whileHover={{ y: -5 }}
                   >
-                    <h3 className="text-lg font-semibold mb-2">
-                      {faq.question}
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
                     <p className="text-muted-foreground">{faq.answer}</p>
                   </motion.div>
                 ))}
@@ -375,12 +348,10 @@ export default function PricingPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-6">
-                Ready to Start Your Newsletter Journey?
-              </h2>
+              <h2 className="text-3xl font-bold mb-6">Ready to Start Your Newsletter Journey?</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-                Join thousands of creators who trust Letterflow to grow and
-                monetize their newsletters.
+                Join thousands of creators who trust Letterflow to grow and monetize their
+                newsletters.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <motion.div whileHover={{ scale: 1.05 }}>

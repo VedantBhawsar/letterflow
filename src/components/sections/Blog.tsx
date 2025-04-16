@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -102,8 +97,8 @@ export default function Blog() {
             Delve Deeper Into Our Writing Collection
           </h2>
           <p className="text-lg text-muted-foreground">
-            Explore our knowledge base of articles, guides, and tutorials to
-            help you create better newsletters.
+            Explore our knowledge base of articles, guides, and tutorials to help you create better
+            newsletters.
           </p>
         </motion.div>
 
@@ -143,9 +138,7 @@ export default function Blog() {
 
                 <CardHeader className="relative z-30 bg-white rounded-t-2xl pb-2">
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                    <span className="font-medium text-primary">
-                      {post.date}
-                    </span>
+                    <span className="font-medium text-primary">{post.date}</span>
                     <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
                       {post.readTime}
                     </span>
@@ -159,10 +152,7 @@ export default function Blog() {
 
                 <CardFooter className="border-t border-border/30 pt-4">
                   <Button variant="link" className="px-0 group" asChild>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="flex items-center gap-2"
-                    >
+                    <Link href={`/blog/${post.slug}`} className="flex items-center gap-2">
                       Read Article
                       <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </Link>

@@ -22,12 +22,10 @@ export default function AboutPage() {
 
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                About Letterflow
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">About Letterflow</h1>
               <p className="text-xl text-muted-foreground">
-                We're on a mission to empower newsletter creators with powerful
-                tools, insightful analytics, and beautiful designs.
+                We're on a mission to empower newsletter creators with powerful tools, insightful
+                analytics, and beautiful designs.
               </p>
             </div>
           </div>
@@ -43,22 +41,20 @@ export default function AboutPage() {
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8 mb-12">
                 <div className="prose prose-slate max-w-none">
                   <p className="text-lg">
-                    Letterflow was born in 2021 when our founders, experienced
-                    newsletter creators themselves, recognized a gap in the
-                    market. While there were many email marketing platforms
-                    available, none were specifically designed for the unique
+                    Letterflow was born in 2021 when our founders, experienced newsletter creators
+                    themselves, recognized a gap in the market. While there were many email
+                    marketing platforms available, none were specifically designed for the unique
                     needs of newsletter creators.
                   </p>
                   <p className="text-lg">
-                    We set out to build a platform that would provide the
-                    perfect balance of powerful features, intuitive design, and
-                    meaningful analytics to help creators grow their audience
-                    and improve their content.
+                    We set out to build a platform that would provide the perfect balance of
+                    powerful features, intuitive design, and meaningful analytics to help creators
+                    grow their audience and improve their content.
                   </p>
                   <p className="text-lg">
-                    What started as a small team of three has now grown into a
-                    diverse company of passionate individuals dedicated to
-                    supporting the thriving newsletter ecosystem.
+                    What started as a small team of three has now grown into a diverse company of
+                    passionate individuals dedicated to supporting the thriving newsletter
+                    ecosystem.
                   </p>
                 </div>
               </div>
@@ -75,50 +71,38 @@ export default function AboutPage() {
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Our Mission & Values</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                The principles that guide our product decisions, team culture,
-                and customer relationships.
+                The principles that guide our product decisions, team culture, and customer
+                relationships.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8">
-                <h3 className="text-xl font-bold mb-4 text-primary">
-                  Empowering Creators
-                </h3>
+                <h3 className="text-xl font-bold mb-4 text-primary">Empowering Creators</h3>
                 <p className="text-muted-foreground">
-                  We believe in democratizing publishing by providing tools that
-                  enable anyone to create professional, engaging newsletters
-                  regardless of technical expertise.
+                  We believe in democratizing publishing by providing tools that enable anyone to
+                  create professional, engaging newsletters regardless of technical expertise.
                 </p>
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8">
-                <h3 className="text-xl font-bold mb-4 text-primary">
-                  Data-Driven Insights
-                </h3>
+                <h3 className="text-xl font-bold mb-4 text-primary">Data-Driven Insights</h3>
                 <p className="text-muted-foreground">
-                  We're committed to providing actionable analytics that help
-                  creators understand their audience and optimize their content
-                  strategy.
+                  We're committed to providing actionable analytics that help creators understand
+                  their audience and optimize their content strategy.
                 </p>
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8">
-                <h3 className="text-xl font-bold mb-4 text-primary">
-                  Design Excellence
-                </h3>
+                <h3 className="text-xl font-bold mb-4 text-primary">Design Excellence</h3>
                 <p className="text-muted-foreground">
-                  Beautiful, functional design is at the heart of our product.
-                  We believe newsletters should be as visually appealing as they
-                  are informative.
+                  Beautiful, functional design is at the heart of our product. We believe
+                  newsletters should be as visually appealing as they are informative.
                 </p>
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8">
-                <h3 className="text-xl font-bold mb-4 text-primary">
-                  Creator-First Support
-                </h3>
+                <h3 className="text-xl font-bold mb-4 text-primary">Creator-First Support</h3>
                 <p className="text-muted-foreground">
-                  Our customer support team is made up of experienced newsletter
-                  creators who understand your challenges and can provide real,
-                  practical advice.
+                  Our customer support team is made up of experienced newsletter creators who
+                  understand your challenges and can provide real, practical advice.
                 </p>
               </div>
             </div>
@@ -133,8 +117,8 @@ export default function AboutPage() {
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Meet Our Team</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                The passionate people behind Letterflow who are dedicated to
-                helping newsletter creators succeed.
+                The passionate people behind Letterflow who are dedicated to helping newsletter
+                creators succeed.
               </p>
             </div>
 
@@ -185,9 +169,7 @@ export default function AboutPage() {
                     Photo
                   </div>
                   <h3 className="font-semibold text-lg">{member.name}</h3>
-                  <p className="text-primary text-sm font-medium mb-2">
-                    {member.role}
-                  </p>
+                  <p className="text-primary text-sm font-medium mb-2">{member.role}</p>
                   <p className="text-muted-foreground text-sm">{member.bio}</p>
                 </div>
               ))}
@@ -204,8 +186,7 @@ export default function AboutPage() {
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Our Journey</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Key milestones in the Letterflow story as we've grown and
-                evolved.
+                Key milestones in the Letterflow story as we've grown and evolved.
               </p>
             </div>
 
@@ -266,17 +247,11 @@ export default function AboutPage() {
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary">
                         {milestone.year}
                       </div>
-                      {index < 7 && (
-                        <div className="w-0.5 h-16 bg-border mt-2"></div>
-                      )}
+                      {index < 7 && <div className="w-0.5 h-16 bg-border mt-2"></div>}
                     </div>
                     <div className="pt-2">
-                      <h3 className="font-semibold text-lg">
-                        {milestone.title}
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {milestone.description}
-                      </p>
+                      <h3 className="font-semibold text-lg">{milestone.title}</h3>
+                      <p className="text-muted-foreground">{milestone.description}</p>
                     </div>
                   </div>
                 ))}
@@ -296,8 +271,8 @@ export default function AboutPage() {
               <div className="relative backdrop-blur-sm bg-white/80 border-border/60 p-8 rounded-xl">
                 <h2 className="text-3xl font-bold mb-4">Join Our Team</h2>
                 <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-6">
-                  We're always looking for passionate, talented people to help
-                  us build the future of newsletters.
+                  We're always looking for passionate, talented people to help us build the future
+                  of newsletters.
                 </p>
                 <Button size="lg" asChild>
                   <Link href="/careers">View Open Positions</Link>

@@ -165,12 +165,10 @@ export default function TestimonialsPage() {
               animate="visible"
               variants={fadeIn}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                What Our Customers Say
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">What Our Customers Say</h1>
               <p className="text-xl text-muted-foreground">
-                Hear from the newsletter creators who have grown their audience
-                and improved their content with Letterflow.
+                Hear from the newsletter creators who have grown their audience and improved their
+                content with Letterflow.
               </p>
             </motion.div>
           </div>
@@ -204,27 +202,20 @@ export default function TestimonialsPage() {
                       />
                     </div>
                     <h3 className="text-xl font-semibold">Sarah Johnson</h3>
-                    <p className="text-muted-foreground">
-                      Founder, The Weekly Insight
-                    </p>
+                    <p className="text-muted-foreground">Founder, The Weekly Insight</p>
                     <div className="flex mt-2">
                       {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-4 w-4 fill-primary text-primary"
-                        />
+                        <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                       ))}
                     </div>
                   </div>
                   <div className="md:w-2/3">
                     <blockquote className="text-xl italic">
-                      "I was struggling to grow my newsletter beyond a few
-                      hundred subscribers for months. Since switching to
-                      Letterflow, I've been able to grow to over 10,000
-                      subscribers in just 6 months. The analytics tools helped
-                      me understand what content resonates, and the email
-                      builder made my newsletter look professional without any
-                      design skills. It's completely transformed my business."
+                      "I was struggling to grow my newsletter beyond a few hundred subscribers for
+                      months. Since switching to Letterflow, I've been able to grow to over 10,000
+                      subscribers in just 6 months. The analytics tools helped me understand what
+                      content resonates, and the email builder made my newsletter look professional
+                      without any design skills. It's completely transformed my business."
                     </blockquote>
                     <div className="mt-6">
                       <p className="text-primary font-medium">Results:</p>
@@ -285,11 +276,7 @@ export default function TestimonialsPage() {
               variants={staggerContainer}
             >
               {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  variants={itemFadeIn}
-                  whileHover={{ y: -5 }}
-                >
+                <motion.div key={index} variants={itemFadeIn} whileHover={{ y: -5 }}>
                   <Card className="backdrop-blur-sm bg-white/80 border-border/60 p-6 h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex gap-4 items-center">
@@ -303,17 +290,12 @@ export default function TestimonialsPage() {
                         </div>
                         <div>
                           <h3 className="font-semibold">{testimonial.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {testimonial.position}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{testimonial.position}</p>
                         </div>
                       </div>
                       <div className="flex">
                         {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-4 w-4 fill-primary text-primary"
-                          />
+                          <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                         ))}
                         {[...Array(5 - testimonial.rating)].map((_, i) => (
                           <Star key={i} className="h-4 w-4 text-muted" />
@@ -349,8 +331,7 @@ export default function TestimonialsPage() {
             >
               <h2 className="text-3xl font-bold mb-4">Video Success Stories</h2>
               <p className="text-lg text-muted-foreground">
-                Watch how these creators have transformed their newsletters with
-                Letterflow.
+                Watch how these creators have transformed their newsletters with Letterflow.
               </p>
             </motion.div>
 
@@ -391,12 +372,7 @@ export default function TestimonialsPage() {
                   whileHover={{ scale: 1.03 }}
                 >
                   <div className="aspect-video bg-muted rounded-lg flex items-center justify-center text-muted-foreground mb-3 overflow-hidden relative">
-                    <Image
-                      src={video.image}
-                      alt={video.title}
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={video.image} alt={video.title} fill className="object-cover" />
                     <div className="absolute inset-0 bg-black/30"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <motion.div
@@ -443,12 +419,10 @@ export default function TestimonialsPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-6">
-                Join Our Growing Community
-              </h2>
+              <h2 className="text-3xl font-bold mb-6">Join Our Growing Community</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-                Experience the platform that has helped thousands of newsletter
-                creators grow their audience and create better content.
+                Experience the platform that has helped thousands of newsletter creators grow their
+                audience and create better content.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <motion.div whileHover={{ scale: 1.05 }}>

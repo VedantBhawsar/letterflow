@@ -6,23 +6,9 @@ import { useRouter } from "next/navigation";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import {
-  Menu,
-  X,
-  Home,
-  Mail,
-  BarChart2,
-  Users,
-  Settings,
-  LogOut,
-  FileText,
-} from "lucide-react";
+import { Menu, X, Home, Mail, BarChart2, Users, Settings, LogOut, FileText } from "lucide-react";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -144,10 +130,7 @@ export default function DashboardLayout({
             <SidebarContent />
           </SheetContent>
         </Sheet>
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 font-semibold"
-        >
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
           <span className="text-primary">Letterflow</span>
         </Link>
       </div>

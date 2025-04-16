@@ -67,8 +67,8 @@ export default function Footer() {
             </div>
 
             <p className="text-muted-foreground">
-              Elevate your newsletter growth success with our powerful tools for
-              email building, analytics, and integrations.
+              Elevate your newsletter growth success with our powerful tools for email building,
+              analytics, and integrations.
             </p>
 
             <div className="flex space-x-4">

@@ -3,12 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+// These are the correct types for Next.js App Router Route Handlers
+type Params = { id: string };
+
+export async function PUT(req: Request, context: { params: Params }) {
   try {
-    const id = params.id;
+    const id = context.params.id;
 
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -29,10 +29,7 @@ export async function PUT(
 
     // Validate required fields
     if (!name) {
-      return NextResponse.json(
-        { message: "Newsletter name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Newsletter name is required" }, { status: 400 });
     }
 
     if (!elements || !Array.isArray(elements)) {
@@ -53,8 +50,7 @@ export async function PUT(
     if (!existingNewsletter) {
       return NextResponse.json(
         {
-          message:
-            "Newsletter not found or you don't have permission to update it",
+          message: "Newsletter not found or you don't have permission to update it",
         },
         { status: 404 }
       );
@@ -87,12 +83,9 @@ export async function PUT(
   }
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, context: { params: Params }) {
   try {
-    const id = params.id;
+    const id = context.params.id;
 
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -116,10 +109,7 @@ export async function GET(
     });
 
     if (!newsletter) {
-      return NextResponse.json(
-        { message: "Newsletter not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Newsletter not found" }, { status: 404 });
     }
 
     console.log("Newsletter retrieved:", newsletter);
@@ -134,12 +124,9 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request, context: { params: Params }) {
   try {
-    const id = params.id;
+    const id = context.params.id;
 
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -165,8 +152,7 @@ export async function DELETE(
     if (!existingNewsletter) {
       return NextResponse.json(
         {
-          message:
-            "Newsletter not found or you don't have permission to delete it",
+          message: "Newsletter not found or you don't have permission to delete it",
         },
         { status: 404 }
       );

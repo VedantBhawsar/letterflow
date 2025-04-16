@@ -67,9 +67,7 @@ function MetricCard({ title, value, change, trend, icon }: MetricCardProps) {
         </div>
         <div
           className={`flex items-center text-sm ${
-            trend === "up"
-              ? "text-green-600 dark:text-green-400"
-              : "text-red-600 dark:text-red-400"
+            trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           }`}
         >
           <span>{change}</span>
@@ -106,9 +104,7 @@ export default function AnalyticsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Analytics</h1>
-            <p className="text-muted-foreground">
-              Track and analyze your newsletter performance
-            </p>
+            <p className="text-muted-foreground">Track and analyze your newsletter performance</p>
           </div>
           <div className="flex gap-2">
             <Skeleton className="h-10 w-32 rounded-md" />
@@ -193,9 +189,7 @@ export default function AnalyticsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>
-          <p className="text-muted-foreground">
-            Track and analyze your newsletter performance
-          </p>
+          <p className="text-muted-foreground">Track and analyze your newsletter performance</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">
@@ -260,17 +254,13 @@ export default function AnalyticsPage() {
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Engagement Over Time</h3>
               <div className="h-[300px] flex items-center justify-center border rounded-md bg-muted/20">
-                <p className="text-muted-foreground">
-                  Engagement chart visualization
-                </p>
+                <p className="text-muted-foreground">Engagement chart visualization</p>
               </div>
             </Card>
 
             {/* Top Performing Campaigns */}
             <Card className="p-6">
-              <h3 className="text-lg font-medium mb-4">
-                Top Performing Campaigns
-              </h3>
+              <h3 className="text-lg font-medium mb-4">Top Performing Campaigns</h3>
               <div className="space-y-4">
                 {topPerformingCampaigns.map((campaign) => (
                   <div
@@ -315,9 +305,7 @@ export default function AnalyticsPage() {
 
             {/* Top Sources */}
             <Card className="p-6">
-              <h3 className="text-lg font-medium mb-4">
-                Top Subscriber Sources
-              </h3>
+              <h3 className="text-lg font-medium mb-4">Top Subscriber Sources</h3>
               <div className="space-y-4">
                 {topSources.map((source, index) => (
                   <div key={index} className="space-y-2">
@@ -344,9 +332,7 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Campaign Performance</h3>
             <div className="h-[400px] flex items-center justify-center border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">
-                Detailed campaign analytics coming soon
-              </p>
+              <p className="text-muted-foreground">Detailed campaign analytics coming soon</p>
             </div>
           </Card>
         </TabsContent>
@@ -355,9 +341,7 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Subscriber Metrics</h3>
             <div className="h-[400px] flex items-center justify-center border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">
-                Detailed subscriber analytics coming soon
-              </p>
+              <p className="text-muted-foreground">Detailed subscriber analytics coming soon</p>
             </div>
           </Card>
         </TabsContent>

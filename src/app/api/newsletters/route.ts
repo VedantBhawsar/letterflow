@@ -78,10 +78,7 @@ export async function POST(req: Request) {
 
     // Validate required fields
     if (!name) {
-      return NextResponse.json(
-        { message: "Newsletter name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Newsletter name is required" }, { status: 400 });
     }
 
     if (!elements || !Array.isArray(elements)) {

@@ -20,33 +20,27 @@ const features = [
   {
     icon: <LineChart className="h-5 w-5" />,
     title: "Interactive Charts",
-    description:
-      "Visualize your newsletter performance with interactive and customizable charts.",
+    description: "Visualize your newsletter performance with interactive and customizable charts.",
   },
   {
     icon: <BarChart className="h-5 w-5" />,
     title: "Engagement Analytics",
-    description:
-      "Track opens, clicks, and other metrics to understand audience behavior.",
+    description: "Track opens, clicks, and other metrics to understand audience behavior.",
   },
   {
     icon: <Users className="h-5 w-5" />,
     title: "Audience Insights",
-    description:
-      "Gain demographic and behavioral insights about your subscribers.",
+    description: "Gain demographic and behavioral insights about your subscribers.",
   },
   {
     icon: <Share2 className="h-5 w-5" />,
     title: "Data Export and Sharing",
-    description:
-      "Easily export data in multiple formats or share insights with your team.",
+    description: "Easily export data in multiple formats or share insights with your team.",
   },
 ];
 
 // Sample data for growth chart
-const subscriberData = [
-  120, 145, 190, 210, 260, 320, 390, 450, 510, 580, 640, 720,
-];
+const subscriberData = [120, 145, 190, 210, 260, 320, 390, 450, 510, 580, 640, 720];
 const monthLabels = [
   "Jan",
   "Feb",
@@ -132,10 +126,7 @@ export function AnalyticsSkeleton() {
               <div className="h-64 relative">
                 <div className="flex items-end justify-between w-full h-full">
                   {Array.from({ length: 12 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center w-full"
-                    >
+                    <div key={idx} className="flex flex-col items-center w-full">
                       <Skeleton
                         className="w-full rounded-t-sm"
                         style={{
@@ -150,10 +141,7 @@ export function AnalyticsSkeleton() {
 
               <div className="grid grid-cols-3 gap-4 mt-6">
                 {Array.from({ length: 3 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg p-3 border border-gray-100"
-                  >
+                  <div key={idx} className="rounded-lg p-3 border border-gray-100">
                     <Skeleton className="h-5 w-20 mb-2" />
                     <div className="flex items-baseline">
                       <Skeleton className="h-7 w-10 mr-2" />
@@ -213,8 +201,8 @@ export default function Analytics() {
             Get Growth Visualization with Precision Data
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Track your newsletter growth and engagement with interactive
-            visualizations and actionable insights.
+            Track your newsletter growth and engagement with interactive visualizations and
+            actionable insights.
           </p>
         </motion.div>
 
@@ -229,9 +217,7 @@ export default function Analytics() {
             <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 to-primary/20 blur-lg opacity-70"></div>
             <div className="relative rounded-xl border border-border/40 bg-white/90 overflow-hidden shadow-xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-800">
-                  Subscriber Growth
-                </h3>
+                <h3 className="font-semibold text-gray-800">Subscriber Growth</h3>
                 <div className="flex items-center text-sm text-primary">
                   <span className="font-medium">YTD Growth: +500%</span>
                   <ArrowUp className="h-4 w-4 ml-1" />
@@ -265,9 +251,7 @@ export default function Analytics() {
                           {value} subscribers
                         </motion.div>
                       </div>
-                      <span className="text-xs mt-1 text-gray-500">
-                        {monthLabels[idx]}
-                      </span>
+                      <span className="text-xs mt-1 text-gray-500">{monthLabels[idx]}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -287,9 +271,7 @@ export default function Analytics() {
                     variants={itemFadeIn}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
-                        {metric.name}
-                      </span>
+                      <span className="text-sm text-gray-500">{metric.name}</span>
                       <div
                         className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: metric.color }}
@@ -298,9 +280,7 @@ export default function Analytics() {
                     <div className="mt-1 flex items-baseline gap-2">
                       <span className="text-xl font-bold">{metric.value}%</span>
                       <div className="flex items-center text-xs">
-                        <span className="text-green-500">
-                          +{metric.change}%
-                        </span>
+                        <span className="text-green-500">+{metric.change}%</span>
                         <ArrowUp className="h-3 w-3 text-green-500" />
                       </div>
                     </div>
@@ -314,9 +294,7 @@ export default function Analytics() {
                   <PieChart className="h-10 w-10 text-primary/40" />
                 </div>
                 <div className="flex-grow">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Audience Breakdown
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Audience Breakdown</h4>
                   <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex">
                     {audienceData.map((item, idx) => (
                       <motion.div
@@ -371,9 +349,7 @@ export default function Analytics() {
                   </div>
                   <div>
                     <h3 className="font-medium">{feature.title}</h3>
-                    <p className="text-muted-foreground">
-                      {feature.description}
-                    </p>
+                    <p className="text-muted-foreground">{feature.description}</p>
                   </div>
                 </motion.div>
               ))}

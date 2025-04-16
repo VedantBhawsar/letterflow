@@ -55,12 +55,8 @@ export default function DashboardPage() {
         {
           title: "Total Subscribers",
           value: analytics.overview.totalSubscribers.toLocaleString(),
-          change: `${
-            analytics.overview.totalSubscribers > 0 ? "+" : ""
-          }${Math.round(
-            (analytics.overview.activeSubscribers /
-              analytics.overview.totalSubscribers) *
-              100
+          change: `${analytics.overview.totalSubscribers > 0 ? "+" : ""}${Math.round(
+            (analytics.overview.activeSubscribers / analytics.overview.totalSubscribers) * 100
           )}%`,
           trend: "up",
           icon: <Users />,
@@ -94,9 +90,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back, {session?.user?.name || "Guest"}
-          </p>
+          <p className="text-muted-foreground">Welcome back, {session?.user?.name || "Guest"}</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -164,9 +158,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col space-y-2">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {session?.user?.name || "Guest"}
-        </p>
+        <p className="text-muted-foreground">Welcome back, {session?.user?.name || "Guest"}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -216,23 +208,19 @@ export default function DashboardPage() {
                     <p className="font-medium">{campaign.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {campaign.sentAt
-                        ? `Sent ${formatDistanceToNow(
-                            new Date(campaign.sentAt),
-                            { addSuffix: true }
-                          )}`
+                        ? `Sent ${formatDistanceToNow(new Date(campaign.sentAt), {
+                            addSuffix: true,
+                          })}`
                         : campaign.status === "scheduled"
-                        ? `Scheduled for ${new Date(
-                            campaign.scheduledAt!
-                          ).toLocaleDateString()}`
-                        : `Status: ${campaign.status}`}
+                          ? `Scheduled for ${new Date(campaign.scheduledAt!).toLocaleDateString()}`
+                          : `Status: ${campaign.status}`}
                     </p>
                   </div>
                   <div className="text-sm text-green-600 dark:text-green-400">
                     {campaign.stats && campaign.stats.sent > 0
-                      ? `${(
-                          (campaign.stats.opened / campaign.stats.sent) *
-                          100
-                        ).toFixed(1)}% opened`
+                      ? `${((campaign.stats.opened / campaign.stats.sent) * 100).toFixed(
+                          1
+                        )}% opened`
                       : "Not sent yet"}
                   </div>
                 </div>
@@ -256,9 +244,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground">
-                No subscriber data available yet
-              </p>
+              <p className="text-muted-foreground">No subscriber data available yet</p>
             )}
           </div>
         </Card>
