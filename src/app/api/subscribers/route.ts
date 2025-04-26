@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,28 +17,50 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const tag = searchParams.get("tag");
     const search = searchParams.get("search");
+    const segmentId = searchParams.get("segmentId");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const skip = (page - 1) * limit;
 
+    // Build the where clause
+    const where: Prisma.SubscriberWhereInput = {
+      userId: userId,
+      ...(status ? { status } : {}),
+      ...(tag ? { tags: { has: tag } } : {}),
+      ...(segmentId ? { segmentIds: { has: segmentId } } : {}),
+    };
+
+    // Add search condition
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" as Prisma.QueryMode } },
+        { firstName: { contains: search, mode: "insensitive" as Prisma.QueryMode } },
+        { lastName: { contains: search, mode: "insensitive" as Prisma.QueryMode } },
+      ];
+    }
+
+    // Get total count for pagination
+    const total = await prisma.subscriber.count({ where });
+
+    // Get subscribers with pagination
     const subscribers = await prisma.subscriber.findMany({
-      where: {
-        userId: userId,
-        ...(status ? { status } : {}),
-        ...(tag ? { tags: { has: tag } } : {}),
-        ...(search
-          ? {
-              OR: [
-                { email: { contains: search, mode: "insensitive" } },
-                { firstName: { contains: search, mode: "insensitive" } },
-                { lastName: { contains: search, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-      },
+      where,
       orderBy: {
         createdAt: "desc",
       },
+      skip,
+      take: limit,
     });
 
-    return NextResponse.json(subscribers);
+    return NextResponse.json({
+      subscribers,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error("Error fetching subscribers:", error);
     return NextResponse.json({ error: "Failed to fetch subscribers" }, { status: 500 });
@@ -83,8 +106,9 @@ export async function POST(req: NextRequest) {
         lastName: data.lastName || null,
         status: data.status || "active",
         tags: data.tags || [],
-        metadata: data.metadata || {},
+        customFields: data.customFields || {},
         campaignIds: data.campaignIds || [],
+        segmentIds: data.segmentIds || [],
       },
     });
 

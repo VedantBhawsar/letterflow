@@ -4,13 +4,35 @@ import React from "react";
 import { Campaign } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, Eye, Mail, MousePointer, MoreHorizontal, ArrowUpDown } from "lucide-react";
+import {
+  Calendar,
+  Eye,
+  Mail,
+  MousePointer,
+  MoreHorizontal,
+  ArrowUpDown,
+  Edit,
+  Trash,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import axios from "axios";
+import { toast } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface CampaignsTableProps {
   campaigns: Campaign[];
   onSort: (key: string) => void;
+  setCampaigns: (campaigns: Campaign[]) => void;
   sortConfig: {
     key: string;
     direction: "asc" | "desc";
@@ -21,6 +43,11 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
   const formatDate = (date: Date | string | undefined) => {
     if (!date) return "N/A";
     return formatDistanceToNow(new Date(date), { addSuffix: true });
+  };
+
+  const handleDelete = async (campaingId: string) => {
+    await axios.delete(`/api/campaigns/${campaingId}`);
+    toast.success("Campaigns delete successfully");
   };
 
   return (
@@ -79,56 +106,81 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
             </thead>
             <tbody>
               {campaigns.map((campaign) => (
-                <tr key={campaign.id} className="border-b transition-colors hover:bg-muted/50">
-                  <td className="p-4 align-middle font-medium">
-                    <div>
-                      <div>{campaign.name}</div>
-                      <div className="text-xs text-muted-foreground">{campaign.subject}</div>
-                    </div>
-                  </td>
-                  <td className="p-4 align-middle">
-                    {campaign.status === "sent"
-                      ? formatDate(campaign.sentAt)
-                      : campaign.status === "scheduled"
-                        ? formatDate(campaign.scheduledAt)
-                        : formatDate(campaign.createdAt)}
-                  </td>
-                  <td className="p-4 align-middle">{campaign.audienceIds.length}</td>
-                  <td className="p-4 align-middle">
-                    {campaign.status === "sent" && campaign.stats
-                      ? `${campaign.stats.opened} (${Math.round(
-                          (campaign.stats.opened / (campaign.stats.sent || 1)) * 100
-                        )}%)`
-                      : "-"}
-                  </td>
-                  <td className="p-4 align-middle">
-                    {campaign.status === "sent" && campaign.stats
-                      ? `${campaign.stats.clicked} (${Math.round(
-                          (campaign.stats.clicked / (campaign.stats.opened || 1)) * 100
-                        )}%)`
-                      : "-"}
-                  </td>
-                  <td className="p-4 align-middle">
-                    <div
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        campaign.status === "sent"
-                          ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400"
-                          : campaign.status === "draft"
-                            ? "bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400"
-                            : campaign.status === "scheduled"
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400"
-                              : "bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-400"
-                      }`}
-                    >
-                      {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                    </div>
-                  </td>
-                  <td className="p-4 align-middle">
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
+                <AnimatePresence key={campaign.id}>
+                  <motion.tr
+                    exit={{
+                      scale: 0.8,
+                    }}
+                    transition={{
+                      ease: "linear",
+                    }}
+                    className="border-b transition-colors hover:bg-muted/50"
+                  >
+                    <td className="p-4 align-middle font-medium">
+                      <div>
+                        <Link href={`/dashboard/campaigns/${campaign.id}`}>{campaign.name}</Link>
+                        <div className="text-xs text-muted-foreground">{campaign.subject}</div>
+                      </div>
+                    </td>
+                    <td className="p-4 align-middle">
+                      {campaign.status === "sent"
+                        ? formatDate(campaign.sentAt)
+                        : campaign.status === "scheduled"
+                          ? formatDate(campaign.scheduledAt)
+                          : formatDate(campaign.createdAt)}
+                    </td>
+                    <td className="p-4 align-middle">{campaign.audienceIds.length}</td>
+                    <td className="p-4 align-middle">
+                      {campaign.status === "sent" && campaign.stats
+                        ? `${campaign.stats.opened} (${Math.round(
+                            (campaign.stats.opened / (campaign.stats.sent || 1)) * 100
+                          )}%)`
+                        : "-"}
+                    </td>
+                    <td className="p-4 align-middle">
+                      {campaign.status === "sent" && campaign.stats
+                        ? `${campaign.stats.clicked} (${Math.round(
+                            (campaign.stats.clicked / (campaign.stats.opened || 1)) * 100
+                          )}%)`
+                        : "-"}
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          campaign.status === "sent"
+                            ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400"
+                            : campaign.status === "draft"
+                              ? "bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400"
+                              : campaign.status === "scheduled"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400"
+                                : "bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-400"
+                        }`}
+                      >
+                        {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+                      </div>
+                    </td>
+                    <td className="p-4 align-super">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem>
+                            <Link href={`/dashboard/campaigns/${campaign.id}/edit`}>
+                              <Edit /> Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => handleDelete(campaign.id)}
+                          >
+                            <Trash /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </motion.tr>
+                </AnimatePresence>
               ))}
             </tbody>
           </table>

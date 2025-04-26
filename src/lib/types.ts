@@ -104,3 +104,51 @@ export interface NewsletterTemplate {
   name: string;
   elements: NewsletterElement[];
 }
+
+// Subscription Form types
+export type FormFieldType = "text" | "email" | "number" | "checkbox" | "select";
+
+export type FormField = {
+  id: string;
+  type: FormFieldType;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  options?: string[];
+};
+
+export type FormSettings = {
+  submitButtonText: string;
+  successMessage: string;
+  doubleOptIn: boolean;
+  redirectUrl?: string;
+  honeypotEnabled: boolean;
+  recaptchaEnabled: boolean;
+  recaptchaSiteKey?: string;
+};
+
+export type FormStyle = {
+  primaryColor: string;
+  backgroundColor: string;
+  textColor: string;
+  fontFamily: string;
+  borderRadius: string;
+  buttonStyle: "filled" | "outline" | "minimal";
+};
+
+export type SubscriptionForm = {
+  id: string;
+  name: string;
+  description?: string;
+  fields: FormField[];
+  settings: FormSettings;
+  style: FormStyle;
+  status: "active" | "inactive" | "archived";
+  formKey: string;
+  views: number;
+  submissions: number;
+  conversionRate?: number;
+  traffic?: Record<string, number>;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+};

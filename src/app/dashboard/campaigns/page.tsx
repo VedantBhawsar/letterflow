@@ -17,6 +17,14 @@ import { Campaign } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { CampaignsTable, CampaignsTableSkeleton } from "@/components/campaigns/campaigns-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,12 +99,6 @@ export default function CampaignsPage() {
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
-  };
-
-  // Format date
-  const formatDate = (date: Date | string | undefined) => {
-    if (!date) return "N/A";
-    return formatDistanceToNow(new Date(date), { addSuffix: true });
   };
 
   // Render loading state
@@ -202,7 +204,12 @@ export default function CampaignsPage() {
           </Button>
         </div>
       ) : (
-        <CampaignsTable campaigns={filteredCampaigns} onSort={handleSort} sortConfig={sortConfig} />
+        <CampaignsTable
+          setCampaigns={setCampaigns}
+          campaigns={filteredCampaigns}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+        />
       )}
 
       {/* Create Campaign Dialog */}

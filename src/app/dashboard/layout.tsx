@@ -7,10 +7,18 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Menu, X, Home, Mail, BarChart2, Users, Settings, LogOut, FileText } from "lucide-react";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const queryClient = new QueryClient();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -118,32 +126,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 dark:bg-gray-900">
       {/* Mobile Navbar */}
-      <div className="flex h-14 items-center border-b bg-white dark:bg-gray-800 px-4 md:hidden">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="mr-2">
-              <Menu className="h-4 w-4" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[240px] sm:w-[300px] p-0">
+      <QueryClientProvider client={queryClient}>
+        <div className="flex h-14 items-center border-b bg-white dark:bg-gray-800 px-4 md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="mr-2">
+                <Menu className="h-4 w-4" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[240px] sm:w-[300px] p-0">
+              <SidebarContent />
+            </SheetContent>
+          </Sheet>
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+            <span className="text-primary">Letterflow</span>
+          </Link>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Desktop Sidebar */}
+          <aside className="hidden w-64 flex-shrink-0 border-r bg-white dark:bg-gray-800 md:block">
             <SidebarContent />
-          </SheetContent>
-        </Sheet>
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <span className="text-primary">Letterflow</span>
-        </Link>
-      </div>
+          </aside>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar */}
-        <aside className="hidden w-64 flex-shrink-0 border-r bg-white dark:bg-gray-800 md:block">
-          <SidebarContent />
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
-      </div>
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        </div>
+      </QueryClientProvider>
     </div>
   );
 }

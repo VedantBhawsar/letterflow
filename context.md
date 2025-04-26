@@ -73,5 +73,25 @@ The application provides various API endpoints for managing data and functionali
 - `/api/subscribers`: For managing subscribers.
 - `/api/newsletters`: For managing newsletters.
 - `/api/analytics`: For retrieving analytics data.
+- `/api/campaigns/[campaignId]`: For retrieving and deleting a specific campaign by its ID.
 
-This document provides a general overview of the Letterflow landing page project. For more detailed information, please refer to the source code and other documentation.
+## 8. Database Schema
+
+The application uses MongoDB as its database. The database schema is defined in `prisma/schema.prisma`. Key models include:
+
+- `User`: Stores user information.
+- `Account`: Stores account information for authentication.
+- `Session`: Stores session information for authentication.
+- `Campaign`: Stores information about email campaigns.
+- `Subscriber`: Stores information about subscribers.
+- `CampaignStats`: Stores statistics for each campaign.
+- `EmailTemplate`: Stores email templates.
+- `Newsletter`: Stores information about newsletters.
+- `SubscriptionForm`: Stores information about subscription forms.
+- `Segment`: Stores information about subscriber segments.
+
+## 9. Campaigns Table Component
+
+The `CampaignsTable` component (`src/components/campaigns/campaigns-table.tsx`) displays a table of campaigns with columns for name, date, recipients, opens, clicks, and status. It allows users to sort campaigns by name and date, and provides options to edit and delete campaigns.
+
+This document provides a more detailed overview of the Letterflow landing page project. For more detailed information, please refer to the source code and other documentation.
