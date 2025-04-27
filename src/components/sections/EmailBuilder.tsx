@@ -150,7 +150,7 @@ export default function EmailBuilder() {
             </div>
 
             <motion.div className="space-y-6" variants={containerVariants}>
-              {features.map((feature, index) => (
+              {features.map((feature: any, index: any) => (
                 <motion.div
                   key={index}
                   className={`flex items-start gap-4 p-4 rounded-lg transition-colors duration-300 cursor-pointer ${
@@ -220,7 +220,7 @@ export default function EmailBuilder() {
                   </div>
 
                   <div className="space-y-2">
-                    {templateElements.map((element, idx) => (
+                    {templateElements.map((element: any, idx: any) => (
                       <motion.div
                         key={idx}
                         className="bg-[#0a2c2a] p-2 rounded flex items-center gap-2 text-white/80 text-sm cursor-move"
@@ -299,7 +299,7 @@ export default function EmailBuilder() {
                           </motion.div>
 
                           <AnimatePresence>
-                            {droppedElements.map((element) => (
+                            {droppedElements.map((element: any) => (
                               <motion.div
                                 key={element.id}
                                 className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative"
@@ -357,7 +357,7 @@ export default function EmailBuilder() {
                                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer opacity-0 hover:opacity-100"
                                   onClick={() =>
                                     setDroppedElements((prev) =>
-                                      prev.filter((e) => e.id !== element.id)
+                                      prev.filter((e: any) => e.id !== element.id)
                                     )
                                   }
                                   whileHover={{ scale: 1.2 }}
@@ -447,7 +447,7 @@ export default function EmailBuilder() {
                         label: "Duplicate",
                       },
                       { icon: <Layout className="h-4 w-4" />, label: "Layout" },
-                    ].map((tool, idx) => (
+                    ].map((tool: any, idx: any) => (
                       <motion.button
                         key={idx}
                         className={`text-gray-600 hover:text-primary flex items-center gap-1 text-xs ${

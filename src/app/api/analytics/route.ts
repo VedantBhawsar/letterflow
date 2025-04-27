@@ -125,9 +125,9 @@ export async function GET(request: Request) {
 
     // Calculate Subscriber Growth Data (as before)
     const dateRange = getDateRange(startDate, endDate);
-    const growthData: SubscriberGrowthPoint[] = dateRange.map((date) => {
+    const growthData: SubscriberGrowthPoint[] = dateRange.map((date: any) => {
       const dayEnd = endOfDay(date);
-      const count = activeSubscribersHistory.filter((sub) => sub.createdAt <= dayEnd).length;
+      const count = activeSubscribersHistory.filter((sub: any) => sub.createdAt <= dayEnd).length;
       return { date: format(date, "MMM dd"), count: count };
     });
 
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
     });
 
     // 2. Create the final array, ensuring all days in the range are present
-    const engagementOverTimeData: EngagementPoint[] = dateRange.map((date) => {
+    const engagementOverTimeData: EngagementPoint[] = dateRange.map((date: any) => {
       const dateKey = format(date, "yyyy-MM-dd");
       const engagement = dailyEngagement[dateKey] || { opens: 0, clicks: 0 }; // Get data or default to zero
       return {

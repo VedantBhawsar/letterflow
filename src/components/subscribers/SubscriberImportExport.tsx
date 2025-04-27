@@ -97,7 +97,9 @@ export function SubscriberImportExport({ className, onComplete }: SubscriberImpo
         return;
       }
 
-      const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/['"]+/g, "")); // Remove quotes and trim
+      const headers = lines[0]
+        .split(",")
+        .map((h: any) => h.trim().toLowerCase().replace(/['"]+/g, "")); // Remove quotes and trim
 
       // Map header variations to standardized keys
       const headerMap: Record<string, number> = {};
@@ -127,8 +129,9 @@ export function SubscriberImportExport({ className, onComplete }: SubscriberImpo
         // Basic CSV parsing (handles commas within quoted fields minimally)
         // A robust library like Papaparse is recommended for complex CSVs
         const values =
-          line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map((v) => v.trim().replace(/^"|"$/g, "")) ??
-          [];
+          line
+            .match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)
+            ?.map((v: any) => v.trim().replace(/^"|"$/g, "")) ?? [];
 
         // Check if the number of values matches headers (basic validation)
         if (values.length !== headers.length) {
@@ -169,8 +172,8 @@ export function SubscriberImportExport({ className, onComplete }: SubscriberImpo
           // Split by semicolon or comma, trim whitespace from each tag
           subscriber.tags = values[tagsIndex]
             .split(/[;,]/)
-            .map((t) => t.trim())
-            .filter((t) => t); // Filter out empty tags
+            .map((t: any) => t.trim())
+            .filter((t: any) => t); // Filter out empty tags
         }
 
         const statusIndex = headerMap["status"];

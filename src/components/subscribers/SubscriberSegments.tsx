@@ -121,7 +121,7 @@ export function SubscriberSegments({ className }: SubscriberSegmentsProps) {
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-3">By Status</h4>
               <div className="space-y-2">
-                {statusSegments.map((segment) => (
+                {statusSegments.map((segment: any) => (
                   <div
                     key={segment.status}
                     className="flex items-center justify-between bg-white rounded-lg p-3 border"
@@ -145,7 +145,7 @@ export function SubscriberSegments({ className }: SubscriberSegmentsProps) {
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-3">Popular Tags</h4>
                 <div className="flex flex-wrap gap-2">
-                  {tagSegments.slice(0, 10).map((segment) => (
+                  {tagSegments.slice(0, 10).map((segment: any) => (
                     <Badge key={segment.tag} variant="outline" className="px-2 py-1">
                       {segment.tag}{" "}
                       <span className="ml-1 text-xs text-gray-500">({segment.count})</span>

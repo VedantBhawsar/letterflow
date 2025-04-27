@@ -182,7 +182,7 @@ export function SegmentBuilder({ initialData, onCancel }: SegmentBuilderProps) {
               </span>
             </div>
 
-            {rules.map((rule, index) => (
+            {rules.map((rule: any, index: any) => (
               <div key={index} className="flex items-end gap-2">
                 <div className="w-1/3">
                   <Label htmlFor={`field-${index}`} className="mb-2 block text-sm">
@@ -196,7 +196,7 @@ export function SegmentBuilder({ initialData, onCancel }: SegmentBuilderProps) {
                       <SelectValue placeholder="Select field" />
                     </SelectTrigger>
                     <SelectContent>
-                      {fieldOptions.map((option) => (
+                      {fieldOptions.map((option: any) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -218,7 +218,7 @@ export function SegmentBuilder({ initialData, onCancel }: SegmentBuilderProps) {
                     </SelectTrigger>
                     <SelectContent>
                       {operatorOptions[rule.field as keyof typeof operatorOptions]?.map(
-                        (option) => (
+                        (option: any) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

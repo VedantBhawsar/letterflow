@@ -109,7 +109,7 @@ export default function Blog() {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {blogPosts.map((post, index) => (
+          {blogPosts.map((post: any, index: any) => (
             <motion.div
               key={post.slug}
               variants={itemFadeIn}

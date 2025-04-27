@@ -188,7 +188,7 @@ async function main() {
         if (batchNum === 0 && result.count > 0) {
           // Get IDs from the *first* successfully created batch for sampling
           const createdSample = await prisma.subscriber.findMany({
-            where: { userId: user.id, email: { in: subscribersInBatch.slice(0, SAMPLE_SUBSCRIBER_LINK_COUNT).map(s => s.email) } },
+            where: { userId: user.id, email: { in: subscribersInBatch.slice(0, SAMPLE_SUBSCRIBER_LINK_COUNT).map((s:any) => s.email) } },
             take: SAMPLE_SUBSCRIBER_LINK_COUNT,
             select: { id: true }
           });
@@ -203,7 +203,7 @@ async function main() {
 
 
     // --- Seed OTHER related data for this user (now that subscribers exist) ---
-    const sampleIdsToConnect = userSubscriberIdsSample.map(id => ({ id }));
+    const sampleIdsToConnect = userSubscriberIdsSample.map((id) => ({ id }));
     console.log(`  Seeding other models (linking sample of ${sampleIdsToConnect.length} subscribers)...`);
 
     // Seed Accounts (1 per user, ~80% chance)

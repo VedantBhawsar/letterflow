@@ -180,39 +180,44 @@ export default function Integrations() {
             onScroll={handleScroll}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {integrationLogos.map((integration, index) => (
-              <motion.div
-                key={index}
-                className="flex-shrink-0 w-20 h-20 bg-white rounded-full border border-gray-100 shadow-sm flex items-center justify-center"
-                whileHover={{
-                  y: -5,
-                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{
-                  opacity: 1,
-                  y: 0,
-                  transition: { delay: index * 0.05 },
-                }}
-                viewport={{ once: true }}
-              >
-                {!failedImages[index] ? (
-                  <Image
-                    src={integration.logo || "/integrations/placeholder.svg"}
-                    alt={integration.name}
-                    width={40}
-                    height={40}
-                    onError={() => handleImageError(index)}
-                  />
-                ) : (
-                  <LogoPlaceholder name={integration.name} color={integration.color} />
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Progress indicator */}
-          <div className="hidden md:flex justify-center mt-4 space-x-1.5">
+            {integrationLogos.map(
+              (
+                integration: {
+                  name: string;
+                  logo: string;
+                  color: string;
+                },
+                index: number
+              ) => (
+                <motion.div
+                  key={index}
+                  className="flex-shrink-0 w-20 h-20 bg-white rounded-full border border-gray-100 shadow-sm flex items-center justify-center"
+                  whileHover={{
+                    y: -5,
+                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{
+                    opacity: 1,
+                    y: 0,
+                    transition: { delay: index * 0.05 },
+                  }}
+                  viewport={{ once: true }}
+                >
+                  {!failedImages[index] ? (
+                    <Image
+                      src={integration.logo || "/integrations/placeholder.svg"}
+                      alt={integration.name}
+                      width={40}
+                      height={40}
+                      onError={() => handleImageError(index)}
+                    />
+                  ) : (
+                    <LogoPlaceholder name={integration.name} color={integration.color} />
+                  )}
+                </motion.div>
+              )
+            )}
             {integrationLogos.length > 0 &&
               Array.from({
                 length: Math.ceil(integrationLogos.length / 4),

@@ -93,7 +93,7 @@ export function SubscriberForm({ subscriber, onSubmit, onCancel }: SubscriberFor
     const currentTags = form.getValues("tags");
     form.setValue(
       "tags",
-      currentTags.filter((tag) => tag !== tagToRemove)
+      currentTags.filter((tag: any) => tag !== tagToRemove)
     );
   };
 
@@ -183,7 +183,7 @@ export function SubscriberForm({ subscriber, onSubmit, onCancel }: SubscriberFor
             <FormItem className="space-y-2">
               <FormLabel>Tags</FormLabel>
               <div className="flex flex-wrap gap-2 mb-2">
-                {form.watch("tags").map((tag) => (
+                {form.watch("tags").map((tag: any) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     {tag}
                     <Button

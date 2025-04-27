@@ -189,8 +189,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // Wait for all emails to be sent (or fail)
     const results = await Promise.all(sendPromises);
-    const sentEmails = results.filter((r) => r.success).map((r) => r.email);
-    const failedEmails = results.filter((r) => !r.success).map((r) => r.email);
+    const sentEmails = results.filter((r: any) => r.success).map((r: any) => r.email);
+    const failedEmails = results.filter((r: any) => !r.success).map((r: any) => r.email);
 
     console.log(
       `Attempted to send newsletter ${id} to ${subscribers.length} subscribers. Success: ${sentEmails.length}, Failed: ${failedEmails.length}.`
@@ -198,7 +198,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // --- Create Campaign and Stats ---
     // Only create if at least one email was attempted (subscribers > 0)
-    const subscriberIds = subscribers.map((sub) => sub.id); // Correct: use the initially fetched subscribers
+    const subscriberIds = subscribers.map((sub: any) => sub.id); // Correct: use the initially fetched subscribers
 
     const campaign = await prisma.campaign.create({
       data: {

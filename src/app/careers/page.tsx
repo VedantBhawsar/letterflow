@@ -244,7 +244,7 @@ export default function CareersPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
             >
-              {companyBenefits.map((benefit, index) => (
+              {companyBenefits.map((benefit: any, index: any) => (
                 <motion.div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-6"
@@ -286,7 +286,7 @@ export default function CareersPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
             >
-              {jobOpenings.map((job, index) => (
+              {jobOpenings.map((job: any, index: any) => (
                 <motion.div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-6"
@@ -368,7 +368,7 @@ export default function CareersPage() {
                     description:
                       "If there's a mutual fit, we'll extend an offer and welcome you to the team!",
                   },
-                ].map((step, index) => (
+                ].map((step: any, index: any) => (
                   <motion.li key={index} className="ml-6" variants={itemFadeIn}>
                     <span className="absolute flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full -left-4 text-sm border border-white">
                       {index + 1}

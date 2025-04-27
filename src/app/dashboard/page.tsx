@@ -202,7 +202,7 @@ export default function DashboardPage() {
         </div>
         {/* Metrics Skeleton */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 4 }).map((_: any, index: any) => (
             <Card key={index} className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <Skeleton className="h-8 w-8 rounded-md" />
@@ -220,7 +220,7 @@ export default function DashboardPage() {
           <Card className="p-4">
             <Skeleton className="h-6 w-40 rounded-md mb-4" />
             <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, index) => (
+              {Array.from({ length: 3 }).map((_: any, index: any) => (
                 <div
                   key={index}
                   className="flex items-center justify-between rounded-md border p-3"
@@ -269,9 +269,9 @@ export default function DashboardPage() {
       {/* Metric Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {analyticsData && metrics.length > 0
-          ? metrics.map((metric, index) => <MetricCard key={index} {...metric} />)
+          ? metrics.map((metric: any, index: any) => <MetricCard key={index} {...metric} />)
           : // Render placeholders if metrics array is empty after loading
-            Array.from({ length: 4 }).map((_, index) => (
+            Array.from({ length: 4 }).map((_: any, index: any) => (
               <Card key={index} className="p-4 opacity-50">
                 <div className="flex items-center justify-between mb-3">
                   <Skeleton className="h-8 w-8 rounded-md" />
@@ -292,7 +292,7 @@ export default function DashboardPage() {
           <h3 className="text-lg font-medium ">Top Performing Campaigns</h3>
           <div className="mt-4 space-y-3">
             {analyticsData && analyticsData.topPerformingCampaigns.length > 0 ? (
-              analyticsData.topPerformingCampaigns.map((campaign) => (
+              analyticsData.topPerformingCampaigns.map((campaign: any) => (
                 <div
                   key={campaign.id}
                   className="flex items-center justify-between rounded-md border p-3 text-sm"

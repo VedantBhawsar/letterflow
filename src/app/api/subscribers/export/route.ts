@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform data for export
-    const exportData = subscribers.map((subscriber) => ({
+    const exportData = subscribers.map((subscriber: any) => ({
       email: subscriber.email,
       firstName: subscriber.firstName || "",
       lastName: subscriber.lastName || "",

@@ -232,7 +232,7 @@ const BlocksList = memo(function BlocksList({
 
   return (
     <div className="space-y-4">
-      {blocks.map((block, index) => (
+      {blocks.map((block: any, index: any) => (
         <EditorBlockComponent
           key={block.id}
           block={block}
@@ -366,7 +366,7 @@ function NewsletterPreview({
       </div>
 
       <div className="space-y-4">
-        {content.blocks.map((block) => (
+        {content.blocks.map((block: any) => (
           <PreviewBlock key={block.id} block={block} />
         ))}
       </div>

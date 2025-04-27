@@ -108,7 +108,7 @@ export function SubscriberList({
 
       // Notify parent about selection changes if callback provided
       if (onSelect) {
-        const selectedSubscriberObjects = subscribers.filter((sub) => newSelected.has(sub.id));
+        const selectedSubscriberObjects = subscribers.filter((sub: any) => newSelected.has(sub.id));
         onSelect(selectedSubscriberObjects);
       }
 
@@ -129,7 +129,7 @@ export function SubscriberList({
 
       // Notify parent about selection changes if callback provided
       if (onSelect) {
-        const selectedSubscriberObjects = subscribers.filter((sub) => newSelected.has(sub.id));
+        const selectedSubscriberObjects = subscribers.filter((sub: any) => newSelected.has(sub.id));
         onSelect(selectedSubscriberObjects);
       }
 
@@ -227,7 +227,7 @@ export function SubscriberList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {subscribers.map((subscriber) => (
+                {subscribers.map((subscriber: any) => (
                   <TableRow key={subscriber.id}>
                     <TableCell>
                       <Checkbox
@@ -246,7 +246,7 @@ export function SubscriberList({
                     <TableCell>
                       {subscriber.tags.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {subscriber.tags.slice(0, 2).map((tag) => (
+                          {subscriber.tags.slice(0, 2).map((tag: any) => (
                             <Badge key={tag} variant="outline">
                               {tag}
                             </Badge>

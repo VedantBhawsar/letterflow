@@ -159,7 +159,7 @@ export default function NewsletterPreviewPage() {
       case "social":
         return (
           <div style={element.style} className="flex justify-center space-x-4">
-            {element.socialLinks?.map((link: SocialLink, i: number) => (
+            {element.socialLinks?.map((link: SocialLink, i: any) => (
               <a
                 key={i}
                 href={link.url || "#"}
@@ -198,9 +198,9 @@ export default function NewsletterPreviewPage() {
               ...element.style,
             }}
           >
-            {element.columns.map((column, colIndex) => (
+            {element.columns.map((column: any, colIndex: any) => (
               <div key={colIndex} style={{ flex: 1 }}>
-                {column.map((columnElement) => (
+                {column.map((columnElement: any) => (
                   <div key={columnElement.id} className="my-1">
                     {renderElement(columnElement)}
                   </div>

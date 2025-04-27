@@ -147,14 +147,14 @@ export function useToast(): UseToastReturn {
 
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
-      setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+      setToasts((prevToasts) => prevToasts.filter((toast: any) => toast.id !== id));
     }, 5000);
 
     return id;
   }, []);
 
   const dismiss = useCallback((id: string) => {
-    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    setToasts((prevToasts) => prevToasts.filter((toast: any) => toast.id !== id));
   }, []);
 
   return { toasts, toast, dismiss };

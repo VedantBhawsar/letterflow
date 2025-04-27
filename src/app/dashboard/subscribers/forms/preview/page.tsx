@@ -227,7 +227,7 @@ function MockEmbeddableForm({ formConfig }: { formConfig: FormValues }) {
         {formConfig.name && <h3 className="lf-form-title">{formConfig.name}</h3>}
 
         {/* Render form fields based on configuration */}
-        {formConfig.fields.map((field) => (
+        {formConfig.fields.map((field: any) => (
           <div key={field.id} className="lf-form-field">
             {field.type !== "checkbox" && (
               <label htmlFor={field.id} className="lf-label">
@@ -256,7 +256,7 @@ function MockEmbeddableForm({ formConfig }: { formConfig: FormValues }) {
                 required={field.required}
               >
                 <option value="">Select an option</option>
-                {field.options?.map((option) => (
+                {field.options?.map((option: any) => (
                   <option key={option} value={option}>
                     {option}
                   </option>

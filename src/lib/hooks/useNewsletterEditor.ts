@@ -90,7 +90,7 @@ export function useNewsletterEditor(newsletterId: string): UseNewsletterEditorRe
   const updateBlock = useCallback((blockId: string, blockData: Partial<EditorBlock>) => {
     setContent((prevContent) => ({
       ...prevContent,
-      blocks: prevContent.blocks.map((block) =>
+      blocks: prevContent.blocks.map((block: any) =>
         block.id === blockId ? { ...block, ...blockData } : block
       ),
     }));
@@ -124,7 +124,7 @@ export function useNewsletterEditor(newsletterId: string): UseNewsletterEditorRe
   const removeBlock = useCallback((blockId: string) => {
     setContent((prevContent) => ({
       ...prevContent,
-      blocks: prevContent.blocks.filter((block) => block.id !== blockId),
+      blocks: prevContent.blocks.filter((block: any) => block.id !== blockId),
     }));
   }, []);
 

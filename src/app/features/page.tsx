@@ -148,7 +148,7 @@ export default function FeaturesPage() {
                       title: "A/B User Testing",
                       description: "Optimize your emails with data-driven A/B testing.",
                     },
-                  ].map((feature, index) => (
+                  ].map((feature: any, index: any) => (
                     <motion.div
                       key={index}
                       className="flex items-start gap-4"
@@ -222,7 +222,7 @@ export default function FeaturesPage() {
                       description:
                         "Create and export custom reports to share with your team or sponsors.",
                     },
-                  ].map((feature, index) => (
+                  ].map((feature: any, index: any) => (
                     <motion.div
                       key={index}
                       className="flex items-start gap-4"
@@ -305,7 +305,7 @@ export default function FeaturesPage() {
                   title: "Social Media",
                   description: "Share your newsletters automatically on social platforms.",
                 },
-              ].map((integration, index) => (
+              ].map((integration: any, index: any) => (
                 <motion.div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"
@@ -390,7 +390,7 @@ export default function FeaturesPage() {
                   title: "Mobile Optimization",
                   description: "All newsletters are automatically optimized for mobile devices.",
                 },
-              ].map((feature, index) => (
+              ].map((feature: any, index: any) => (
                 <motion.div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"

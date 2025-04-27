@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     // Process in batches
     for (let i = 0; i < subscribers.length; i += batchSize) {
       const batch = subscribers.slice(i, i + batchSize);
-      const batchPromises = batch.map(async (sub) => {
+      const batchPromises = batch.map(async (sub: any) => {
         if (!sub.email) {
           results.skipped++;
           return { status: "skipped", reason: "Missing email" };

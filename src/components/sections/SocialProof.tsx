@@ -66,7 +66,7 @@ const companies = [
 ];
 
 // Get unique industries for filter
-const industries = Array.from(new Set(companies.map((company) => company.industry)));
+const industries = Array.from(new Set(companies.map((company: any) => company.industry)));
 
 // Animation variants
 const containerVariants = {
@@ -98,7 +98,7 @@ export default function SocialProof() {
   const [spotlightIntensity, setSpotlightIntensity] = useState(50);
 
   // Filter companies based on selected industry and search query
-  const filteredCompanies = companies.filter((company) => {
+  const filteredCompanies = companies.filter((company: any) => {
     const matchesIndustry = selectedIndustry ? company.industry === selectedIndustry : true;
     const matchesSearch = searchQuery
       ? company.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -224,7 +224,7 @@ export default function SocialProof() {
             >
               All Industries
             </button>
-            {industries.map((industry) => (
+            {industries.map((industry: any) => (
               <button
                 key={industry}
                 className={`whitespace-nowrap px-3 py-1.5 text-sm rounded-full transition-colors ${
@@ -275,7 +275,7 @@ export default function SocialProof() {
           viewport={{ once: true, margin: "-50px" }}
         >
           {filteredCompanies.length > 0 ? (
-            filteredCompanies.map((company, index) => (
+            filteredCompanies.map((company: any, index: number) => (
               <motion.div
                 key={index}
                 variants={itemVariants}

@@ -105,7 +105,7 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
               </tr>
             </thead>
             <tbody>
-              {campaigns.map((campaign) => (
+              {campaigns.map((campaign: any) => (
                 <AnimatePresence key={campaign.id}>
                   <motion.tr
                     exit={{
@@ -238,7 +238,7 @@ export function CampaignsTableSkeleton() {
               </tr>
             </thead>
             <tbody>
-              {Array.from({ length: 5 }).map((_, index) => (
+              {Array.from({ length: 5 }).map((_: any, index: any) => (
                 <tr key={index} className="border-b transition-colors">
                   <td className="p-4 align-middle">
                     <div>

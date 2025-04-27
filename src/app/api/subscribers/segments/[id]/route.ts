@@ -104,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         },
       });
 
-      const currentSubscriberIds = currentSubscribers.map((s) => s.id);
+      const currentSubscriberIds = currentSubscribers.map((s: any) => s.id);
 
       // Subscribers to add
       const subscribersToAdd = data.subscriberIds.filter(
@@ -113,7 +113,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       // Subscribers to remove
       const subscribersToRemove = currentSubscriberIds.filter(
-        (id) => !data.subscriberIds.includes(id)
+        (id: string) => !data.subscriberIds.includes(id)
       );
 
       // Add new subscribers to segment
@@ -135,7 +135,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       // Remove subscribers from segment
       if (subscribersToRemove.length > 0) {
         await Promise.all(
-          subscribersToRemove.map((id) =>
+          subscribersToRemove.map((id: any) =>
             prisma.subscriber.update({
               where: { id },
               data: {
@@ -146,7 +146,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                       where: { id },
                       select: { segmentIds: true },
                     })
-                    .then((data) => data?.segmentIds.filter((sid) => sid !== segmentId) || []),
+                    .then((data) => data?.segmentIds.filter((sid: any) => sid !== segmentId) || []),
                 },
               },
             })
@@ -201,12 +201,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     // Remove segment from all subscribers' segmentIds
     if (subscribers.length > 0) {
       await Promise.all(
-        subscribers.map((subscriber) =>
+        subscribers.map((subscriber: any) =>
           prisma.subscriber.update({
             where: { id: subscriber.id },
             data: {
               segmentIds: {
-                set: subscriber.segmentIds.filter((id) => id !== segmentId),
+                set: subscriber.segmentIds.filter((id: any) => id !== segmentId),
               },
             },
           })

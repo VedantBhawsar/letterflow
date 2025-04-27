@@ -202,7 +202,7 @@ export function FormBuilder({
     const currentFields = Array.isArray(fields) ? fields : [];
     form.setValue(
       "fields",
-      currentFields.filter((field) => field.id !== idToRemove),
+      currentFields.filter((field: any) => field.id !== idToRemove),
       { shouldValidate: true, shouldDirty: true } // Trigger validation
     );
   };
@@ -393,7 +393,7 @@ export function FormBuilder({
                                                   </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                  {FIELD_TYPES.map((typeOpt) => (
+                                                  {FIELD_TYPES.map((typeOpt: any) => (
                                                     <SelectItem
                                                       key={typeOpt.value}
                                                       value={typeOpt.value}
@@ -489,7 +489,7 @@ export function FormBuilder({
                                                       // Convert string back to string[] for the form state
                                                       const optionsArray = e.target.value
                                                         .split("\n")
-                                                        .map((opt) => opt.trim()) // Trim whitespace
+                                                        .map((opt: any) => opt.trim()) // Trim whitespace
                                                         .filter(Boolean); // Remove empty lines
                                                       optionsField.onChange(optionsArray);
                                                     }}

@@ -142,7 +142,7 @@ export default function PricingPage() {
               viewport={{ once: true, amount: 0.2 }} // Adjust viewport amount
               variants={staggerContainer}
             >
-              {plans.map((plan, index) => (
+              {plans.map((plan: any, index: any) => (
                 <motion.div
                   key={plan.name} // Use a unique key like plan name
                   className="flex" // Ensure motion div takes flex behaviour
@@ -177,7 +177,7 @@ export default function PricingPage() {
                     </CardHeader>
                     <CardContent className="flex-grow pt-4 pb-6">
                       <ul className="space-y-3">
-                        {plan.features.map((feature, featureIndex) => (
+                        {plan.features.map((feature: any, featureIndex: any) => (
                           <motion.li
                             key={featureIndex}
                             className="flex items-start text-sm"
@@ -244,7 +244,7 @@ export default function PricingPage() {
                         "SSO and advanced security",
                         "Onboarding and training",
                         "SLA with 24/7 support",
-                      ].map((feature, index) => (
+                      ].map((feature: any, index: any) => (
                         <motion.li
                           key={index}
                           className="flex items-center text-sm"
@@ -325,7 +325,7 @@ export default function PricingPage() {
                     answer:
                       "No long-term contracts. All plans are typically month-to-month (unless you choose an annual plan), and you can cancel anytime.",
                   },
-                ].map((faq, index) => (
+                ].map((faq: any, index: any) => (
                   <motion.div
                     key={faq.question}
                     className="bg-white/85 backdrop-blur-md rounded-lg p-6 border border-border/40 shadow-sm transition-shadow hover:shadow-md"

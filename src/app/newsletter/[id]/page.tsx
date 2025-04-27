@@ -289,7 +289,7 @@ export default function NewsletterEditorPage() {
 
   // Handle removing an element (no changes needed)
   const handleRemoveElement = (elementId: string) => {
-    setElements((prev) => prev.filter((element) => element.id !== elementId));
+    setElements((prev) => prev.filter((element: any) => element.id !== elementId));
     if (selectedElement === elementId) {
       setSelectedElement(null); // Deselect if the removed element was selected
     }
@@ -299,14 +299,14 @@ export default function NewsletterEditorPage() {
   // Handle updating element content (no changes needed)
   const handleElementContentChange = (elementId: string, content: string) => {
     setElements((prev) =>
-      prev.map((element) => (element.id === elementId ? { ...element, content } : element))
+      prev.map((element: any) => (element.id === elementId ? { ...element, content } : element))
     );
   };
 
   // Handle updating element style (no changes needed)
   const handleElementStyleChange = (elementId: string, property: string, value: string) => {
     setElements((prev) =>
-      prev.map((element) =>
+      prev.map((element: any) =>
         element.id === elementId
           ? {
               ...element,
@@ -332,7 +332,7 @@ export default function NewsletterEditorPage() {
     const updatedContent = `${elementToUpdate.content || ""} ${field.defaultValue}`;
 
     setElements((prev) =>
-      prev.map((element) =>
+      prev.map((element: any) =>
         element.id === elementId
           ? {
               ...element,
@@ -942,7 +942,7 @@ export default function NewsletterEditorPage() {
                   { type: "spacer", icon: ArrowUpDown, label: "Spacer" },
                   { type: "social", icon: Share2, label: "Social" },
                   { type: "code", icon: Braces, label: "HTML" },
-                ].map((item) => (
+                ].map((item: any) => (
                   <div
                     key={item.type}
                     className="flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
@@ -965,7 +965,7 @@ export default function NewsletterEditorPage() {
                   <div className="text-xs text-muted-foreground mb-2">
                     Select a text element first, then add personalization fields:
                   </div>
-                  {personalizationOptions.map((field) => (
+                  {personalizationOptions.map((field: any) => (
                     <Button
                       key={field.id}
                       variant="outline"
@@ -1066,7 +1066,7 @@ export default function NewsletterEditorPage() {
                         value={selectedElementData.url || ""}
                         onChange={(e) =>
                           setElements((prev) =>
-                            prev.map((element) =>
+                            prev.map((element: any) =>
                               element.id === selectedElement
                                 ? { ...element, url: e.target.value }
                                 : element
@@ -1084,7 +1084,7 @@ export default function NewsletterEditorPage() {
                         value={selectedElementData.src || ""}
                         onChange={(e) =>
                           setElements((prev) =>
-                            prev.map((element) =>
+                            prev.map((element: any) =>
                               element.id === selectedElement
                                 ? { ...element, src: e.target.value }
                                 : element
@@ -1111,7 +1111,7 @@ export default function NewsletterEditorPage() {
                         value={selectedElementData.height || "40px"}
                         onValueChange={(value) =>
                           setElements((prev) =>
-                            prev.map((element) =>
+                            prev.map((element: any) =>
                               element.id === selectedElement
                                 ? { ...element, height: value }
                                 : element
@@ -1169,8 +1169,8 @@ export default function NewsletterEditorPage() {
                                 ...newLinks[index],
                                 url: e.target.value,
                               };
-                              setElements((prev) =>
-                                prev.map((element) =>
+                              setElements((prev: any) =>
+                                prev.map((element: any) =>
                                   element.id === selectedElement
                                     ? { ...element, socialLinks: newLinks }
                                     : element
@@ -1274,7 +1274,7 @@ export default function NewsletterEditorPage() {
                             <label className="text-xs">Text Color:</label>
                             <div className="flex space-x-2 mt-1">
                               {["#000000", "#1e40af", "#047857", "#b91c1c", "#4b5563"].map(
-                                (color) => (
+                                (color: any) => (
                                   <div
                                     key={color}
                                     className={`h-5 w-5 rounded-full cursor-pointer ${
@@ -1303,7 +1303,7 @@ export default function NewsletterEditorPage() {
                             <label className="text-xs">Button Color:</label>
                             <div className="flex space-x-2 mt-1">
                               {["#3b82f6", "#1e40af", "#059669", "#b91c1c", "#4b5563"].map(
-                                (color) => (
+                                (color: any) => (
                                   <div
                                     key={color}
                                     className={`h-5 w-5 rounded-full cursor-pointer ${
@@ -1328,7 +1328,7 @@ export default function NewsletterEditorPage() {
                           <div>
                             <label className="text-xs">Text Color:</label>
                             <div className="flex space-x-2 mt-1">
-                              {["#ffffff", "#f3f4f6", "#000000"].map((color) => (
+                              {["#ffffff", "#f3f4f6", "#000000"].map((color: any) => (
                                 <div
                                   key={color}
                                   className={`h-5 w-5 rounded-full cursor-pointer border ${
@@ -1476,7 +1476,7 @@ export default function NewsletterEditorPage() {
               </div>
             ) : (
               <div className="p-4">
-                {elements.map((element, index) => (
+                {elements.map((element: any, index: any) => (
                   <div
                     key={element.id}
                     className={`my-2 relative group cursor-pointer ${
@@ -1637,10 +1637,10 @@ export default function NewsletterEditorPage() {
                           ...element.style,
                         }}
                       >
-                        {element.columns.map((column, colIndex) => (
+                        {element.columns.map((column: any, colIndex: any) => (
                           <div key={colIndex} style={{ flex: 1 }}>
                             {/* Render column elements recursively or directly */}
-                            {column.map((columnElement) => (
+                            {column.map((columnElement: any) => (
                               <div
                                 key={columnElement.id}
                                 className={`my-1 relative group cursor-pointer ${

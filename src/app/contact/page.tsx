@@ -63,7 +63,7 @@ export default function ContactPage() {
                   action: "Call Us",
                   href: "tel:+15551234567",
                 },
-              ].map((item, index) => (
+              ].map((item: any, index: any) => (
                 <Card key={index} className="backdrop-blur-sm bg-white/80 border-border/60">
                   <CardHeader className="pb-2">
                     <div className="mb-4 rounded-full w-12 h-12 bg-primary/10 flex items-center justify-center text-primary">
@@ -206,7 +206,7 @@ export default function ContactPage() {
                   address: "789 Orchard Road, Singapore 238839",
                   country: "Singapore",
                 },
-              ].map((office, index) => (
+              ].map((office: any, index: any) => (
                 <div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"
@@ -253,7 +253,7 @@ export default function ContactPage() {
                     answer:
                       "You can report bugs through our support portal, email, or by submitting a ticket through the in-app help center.",
                   },
-                ].map((faq, index) => (
+                ].map((faq: any, index: any) => (
                   <div
                     key={index}
                     className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"

@@ -107,7 +107,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
-              {companyLinks.map((link) => (
+              {companyLinks.map((link: any) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -123,7 +123,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Products</h3>
             <ul className="space-y-3">
-              {productLinks.map((link) => (
+              {productLinks.map((link: any) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -139,7 +139,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-3">
-              {resourceLinks.map((link) => (
+              {resourceLinks.map((link: any) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}

@@ -160,7 +160,7 @@ export default function AboutPage() {
                   bio: "Data scientist with expertise in audience analytics and content optimization for digital publishers.",
                   image: "/raj-patel.jpg",
                 },
-              ].map((member, index) => (
+              ].map((member: any, index: number) => (
                 <div
                   key={index}
                   className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-6 flex flex-col items-center text-center"
@@ -241,7 +241,7 @@ export default function AboutPage() {
                     description:
                       "We continue to enhance the platform based on creator feedback and emerging industry needs.",
                   },
-                ].map((milestone, index) => (
+                ].map((milestone: any, index: number) => (
                   <div key={index} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary">

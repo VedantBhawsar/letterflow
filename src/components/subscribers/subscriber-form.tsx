@@ -74,7 +74,7 @@ export function SubscriberForm({ initialData, onSubmit, onCancel }: SubscriberFo
   };
 
   const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
+    setTags(tags.filter((t: any) => t !== tag));
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
@@ -153,7 +153,7 @@ export function SubscriberForm({ initialData, onSubmit, onCancel }: SubscriberFo
           </Button>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
-          {tags.map((tag) => (
+          {tags.map((tag: any) => (
             <Badge key={tag} variant="outline" className="flex items-center gap-1">
               {tag}
               <button type="button" onClick={() => removeTag(tag)}>

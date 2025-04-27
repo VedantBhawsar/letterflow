@@ -70,8 +70,7 @@ export default function NewslettersPage() {
       const data = await response.json();
 
       // Convert date strings to Date objects
-      // @ts-expect-error - data is compatible with Newsletter[]
-      const formattedData = data.map((newsletter) => ({
+      const formattedData = data.map((newsletter: any) => ({
         ...newsletter,
         createdAt: new Date(newsletter.createdAt),
         updatedAt: new Date(newsletter.updatedAt),
@@ -127,7 +126,7 @@ export default function NewslettersPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_: any, i: any) => (
             <Skeleton key={i} className="h-64 w-full rounded-lg" />
           ))}
         </div>
@@ -213,7 +212,7 @@ export default function NewslettersPage() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {newsletters.map((newsletter) => (
+          {newsletters.map((newsletter: any) => (
             <Card
               key={newsletter.id}
               className="overflow-hidden hover:shadow-md transition-shadow duration-200"

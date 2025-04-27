@@ -295,7 +295,7 @@ export function SubscriptionFormList() {
       // Handle cases where the form is already gone (404) or deletion is successful
       if (response.ok || response.status === 404) {
         // Update the forms list immediately
-        setForms((prevForms) => prevForms.filter((form) => form.id !== formId));
+        setForms((prevForms) => prevForms.filter((form: any) => form.id !== formId));
 
         toast({
           title: "Success",
@@ -440,7 +440,7 @@ export function SubscriptionFormList() {
         renderEmptyState()
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {forms.map((form) => (
+          {forms.map((form: any) => (
             <Card key={form.id} className="flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start gap-2">

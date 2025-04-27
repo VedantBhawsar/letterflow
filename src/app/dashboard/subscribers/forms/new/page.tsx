@@ -89,7 +89,7 @@ export default function NewFormPage() {
           </Card>
 
           {/* Template cards */}
-          {Object.entries(formTemplates).map(([key, template]) => (
+          {Object.entries(formTemplates).map(([key, template]: any) => (
             <Card
               key={key}
               className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden"

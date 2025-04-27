@@ -92,7 +92,7 @@ async function processViewQueue() {
     });
 
     // Update forms in parallel
-    const updates = Object.entries(viewsByForm).map(async ([formKey, data]) => {
+    const updates = Object.entries(viewsByForm).map(async ([formKey, data]: any) => {
       try {
         // First get the current form to update traffic data
         const form = await prisma.subscriptionForm.findUnique({
@@ -106,7 +106,7 @@ async function processViewQueue() {
         const currentTraffic = (form.traffic as Record<string, number>) || {};
         const newTraffic = { ...currentTraffic };
 
-        Object.entries(data.traffic).forEach(([source, count]) => {
+        Object.entries(data.traffic).forEach(([source, count]: any) => {
           newTraffic[source] = (newTraffic[source] || 0) + count;
         });
 

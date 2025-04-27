@@ -78,7 +78,9 @@ export async function POST(req: NextRequest) {
     if (errors.length > 0) {
       console.error("Papaparse errors:", errors);
       // Provide more specific error details if possible
-      const errorDetails = errors.map((e) => `Row ${e.row}: ${e.message} (${e.code})`).join("; ");
+      const errorDetails = errors
+        .map((e: any) => `Row ${e.row}: ${e.message} (${e.code})`)
+        .join("; ");
       return NextResponse.json(
         { error: "Error parsing CSV file", details: errorDetails },
         { status: 400 }
@@ -101,7 +103,7 @@ export async function POST(req: NextRequest) {
 
     // Validate essential header ('email')
     // meta.fields contains the actual headers found
-    const lowerCaseHeaders = meta.fields.map((h) => h.toLowerCase());
+    const lowerCaseHeaders = meta.fields.map((h: any) => h.toLowerCase());
     if (!lowerCaseHeaders.includes("email")) {
       return NextResponse.json(
         { error: "Invalid file structure. File must contain an 'email' header/column" },
@@ -135,7 +137,7 @@ export async function POST(req: NextRequest) {
       select: { email: true },
     });
     // Use lowercase emails in the Set for case-insensitive comparison
-    const existingEmailSet = new Set(existingEmails.map((s) => s.email.toLowerCase()));
+    const existingEmailSet = new Set(existingEmails.map((s: any) => s.email.toLowerCase()));
 
     const subscribersToCreate = [];
     let rowIndex = 0; // Start from 0 matching parser's index basis if needed, or 1 for user-facing row number
@@ -182,7 +184,7 @@ export async function POST(req: NextRequest) {
         tags = rawTags
           .split(",")
           .map((tag: string) => tag.trim())
-          .filter((tag) => tag !== ""); // Filter empty tags
+          .filter((tag: any) => tag !== ""); // Filter empty tags
       }
 
       // Validate status (use enum if available)

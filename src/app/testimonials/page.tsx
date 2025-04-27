@@ -204,7 +204,7 @@ export default function TestimonialsPage() {
                     <h3 className="text-xl font-semibold">Sarah Johnson</h3>
                     <p className="text-muted-foreground">Founder, The Weekly Insight</p>
                     <div className="flex mt-2">
-                      {[...Array(5)].map((_, i) => (
+                      {[...Array(5)].map((_: any, i: any) => (
                         <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                       ))}
                     </div>
@@ -245,7 +245,7 @@ export default function TestimonialsPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
             >
-              {categories.map((category, index) => (
+              {categories.map((category: any, index: any) => (
                 <motion.button
                   key={index}
                   variants={itemFadeIn}
@@ -276,7 +276,7 @@ export default function TestimonialsPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
             >
-              {testimonials.map((testimonial, index) => (
+              {testimonials.map((testimonial: any, index: any) => (
                 <motion.div key={index} variants={itemFadeIn} whileHover={{ y: -5 }}>
                   <Card className="backdrop-blur-sm bg-white/80 border-border/60 p-6 h-full">
                     <div className="flex justify-between items-start mb-4">
@@ -295,10 +295,10 @@ export default function TestimonialsPage() {
                         </div>
                       </div>
                       <div className="flex">
-                        {[...Array(testimonial.rating)].map((_, i) => (
+                        {[...Array(testimonial.rating)].map((_: any, i: any) => (
                           <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                         ))}
-                        {[...Array(5 - testimonial.rating)].map((_, i) => (
+                        {[...Array(5 - testimonial.rating)].map((_: any, i: any) => (
                           <Star key={i} className="h-4 w-4 text-muted" />
                         ))}
                       </div>
@@ -365,7 +365,7 @@ export default function TestimonialsPage() {
                   image:
                     "https://images.unsplash.com/photo-1567443024551-f3e3a7b3ac89?q=80&w=2070&auto=format&fit=crop",
                 },
-              ].map((video, index) => (
+              ].map((video: any, index: any) => (
                 <motion.div
                   key={index}
                   className="relative"

@@ -150,7 +150,7 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {subscribers.map((subscriber) => (
+                {subscribers.map((subscriber: any) => (
                   <TableRow key={subscriber.id}>
                     <TableCell className="font-medium">{subscriber.email}</TableCell>
                     <TableCell>
@@ -161,7 +161,7 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
                     <TableCell>{getStatusBadge(subscriber.status)}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {subscriber.tags.slice(0, 3).map((tag, i) => (
+                        {subscriber.tags.slice(0, 3).map((tag: any, i: any) => (
                           <Badge key={i} variant="outline">
                             {tag}
                           </Badge>
@@ -207,7 +207,7 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
 function LoadingTable() {
   return (
     <div className="space-y-2">
-      {[...Array(10)].map((_, i) => (
+      {[...Array(10)].map((_: any, i: any) => (
         <div key={i} className="flex items-center space-x-4 p-4 border rounded-md">
           <Skeleton className="h-6 w-full max-w-[150px]" />
           <Skeleton className="h-6 w-full max-w-[100px]" />

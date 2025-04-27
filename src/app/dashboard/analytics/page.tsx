@@ -168,7 +168,7 @@ export default function AnalyticsPage() {
 
           // Add mock trend for display purposes after fetching
           const campaignsWithMockTrend: AnalyticsData["topPerformingCampaigns"] =
-            fetchedData.topPerformingCampaigns.map((c, i) => ({
+            fetchedData.topPerformingCampaigns.map((c: any, i: any) => ({
               ...c,
               // Ensure the value is explicitly 'up' or 'down'
               trend: i % 2 === 0 ? "up" : "down",
@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 4 }).map((_: any, index: any) => (
             <Card key={index} className="p-4">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-10 w-10 rounded-md" />
@@ -367,7 +367,7 @@ export default function AnalyticsPage() {
                 {displayCampaigns.length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">No campaign data.</p>
                 ) : (
-                  displayCampaigns.map((campaign) => (
+                  displayCampaigns.map((campaign: any) => (
                     <div
                       key={campaign.id}
                       className="flex items-center justify-between border-b pb-3 last:border-none"
@@ -464,7 +464,7 @@ export default function AnalyticsPage() {
                 {analyticsData.topSources.length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">No source data.</p>
                 ) : (
-                  analyticsData.topSources.map((source, index) => {
+                  analyticsData.topSources.map((source: any, index: number) => {
                     const percentage =
                       totalSourceCount > 0
                         ? Math.max(0.1, (source.count / totalSourceCount) * 100)

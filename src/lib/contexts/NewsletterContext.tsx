@@ -129,7 +129,7 @@ function newsletterReducer(state: NewsletterState, action: NewsletterAction): Ne
     case "UPDATE_NEWSLETTER_SUCCESS":
       return {
         ...state,
-        newsletters: state.newsletters.map((newsletter) =>
+        newsletters: state.newsletters.map((newsletter: any) =>
           newsletter.id === action.payload.id ? action.payload : newsletter
         ),
         currentNewsletter: action.payload,
@@ -151,7 +151,9 @@ function newsletterReducer(state: NewsletterState, action: NewsletterAction): Ne
     case "DELETE_NEWSLETTER_SUCCESS":
       return {
         ...state,
-        newsletters: state.newsletters.filter((newsletter) => newsletter.id !== action.payload),
+        newsletters: state.newsletters.filter(
+          (newsletter: any) => newsletter.id !== action.payload
+        ),
         currentNewsletter:
           state.currentNewsletter?.id === action.payload ? null : state.currentNewsletter,
         status: "success",

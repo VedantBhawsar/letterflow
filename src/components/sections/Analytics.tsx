@@ -125,7 +125,7 @@ export function AnalyticsSkeleton() {
               {/* Growth Chart Skeleton */}
               <div className="h-64 relative">
                 <div className="flex items-end justify-between w-full h-full">
-                  {Array.from({ length: 12 }).map((_, idx) => (
+                  {Array.from({ length: 12 }).map((_: any, idx: any) => (
                     <div key={idx} className="flex flex-col items-center w-full">
                       <Skeleton
                         className="w-full rounded-t-sm"
@@ -140,7 +140,7 @@ export function AnalyticsSkeleton() {
               </div>
 
               <div className="grid grid-cols-3 gap-4 mt-6">
-                {Array.from({ length: 3 }).map((_, idx) => (
+                {Array.from({ length: 3 }).map((_: any, idx: any) => (
                   <div key={idx} className="rounded-lg p-3 border border-gray-100">
                     <Skeleton className="h-5 w-20 mb-2" />
                     <div className="flex items-baseline">
@@ -158,7 +158,7 @@ export function AnalyticsSkeleton() {
             <Skeleton className="h-5 w-full mb-8" />
 
             <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, idx) => (
+              {Array.from({ length: 4 }).map((_: any, idx: any) => (
                 <div key={idx} className="flex items-start gap-4">
                   <Skeleton className="h-10 w-10 rounded-lg flex-shrink-0" />
                   <div className="space-y-2 flex-1">
@@ -227,7 +227,7 @@ export default function Analytics() {
               {/* Growth Chart */}
               <div className="h-64 relative">
                 <div className="absolute inset-0 flex items-end justify-between">
-                  {subscriberData.map((value, idx) => (
+                  {subscriberData.map((value: any, idx: any) => (
                     <motion.div
                       key={idx}
                       className="flex flex-col items-center w-full"
@@ -258,7 +258,7 @@ export default function Analytics() {
               </div>
 
               <div className="grid grid-cols-3 gap-4 mt-6">
-                {engagementMetrics.map((metric, idx) => (
+                {engagementMetrics.map((metric: any, idx: any) => (
                   <motion.div
                     key={idx}
                     className={`rounded-lg p-3 border transition-all cursor-pointer ${
@@ -296,7 +296,7 @@ export default function Analytics() {
                 <div className="flex-grow">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Audience Breakdown</h4>
                   <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex">
-                    {audienceData.map((item, idx) => (
+                    {audienceData.map((item: any, idx: any) => (
                       <motion.div
                         key={idx}
                         className="h-full"
@@ -312,7 +312,7 @@ export default function Analytics() {
                     ))}
                   </div>
                   <div className="flex justify-between mt-2 text-xs text-gray-500">
-                    {audienceData.map((item, idx) => (
+                    {audienceData.map((item: any, idx: any) => (
                       <div key={idx} className="flex items-center">
                         <div
                           className="h-2 w-2 rounded-full mr-1"
@@ -337,7 +337,7 @@ export default function Analytics() {
             variants={staggerContainer}
           >
             <div className="space-y-6">
-              {features.map((feature, index) => (
+              {features.map((feature: any, index: any) => (
                 <motion.div
                   key={index}
                   className="flex items-start gap-4 p-4 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer"

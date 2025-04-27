@@ -227,7 +227,7 @@ export function FormBuilder({
     const currentFields = Array.isArray(fields) ? fields : [];
     form.setValue(
       "fields",
-      currentFields.filter((field) => field.id !== idToRemove),
+      currentFields.filter((field: any) => field.id !== idToRemove),
       { shouldValidate: true, shouldDirty: true }
     );
   };
@@ -364,7 +364,7 @@ export function FormBuilder({
                         >
                           {/* Map over fields safely */}
                           {Array.isArray(fields) && fields.length > 0 ? (
-                            fields.map((fieldItem, index) => (
+                            fields.map((fieldItem: any, index: any) => (
                               <Draggable
                                 key={fieldItem.id}
                                 draggableId={fieldItem.id}
@@ -419,7 +419,7 @@ export function FormBuilder({
                                                 </SelectTrigger>
                                               </FormControl>{" "}
                                               <SelectContent>
-                                                {FIELD_TYPES.map((typeOpt) => (
+                                                {FIELD_TYPES.map((typeOpt: any) => (
                                                   <SelectItem
                                                     key={typeOpt.value}
                                                     value={typeOpt.value}

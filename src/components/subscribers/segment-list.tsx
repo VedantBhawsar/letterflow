@@ -73,7 +73,7 @@ export function SegmentList({ refreshKey = 0 }: SegmentListProps) {
   const handleDelete = async (segmentId: string) => {
     // Optimistically remove the segment from UI for better UX
     const originalSegments = [...segments];
-    setSegments((prevSegments) => prevSegments.filter((seg) => seg.id !== segmentId));
+    setSegments((prevSegments) => prevSegments.filter((seg: any) => seg.id !== segmentId));
 
     try {
       const response = await fetch(`/api/subscribers/segments/${segmentId}`, {
@@ -105,7 +105,7 @@ export function SegmentList({ refreshKey = 0 }: SegmentListProps) {
 
   // Type is inferred correctly from the state 'segments'
   const filteredSegments = segments.filter(
-    (segment) =>
+    (segment: any) =>
       segment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (segment.description && segment.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -169,7 +169,7 @@ export function SegmentList({ refreshKey = 0 }: SegmentListProps) {
           {" "}
           {/* Adjust grid cols */}
           {/* Type is inferred correctly from filteredSegments */}
-          {filteredSegments.map((segment) => (
+          {filteredSegments.map((segment: any) => (
             <Card key={segment.id} className="flex flex-col">
               {" "}
               {/* Use flex-col for consistent height potentially */}

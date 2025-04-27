@@ -68,7 +68,7 @@ function CampaignDetailsSkeleton() {
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 4 }).map((_: any, index: any) => (
             <div key={index} className="p-4 border rounded-lg">
               <Skeleton className="h-6 w-6 mb-2 rounded-md" />
               <Skeleton className="h-4 w-24 mb-1" />

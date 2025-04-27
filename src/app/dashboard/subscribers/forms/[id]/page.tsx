@@ -229,7 +229,7 @@ export default function FormDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {form.fields.map((field) => (
+                {form.fields.map((field: any) => (
                   <div key={field.id} className="border p-4 rounded-md">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium">{field.label}</span>
