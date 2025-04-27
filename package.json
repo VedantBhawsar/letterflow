@@ -9,7 +9,8 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "clean:unused": "eslint --fix \"src/**/*.{ts,tsx}\" --quiet --rule \"@typescript-eslint/no-unused-vars: error\"",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
