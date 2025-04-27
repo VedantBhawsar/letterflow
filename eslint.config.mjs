@@ -89,8 +89,6 @@ const eslintConfig = [
   // 5. Global rule override to ensure all remaining rules are warnings
   {
     rules: {
-      // Ensure React rules are warnings
-      "react/prop-types": "warn",
       "react/react-in-jsx-scope": "warn",
       "react/display-name": "warn",
       "react/jsx-key": "warn",
