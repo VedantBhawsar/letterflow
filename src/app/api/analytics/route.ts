@@ -109,7 +109,7 @@ export async function GET(request: Request) {
     const avgUnsubscribeRate =
       totalSubscribersAllStatus > 0 ? (unsubscribedCount / totalSubscribersAllStatus) * 100 : 0;
     const campaignsWithRates = campaignStatsList
-      .map((stat) => ({
+      .map((stat: any) => ({
         id: stat.campaign.id,
         name: stat.campaign.name,
         openRate: stat.sent > 0 ? (stat.opened / stat.sent) * 100 : 0,
