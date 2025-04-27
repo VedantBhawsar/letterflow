@@ -120,8 +120,8 @@ export async function GET(request: Request) {
 
     // Format Top Sources (as before)
     const topSources = sourcesData
-      .filter((s) => s.source)
-      .map((s) => ({ name: s.source ?? "Unknown", count: s._count.source }));
+      .filter((s: any) => s.source)
+      .map((s: any) => ({ name: s.source ?? "Unknown", count: s._count.source }));
 
     // Calculate Subscriber Growth Data (as before)
     const dateRange = getDateRange(startDate, endDate);
