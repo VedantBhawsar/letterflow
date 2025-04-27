@@ -3,12 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// These are the correct types for Next.js App Router Route Handlers
-type Params = { id: string };
-
-export async function PUT(req: Request, context: { params: Params }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = context.params.id;
+    const { id } = await params;
 
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -63,7 +60,7 @@ export async function PUT(req: Request, context: { params: Params }) {
       },
       data: {
         name,
-        elements: elements as any, // Store as JSON
+        elements: elements, // Store as JSON
         subject: subject || "",
         previewText: previewText || "",
         status: status || "draft", // Default to draft if not provided
@@ -83,9 +80,9 @@ export async function PUT(req: Request, context: { params: Params }) {
   }
 }
 
-export async function GET(req: Request, context: { params: Params }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = context.params.id;
+    const { id } = await params;
 
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -124,9 +121,9 @@ export async function GET(req: Request, context: { params: Params }) {
   }
 }
 
-export async function DELETE(req: Request, context: { params: Params }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = context.params.id;
+    const { id } = await params;
 
     // Check if user is authenticated
     const session = await getServerSession(authOptions);

@@ -92,6 +92,7 @@ model Subscriber {
   customFields    Json?
   tags            String[]
   engagementScore Float?     @default(0)
+  metadata        Json?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -132,6 +133,8 @@ model Newsletter {
   name        String
   elements    Json
   subject     String?
+  publishedAt DateTime?
+  lastAttemptedSend DateTime?
   previewText String?
   status      String   @default("draft") // Possible values: "draft", "published"
   userId      String   @db.ObjectId
@@ -149,6 +152,8 @@ model SubscriptionForm {
   fields         Json
   settings       Json
   style          Json
+  lastSubmittedAt DateTime?
+  metadata        Json?
   status         String   @default("active") // active, inactive, archived
   formKey        String   @unique
   views          Int      @default(0)

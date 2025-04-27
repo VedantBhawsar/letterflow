@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     const userId = session.user.id;
-    const subscriberId = params.id;
+    const { id: subscriberId } = await params;
 
     const subscriber = await prisma.subscriber.findUnique({
       where: {
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const userId = session.user.id;
-    const subscriberId = params.id;
+    const { id: subscriberId } = await params;
     const data = await req.json();
 
     // Check if subscriber exists and belongs to this user
@@ -111,7 +111,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -120,7 +120,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     const userId = session.user.id;
-    const subscriberId = params.id;
+    const { id: subscriberId } = await params;
 
     // Check if subscriber exists and belongs to this user
     const existingSubscriber = await prisma.subscriber.findUnique({

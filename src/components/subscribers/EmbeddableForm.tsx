@@ -1,506 +1,894 @@
-import { useState, useEffect } from "react";
+"use client"; // Ensure this directive is needed based on your project setup
+
+import { useState } from "react";
+// Import specific RHF types
+import { useForm, SubmitHandler, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { FormField, FormStyle, FormSettings } from "@/lib/types";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DroppableProvided,
+  DraggableProvided,
+  DropResult,
+} from "@hello-pangea/dnd";
+import { Plus, X, Grip, Settings, Paintbrush, Eye, Code, Save } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 
-// Dynamic form validation schema
-const createValidationSchema = (fields: FormField[]) => {
-  const schemaFields: Record<string, any> = {};
+// --- Zod Schema Definition ---
+// Defines the structure and validation rules for the form
+const formSchema = z.object({
+  name: z.string().min(1, { message: "Form name is required" }),
+  description: z.string().optional(),
+  // Define the 'fields' array with nested object validation
+  fields: z
+    .array(
+      z.object({
+        id: z.string(), // Unique ID for each field (for keys and dnd)
+        type: z.enum(["text", "email", "number", "checkbox", "select"]), // Allowed field types
+        label: z.string().min(1, { message: "Field label is required" }), // Labels must not be empty
+        placeholder: z.string().optional(), // Placeholder text is optional
+        required: z.boolean(), // Whether the field is mandatory
+        options: z.array(z.string()).optional(), // Array of strings for 'select' options
+      })
+    )
+    .min(1, { message: "The form must have at least one field" }), // Ensure form is not empty
+  // Settings object with defaults
+  settings: z.object({
+    submitButtonText: z.string().min(1, "Submit text cannot be empty").default("Subscribe"),
+    successMessage: z
+      .string()
+      .min(1, "Success message cannot be empty")
+      .default("Thank you for subscribing!"),
+    doubleOptIn: z.boolean().default(false),
+    // Validate URL format if provided, allow empty string
+    redirectUrl: z
+      .string()
+      .url("Invalid URL format (e.g., https://example.com)")
+      .optional()
+      .or(z.literal("")),
+    honeypotEnabled: z.boolean().default(true),
+    recaptchaEnabled: z.boolean().default(false),
+    recaptchaSiteKey: z.string().optional(),
+    // Advanced: Add refinement to ensure recaptchaSiteKey exists if recaptchaEnabled is true
+  }),
+  // Style object with defaults and validation
+  style: z.object({
+    primaryColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color format (e.g., #RRGGBB)")
+      .default("#3b82f6"),
+    backgroundColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color format")
+      .default("#ffffff"),
+    textColor: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color format")
+      .default("#000000"),
+    fontFamily: z.string().default("Inter, sans-serif"),
+    borderRadius: z.string().default("4"), // Storing radius as string for selection mapping
+    buttonStyle: z.enum(["filled", "outline", "minimal"]).default("filled"),
+  }),
+  // Advanced: Add refinement for conditional logic (e.g., options required if type is 'select')
+  // .refine(...)
+});
 
-  fields.forEach((field) => {
-    let validator: any;
+// --- TypeScript Type derived from the Zod schema ---
+export type FormValues = z.infer<typeof formSchema>;
 
-    switch (field.type) {
-      case "email":
-        validator = z.string().email({ message: "Please enter a valid email address" });
-        break;
-      case "number":
-        validator = z.string().refine((val) => !isNaN(Number(val)), {
-          message: "Please enter a valid number",
-        });
-        break;
-      case "checkbox":
-        validator = z.boolean().optional();
-        break;
-      case "select":
-        validator = z.string().min(1, { message: "Please select an option" });
-        break;
-      default:
-        validator = z.string();
-    }
+// --- Field Type Options ---
+// Use 'as const' for stricter type checking on values
+const FIELD_TYPES = [
+  { value: "text", label: "Text" },
+  { value: "email", label: "Email" },
+  { value: "number", label: "Number" },
+  { value: "checkbox", label: "Checkbox" },
+  { value: "select", label: "Dropdown" },
+] as const;
 
-    if (field.required) {
-      if (field.type !== "checkbox") {
-        validator = validator.min(1, { message: `${field.label} is required` });
-      } else {
-        validator = z.boolean().refine((val) => val === true, {
-          message: `${field.label} is required`,
-        });
-      }
-    } else {
-      if (field.type !== "checkbox") {
-        validator = validator.optional();
-      }
-    }
-
-    schemaFields[field.id] = validator;
-  });
-
-  // Add honeypot field
-  schemaFields["_honeypot"] = z.string().optional();
-
-  return z.object(schemaFields);
+// --- Component Props ---
+type FormBuilderProps = {
+  initialValues?: Partial<FormValues>; // Allow providing partial initial data
+  onSubmit: (values: FormValues) => Promise<void>; // Function to handle form submission
+  onPreview: (values: FormValues) => void; // Function to trigger preview
+  onGenerateCode: (values: FormValues) => void; // Function to trigger code generation
 };
 
-interface EmbeddableFormProps {
-  apiUrl: string;
-  formKey: string;
-  onSuccess?: (data: any) => void;
-  onError?: (error: any) => void;
-}
-
-export function EmbeddableForm({ apiUrl, formKey, onSuccess, onError }: EmbeddableFormProps) {
-  const [isLoading, setIsLoading] = useState(true);
+// --- Form Builder Component ---
+export function FormBuilder({
+  initialValues,
+  onSubmit,
+  onPreview,
+  onGenerateCode,
+}: FormBuilderProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formConfig, setFormConfig] = useState<{
-    fields: FormField[];
-    settings: FormSettings;
-    style: FormStyle;
-    name: string;
-  } | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState("fields"); // Default active tab
 
-  // Fetch form configuration
-  useEffect(() => {
-    const fetchFormConfig = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/api/public/forms/${formKey}`);
-        if (!response.ok) {
-          throw new Error("Failed to load form configuration");
-        }
-        const data = await response.json();
-        setFormConfig(data);
-      } catch (error) {
-        setFormError("Could not load the subscription form. Please try again later.");
-        console.error("Error loading form:", error);
-        if (onError) onError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Merge initial values with defaults, ensuring all fields are present
+  const defaultValues: FormValues = {
+    name: initialValues?.name ?? "My Subscription Form",
+    description: initialValues?.description ?? "", // Default empty description
+    fields:
+      initialValues?.fields && initialValues.fields.length > 0
+        ? initialValues.fields
+        : [
+            // Default with at least one field (email)
+            {
+              id: "email-" + Date.now(),
+              type: "email",
+              label: "Email Address",
+              placeholder: "your@email.com",
+              required: true,
+              options: [],
+            },
+          ],
+    settings: {
+      submitButtonText:
+        initialValues?.settings?.submitButtonText ??
+        formSchema.shape.settings.shape.submitButtonText.parse(undefined),
+      successMessage:
+        initialValues?.settings?.successMessage ??
+        formSchema.shape.settings.shape.successMessage.parse(undefined),
+      doubleOptIn: initialValues?.settings?.doubleOptIn ?? false,
+      redirectUrl: initialValues?.settings?.redirectUrl ?? "",
+      honeypotEnabled: initialValues?.settings?.honeypotEnabled ?? true,
+      recaptchaEnabled: initialValues?.settings?.recaptchaEnabled ?? false,
+      recaptchaSiteKey: initialValues?.settings?.recaptchaSiteKey ?? "",
+    },
+    style: {
+      primaryColor:
+        initialValues?.style?.primaryColor ??
+        formSchema.shape.style.shape.primaryColor.parse(undefined),
+      backgroundColor:
+        initialValues?.style?.backgroundColor ??
+        formSchema.shape.style.shape.backgroundColor.parse(undefined),
+      textColor:
+        initialValues?.style?.textColor ?? formSchema.shape.style.shape.textColor.parse(undefined),
+      fontFamily: initialValues?.style?.fontFamily ?? "Inter, sans-serif",
+      borderRadius: initialValues?.style?.borderRadius ?? "4",
+      buttonStyle: initialValues?.style?.buttonStyle ?? "filled",
+    },
+  };
 
-    fetchFormConfig();
-  }, [apiUrl, formKey, onError]);
-
-  // Create form with dynamic validation
-  const form = useForm({
-    resolver: formConfig?.fields
-      ? zodResolver(createValidationSchema(formConfig.fields))
-      : undefined,
-    defaultValues: formConfig?.fields?.reduce(
-      (acc, field) => {
-        acc[field.id] = field.type === "checkbox" ? false : "";
-        return acc;
-      },
-      {} as Record<string, any>
-    ),
+  // Initialize React Hook Form, typed explicitly
+  // @ts-expect-error - useForm is compatible with zod
+  const form: UseFormReturn<FormValues> = useForm<FormValues>({
+    // @ts-expect-error - useForm is compatible with zod
+    resolver: zodResolver(formSchema), // Use Zod schema for validation
+    defaultValues, // Provide defaults
+    mode: "onChange", // Validate fields as they change
   });
 
-  // Reset form when configuration changes
-  useEffect(() => {
-    if (formConfig?.fields) {
-      const defaultValues = formConfig.fields.reduce(
-        (acc, field) => {
-          acc[field.id] = field.type === "checkbox" ? false : "";
-          return acc;
-        },
-        {} as Record<string, any>
-      );
+  // Watch the 'fields' array for dynamic rendering
+  const fields = form.watch("fields");
 
-      // Add honeypot field
-      defaultValues["_honeypot"] = "";
+  // --- Event Handlers ---
 
-      form.reset(defaultValues);
-    }
-  }, [formConfig, form]);
-
-  const onSubmit = async (data: Record<string, any>) => {
+  // Typed submit handler function passed to RHF's handleSubmit
+  const handleFormSubmit: SubmitHandler<FormValues> = async (values) => {
     setIsSubmitting(true);
-    setFormError(null);
-
     try {
-      const response = await fetch(`${apiUrl}/api/public/forms/${formKey}/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Form submission failed");
-      }
-
-      // Show success message
-      setShowSuccess(true);
-
-      // Call success callback
-      if (onSuccess) onSuccess(result);
-
-      // Redirect if configured
-      if (result.redirectUrl) {
-        window.location.href = result.redirectUrl;
-      }
-    } catch (error: any) {
-      setFormError(error.message || "An error occurred during submission");
-      if (onError) onError(error);
+      console.log("Form Submitted Values:", values); // Log values before submitting
+      await onSubmit(values);
+      // Optionally: show success toast, reset form, etc. handled by parent or here
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      // Optionally: show error toast to user
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Generate CSS variables for styling
-  const getCustomStyles = () => {
-    if (!formConfig?.style) return {};
-
-    const { primaryColor, backgroundColor, textColor, fontFamily, borderRadius, buttonStyle } =
-      formConfig.style;
-
-    return {
-      "--lf-primary-color": primaryColor,
-      "--lf-bg-color": backgroundColor,
-      "--lf-text-color": textColor,
-      "--lf-font-family": fontFamily,
-      "--lf-border-radius": `${borderRadius}px`,
-      "--lf-button-style": buttonStyle,
-    } as React.CSSProperties;
+  // Add a new field to the form
+  const addField = () => {
+    // Define the new field using the schema's array item type
+    const newField: FormValues["fields"][number] = {
+      id: `field-${Date.now()}`, // Simple unique ID generation
+      type: "text",
+      label: "New Field",
+      placeholder: "",
+      required: false,
+      options: [], // Initialize options array
+    };
+    // Get current fields, ensure it's an array, then append
+    const currentFields = Array.isArray(fields) ? fields : [];
+    form.setValue("fields", [...currentFields, newField], {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
-  if (isLoading) {
-    return (
-      <div className="lf-loading">
-        <div className="lf-spinner"></div>
-        <p>Loading form...</p>
-      </div>
+  // Remove a field by its ID
+  const removeField = (idToRemove: string) => {
+    const currentFields = Array.isArray(fields) ? fields : [];
+    form.setValue(
+      "fields",
+      currentFields.filter((field) => field.id !== idToRemove),
+      { shouldValidate: true, shouldDirty: true }
     );
-  }
+  };
 
-  if (formError && !formConfig) {
-    return <div className="lf-error">{formError}</div>;
-  }
+  // Handle the end of a drag-and-drop operation for fields
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return; // Dropped outside a droppable area
 
-  if (!formConfig) {
-    return <div className="lf-error">Form configuration not available.</div>;
-  }
+    const currentFields = Array.isArray(fields) ? fields : [];
+    if (source.index === destination.index) return; // Item dropped in the same place
 
-  if (showSuccess) {
-    return (
-      <div className="lf-success-message" style={getCustomStyles()}>
-        <div className="lf-success-icon">✓</div>
-        <p>{formConfig.settings.successMessage}</p>
-      </div>
-    );
-  }
+    const items = Array.from(currentFields);
+    const [reorderedItem] = items.splice(source.index, 1); // Remove item from original position
+    items.splice(destination.index, 0, reorderedItem); // Insert item at new position
 
+    form.setValue("fields", items, { shouldDirty: true }); // Update form state, mark as dirty
+  };
+
+  // --- Render JSX ---
   return (
-    <div className="letterflow-form-container" style={getCustomStyles()}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="lf-form">
-        {formConfig.name && <h3 className="lf-form-title">{formConfig.name}</h3>}
-
-        {formError && <div className="lf-form-error">{formError}</div>}
-
-        {/* Render form fields based on configuration */}
-        {formConfig.fields.map((field) => (
-          <div key={field.id} className="lf-form-field">
-            {field.type !== "checkbox" && (
-              <label htmlFor={field.id} className="lf-label">
-                {field.label} {field.required && <span className="lf-required">*</span>}
-              </label>
-            )}
-
-            {field.type === "text" || field.type === "email" || field.type === "number" ? (
-              <input
-                id={field.id}
-                type={field.type}
-                placeholder={field.placeholder}
-                className={`lf-input ${form.formState.errors[field.id] ? "lf-input-error" : ""}`}
-                {...form.register(field.id)}
+    <div className="space-y-6">
+      <Form {...form}>
+        {" "}
+        {/* Spread RHF context */}
+        {/* Pass correctly typed handler to RHF's handleSubmit */}
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+          {/* --- Top Header: Name, Description, Actions --- */}
+          <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between border-b pb-4">
+            {/* Left: Name & Description */}
+            <div className="flex-grow">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    {" "}
+                    <FormLabel className="sr-only">Form Name</FormLabel>{" "}
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Enter Form Name"
+                        className="text-xl font-semibold border-none focus-visible:ring-0 px-0 h-auto"
+                      />
+                    </FormControl>{" "}
+                    <FormMessage />{" "}
+                  </FormItem>
+                )}
               />
-            ) : field.type === "select" ? (
-              <select
-                id={field.id}
-                className={`lf-select ${form.formState.errors[field.id] ? "lf-input-error" : ""}`}
-                {...form.register(field.id)}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="mt-1">
+                    {" "}
+                    <FormLabel className="sr-only">Description</FormLabel>{" "}
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Enter a short description (optional)"
+                        className="text-sm text-muted-foreground border-none focus-visible:ring-0 px-0 h-auto"
+                      />
+                    </FormControl>{" "}
+                    <FormMessage />{" "}
+                  </FormItem>
+                )}
+              />
+            </div>
+            {/* Right: Action Buttons */}
+            <div className="flex gap-2 flex-shrink-0 self-start md:self-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onPreview(form.getValues())}
               >
-                <option value="">Select an option</option>
-                {field.options?.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            ) : field.type === "checkbox" ? (
-              <div className="lf-checkbox-wrapper">
-                <input
-                  id={field.id}
-                  type="checkbox"
-                  className="lf-checkbox"
-                  {...form.register(field.id)}
-                />
-                <label htmlFor={field.id} className="lf-checkbox-label">
-                  {field.label} {field.required && <span className="lf-required">*</span>}
-                </label>
-              </div>
-            ) : null}
-
-            {form.formState.errors[field.id] && (
-              <span className="lf-error-message">
-                {form.formState.errors[field.id]?.message as string}
-              </span>
-            )}
+                {" "}
+                <Eye className="h-4 w-4 mr-1" /> Preview{" "}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onGenerateCode(form.getValues())}
+              >
+                {" "}
+                <Code className="h-4 w-4 mr-1" /> Code{" "}
+              </Button>
+              <Button type="submit" disabled={isSubmitting} size="sm">
+                {" "}
+                {isSubmitting ? (
+                  <Spinner size="sm" className="mr-2" />
+                ) : (
+                  <Save className="h-4 w-4 mr-1" />
+                )}{" "}
+                {isSubmitting ? "Saving..." : "Save Form"}{" "}
+              </Button>
+            </div>
           </div>
-        ))}
 
-        {/* Honeypot field for spam protection */}
-        {formConfig.settings.honeypotEnabled && (
-          <div className="lf-honeypot">
-            <input
-              type="text"
-              {...form.register("_honeypot")}
-              tabIndex={-1}
-              aria-hidden="true"
-              autoComplete="off"
-            />
-          </div>
-        )}
+          {/* --- Main Content: Tabs (Fields, Settings, Design) --- */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="fields">
+                {" "}
+                <Plus className="h-4 w-4 mr-1 sm:mr-2" /> Fields{" "}
+              </TabsTrigger>
+              <TabsTrigger value="settings">
+                {" "}
+                <Settings className="h-4 w-4 mr-1 sm:mr-2" /> Settings{" "}
+              </TabsTrigger>
+              <TabsTrigger value="style">
+                {" "}
+                <Paintbrush className="h-4 w-4 mr-1 sm:mr-2" /> Design{" "}
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          className={`lf-submit-button lf-button-${formConfig.style.buttonStyle}`}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Submitting..." : formConfig.settings.submitButtonText}
-        </button>
-      </form>
+            {/* --- Fields Tab Content --- */}
+            <TabsContent value="fields" className="mt-6 space-y-4">
+              <Card className="border shadow-sm">
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg">Form Fields Builder</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="fields">
+                      {(
+                        providedDrop: DroppableProvided // Use unique name
+                      ) => (
+                        <div
+                          {...providedDrop.droppableProps}
+                          ref={providedDrop.innerRef}
+                          className="space-y-4"
+                        >
+                          {/* Map over fields safely */}
+                          {Array.isArray(fields) && fields.length > 0 ? (
+                            fields.map((fieldItem, index) => (
+                              <Draggable
+                                key={fieldItem.id}
+                                draggableId={fieldItem.id}
+                                index={index}
+                              >
+                                {(
+                                  providedDrag: DraggableProvided // Use unique name
+                                ) => (
+                                  <div
+                                    ref={providedDrag.innerRef}
+                                    {...providedDrag.draggableProps}
+                                    className="rounded-md border bg-background p-4"
+                                  >
+                                    {/* Field Item Header */}
+                                    <div className="flex items-center justify-between mb-3 border-b pb-2 -mx-4 px-4">
+                                      <div
+                                        {...providedDrag.dragHandleProps}
+                                        className="cursor-grab text-muted-foreground hover:text-foreground p-1"
+                                        aria-label="Drag to reorder field"
+                                      >
+                                        <Grip className="h-5 w-5" />
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeField(fieldItem.id)}
+                                        className="text-destructive hover:bg-destructive/10 h-7 w-7"
+                                        aria-label="Remove field"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                    {/* Field Configuration */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                      {/* Field Type Select */}
+                                      <FormField
+                                        control={form.control}
+                                        name={`fields.${index}.type`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            {" "}
+                                            <FormLabel>Type</FormLabel>{" "}
+                                            <Select
+                                              value={field.value}
+                                              onValueChange={field.onChange}
+                                            >
+                                              {" "}
+                                              <FormControl>
+                                                <SelectTrigger>
+                                                  <SelectValue />
+                                                </SelectTrigger>
+                                              </FormControl>{" "}
+                                              <SelectContent>
+                                                {FIELD_TYPES.map((typeOpt) => (
+                                                  <SelectItem
+                                                    key={typeOpt.value}
+                                                    value={typeOpt.value}
+                                                  >
+                                                    {typeOpt.label}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>{" "}
+                                            </Select>{" "}
+                                            <FormMessage />{" "}
+                                          </FormItem>
+                                        )}
+                                      />
+                                      {/* Field Label Input */}
+                                      <FormField
+                                        control={form.control}
+                                        name={`fields.${index}.label`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            {" "}
+                                            <FormLabel>Label</FormLabel>{" "}
+                                            <FormControl>
+                                              <Input {...field} placeholder="Enter field label" />
+                                            </FormControl>{" "}
+                                            <FormMessage />{" "}
+                                          </FormItem>
+                                        )}
+                                      />
+                                      {/* Placeholder Input (Conditional) */}
+                                      {fieldItem.type !== "checkbox" && (
+                                        <FormField
+                                          control={form.control}
+                                          name={`fields.${index}.placeholder`}
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              {" "}
+                                              <FormLabel>Placeholder</FormLabel>{" "}
+                                              <FormControl>
+                                                <Input
+                                                  {...field}
+                                                  placeholder="Optional placeholder"
+                                                />
+                                              </FormControl>{" "}
+                                              <FormMessage />{" "}
+                                            </FormItem>
+                                          )}
+                                        />
+                                      )}
+                                      {/* Required Switch */}
+                                      <FormField
+                                        control={form.control}
+                                        name={`fields.${index}.required`}
+                                        render={({ field }) => (
+                                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 sm:col-span-2">
+                                            {" "}
+                                            <div className="space-y-0.5 pr-4">
+                                              {" "}
+                                              <FormLabel>Required Field</FormLabel>{" "}
+                                              <FormDescription className="text-xs">
+                                                Is this field mandatory?
+                                              </FormDescription>{" "}
+                                            </div>{" "}
+                                            <FormControl>
+                                              <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                aria-labelledby={`required-label-${fieldItem.id}`}
+                                              />
+                                            </FormControl>{" "}
+                                          </FormItem>
+                                        )}
+                                      />
+                                      {/* Options Textarea (Conditional) */}
+                                      {fieldItem.type === "select" && (
+                                        <FormField
+                                          control={form.control}
+                                          name={`fields.${index}.options`}
+                                          render={({ field }) => (
+                                            <FormItem className="sm:col-span-2">
+                                              {" "}
+                                              <FormLabel>Options (one per line)</FormLabel>{" "}
+                                              <FormControl>
+                                                <Textarea
+                                                  value={(field.value ?? []).join("\n")}
+                                                  onChange={(e) =>
+                                                    field.onChange(
+                                                      e.target.value
+                                                        .split("\n")
+                                                        .map((opt) => opt.trim())
+                                                        .filter(Boolean)
+                                                    )
+                                                  }
+                                                  placeholder="Option 1
+Option 2
+Option 3"
+                                                  rows={4}
+                                                />
+                                              </FormControl>{" "}
+                                              <FormMessage />{" "}
+                                            </FormItem>
+                                          )}
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                              No fields added yet. Click &quot;Add Field`&quot; below.
+                            </p>
+                          )}
+                          {providedDrop.placeholder} {/* DnD placeholder */}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                  <Button
+                    type="button"
+                    onClick={addField}
+                    variant="outline"
+                    size="sm"
+                    className="mt-6"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Field
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-      {/* Base styles for the form */}
-      <style jsx>{`
-        .letterflow-form-container {
-          --lf-primary-color: #3b82f6;
-          --lf-bg-color: #ffffff;
-          --lf-text-color: #000000;
-          --lf-font-family:
-            "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          --lf-border-radius: 4px;
+            {/* --- Settings Tab Content --- */}
+            <TabsContent value="settings" className="mt-6 space-y-6">
+              {/* Group related settings in Cards */}
+              <Card className="border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Submission Handling</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="settings.submitButtonText"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Submit Button Text</FormLabel>{" "}
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="settings.successMessage"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Success Message</FormLabel>{" "}
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Message shown after successful submission."
+                            rows={3}
+                          />
+                        </FormControl>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="settings.redirectUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Redirect URL (Optional)</FormLabel>{" "}
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder="https://example.com/thank-you"
+                          />
+                        </FormControl>{" "}
+                        <FormDescription>
+                          Leave blank to show the success message instead.
+                        </FormDescription>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+              <Card className="border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Email & Spam</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="settings.doubleOptIn"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        {" "}
+                        <div className="space-y-0.5 pr-4">
+                          {" "}
+                          <FormLabel>Enable Double Opt-In</FormLabel>{" "}
+                          <FormDescription>
+                            Require email confirmation before subscribing.
+                          </FormDescription>{" "}
+                        </div>{" "}
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="settings.honeypotEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        {" "}
+                        <div className="space-y-0.5 pr-4">
+                          {" "}
+                          <FormLabel>Enable Honeypot Field</FormLabel>{" "}
+                          <FormDescription>
+                            Basic bot protection using a hidden field.
+                          </FormDescription>{" "}
+                        </div>{" "}
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="settings.recaptchaEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        {" "}
+                        <div className="space-y-0.5 pr-4">
+                          {" "}
+                          <FormLabel>Enable Google reCAPTCHA v2</FormLabel>{" "}
+                          <FormDescription>
+                            Requires site key configuration below.
+                          </FormDescription>{" "}
+                        </div>{" "}
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>{" "}
+                      </FormItem>
+                    )}
+                  />
+                  {form.watch("settings.recaptchaEnabled") && (
+                    <FormField
+                      control={form.control}
+                      name="settings.recaptchaSiteKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          {" "}
+                          <FormLabel>reCAPTCHA Site Key</FormLabel>{" "}
+                          <FormControl>
+                            <Input {...field} placeholder="Enter your v2 Checkbox site key" />
+                          </FormControl>{" "}
+                          <FormDescription>
+                            Get this key from your Google reCAPTCHA admin console.
+                          </FormDescription>
+                          <FormMessage />{" "}
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          font-family: var(--lf-font-family);
-          max-width: 100%;
-          width: 100%;
-          margin: 0 auto;
-          padding: 1.5rem;
-          background-color: var(--lf-bg-color);
-          color: var(--lf-text-color);
-          border-radius: var(--lf-border-radius);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .lf-form {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .lf-form-title {
-          margin: 0 0 1rem;
-          font-size: 1.25rem;
-          font-weight: 600;
-          text-align: center;
-        }
-
-        .lf-form-field {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .lf-label {
-          font-size: 0.875rem;
-          font-weight: 500;
-        }
-
-        .lf-input,
-        .lf-select {
-          width: 100%;
-          padding: 0.5rem;
-          border: 1px solid #d1d5db;
-          border-radius: var(--lf-border-radius);
-          font-size: 0.875rem;
-          transition: border-color 0.15s ease;
-        }
-
-        .lf-input:focus,
-        .lf-select:focus {
-          outline: none;
-          border-color: var(--lf-primary-color);
-          box-shadow: 0 0 0 1px var(--lf-primary-color);
-        }
-
-        .lf-input-error {
-          border-color: #ef4444;
-        }
-
-        .lf-checkbox-wrapper {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .lf-checkbox {
-          width: 1rem;
-          height: 1rem;
-          cursor: pointer;
-        }
-
-        .lf-checkbox-label {
-          font-size: 0.875rem;
-          cursor: pointer;
-        }
-
-        .lf-required {
-          color: #ef4444;
-        }
-
-        .lf-error-message {
-          color: #ef4444;
-          font-size: 0.75rem;
-          margin-top: 0.25rem;
-        }
-
-        .lf-form-error {
-          background-color: #fee2e2;
-          color: #ef4444;
-          padding: 0.75rem;
-          border-radius: var(--lf-border-radius);
-          font-size: 0.875rem;
-          margin-bottom: 1rem;
-        }
-
-        .lf-submit-button {
-          cursor: pointer;
-          padding: 0.5rem 1rem;
-          font-weight: 500;
-          border-radius: var(--lf-border-radius);
-          transition: all 0.15s ease;
-          margin-top: 0.5rem;
-        }
-
-        .lf-button-filled {
-          background-color: var(--lf-primary-color);
-          color: white;
-          border: none;
-        }
-
-        .lf-button-filled:hover {
-          opacity: 0.9;
-        }
-
-        .lf-button-outline {
-          background-color: transparent;
-          color: var(--lf-primary-color);
-          border: 1px solid var(--lf-primary-color);
-        }
-
-        .lf-button-outline:hover {
-          background-color: var(--lf-primary-color);
-          color: white;
-        }
-
-        .lf-button-minimal {
-          background-color: transparent;
-          color: var(--lf-primary-color);
-          border: none;
-        }
-
-        .lf-button-minimal:hover {
-          text-decoration: underline;
-        }
-
-        .lf-honeypot {
-          position: absolute;
-          left: -9999px;
-          top: -9999px;
-          z-index: -1;
-          opacity: 0;
-          height: 0;
-          width: 0;
-          overflow: hidden;
-        }
-
-        .lf-loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          gap: 1rem;
-          color: var(--lf-text-color);
-        }
-
-        .lf-spinner {
-          border: 3px solid #f3f3f3;
-          border-top: 3px solid var(--lf-primary-color);
-          border-radius: 50%;
-          width: 30px;
-          height: 30px;
-          animation: spin 1s linear infinite;
-        }
-
-        .lf-success-message {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          background-color: var(--lf-bg-color);
-          border-radius: var(--lf-border-radius);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-          text-align: center;
-        }
-
-        .lf-success-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 48px;
-          height: 48px;
-          background-color: #10b981;
-          color: white;
-          border-radius: 50%;
-          margin-bottom: 1rem;
-          font-size: 1.5rem;
-        }
-
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (min-width: 640px) {
-          .letterflow-form-container {
-            max-width: 28rem;
-            padding: 2rem;
-          }
-        }
-      `}</style>
+            {/* --- Style Tab Content --- */}
+            <TabsContent value="style" className="mt-6 space-y-4">
+              <Card className="border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Color Palette</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="style.primaryColor"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Primary</FormLabel>{" "}
+                        <div className="flex items-center gap-2">
+                          {" "}
+                          <FormControl>
+                            <Input
+                              aria-label="Primary color picker"
+                              {...field}
+                              type="color"
+                              className="w-10 h-10 p-0 border-none cursor-pointer rounded"
+                            />
+                          </FormControl>{" "}
+                          <Input
+                            aria-label="Primary color hex value"
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="font-mono text-sm"
+                          />{" "}
+                        </div>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="style.backgroundColor"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Background</FormLabel>{" "}
+                        <div className="flex items-center gap-2">
+                          {" "}
+                          <FormControl>
+                            <Input
+                              aria-label="Background color picker"
+                              {...field}
+                              type="color"
+                              className="w-10 h-10 p-0 border-none cursor-pointer rounded"
+                            />
+                          </FormControl>{" "}
+                          <Input
+                            aria-label="Background color hex value"
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="font-mono text-sm"
+                          />{" "}
+                        </div>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="style.textColor"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Text</FormLabel>{" "}
+                        <div className="flex items-center gap-2">
+                          {" "}
+                          <FormControl>
+                            <Input
+                              aria-label="Text color picker"
+                              {...field}
+                              type="color"
+                              className="w-10 h-10 p-0 border-none cursor-pointer rounded"
+                            />
+                          </FormControl>{" "}
+                          <Input
+                            aria-label="Text color hex value"
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="font-mono text-sm"
+                          />{" "}
+                        </div>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+              <Card className="border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Appearance</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="style.fontFamily"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Font</FormLabel>{" "}
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          {" "}
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>{" "}
+                          <SelectContent>
+                            {" "}
+                            <SelectItem value="Inter, sans-serif">Inter</SelectItem>{" "}
+                            <SelectItem value="Roboto, sans-serif">Roboto</SelectItem>{" "}
+                            <SelectItem value="Poppins, sans-serif">Poppins</SelectItem>{" "}
+                            <SelectItem value="Montserrat, sans-serif">Montserrat</SelectItem>{" "}
+                            <SelectItem value="system-ui, sans-serif">
+                              System Default
+                            </SelectItem>{" "}
+                          </SelectContent>{" "}
+                        </Select>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="style.borderRadius"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Corner Radius</FormLabel>{" "}
+                        <Select
+                          value={String(field.value)}
+                          onValueChange={(value) => field.onChange(value)}
+                        >
+                          {" "}
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>{" "}
+                          <SelectContent>
+                            {" "}
+                            <SelectItem value="0">Sharp (0px)</SelectItem>{" "}
+                            <SelectItem value="2">Minimal (2px)</SelectItem>{" "}
+                            <SelectItem value="4">Small (4px)</SelectItem>{" "}
+                            <SelectItem value="6">Medium (6px)</SelectItem>{" "}
+                            <SelectItem value="8">Large (8px)</SelectItem>{" "}
+                            <SelectItem value="12">X-Large (12px)</SelectItem>{" "}
+                            <SelectItem value="9999">Pill</SelectItem>{" "}
+                          </SelectContent>{" "}
+                        </Select>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="style.buttonStyle"
+                    render={({ field }) => (
+                      <FormItem>
+                        {" "}
+                        <FormLabel>Button Style</FormLabel>{" "}
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          {" "}
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>{" "}
+                          <SelectContent>
+                            {" "}
+                            <SelectItem value="filled">Filled</SelectItem>{" "}
+                            <SelectItem value="outline">Outline</SelectItem>{" "}
+                            <SelectItem value="minimal">Minimal (Text)</SelectItem>{" "}
+                          </SelectContent>{" "}
+                        </Select>{" "}
+                        <FormMessage />{" "}
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </form>
+      </Form>
     </div>
   );
 }

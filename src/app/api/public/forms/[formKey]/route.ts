@@ -44,9 +44,9 @@ function isPrismaErrorWithCode(error: unknown): error is { code: string; message
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { formKey: string } } // Standard App Router context type
+  { params }: { params: Promise<{ formKey: string }> } // Standard App Router context type
 ) {
-  const formKey = params.formKey;
+  const { formKey } = await params;
 
   // Basic validation for formKey if needed
   if (!formKey || typeof formKey !== "string") {
@@ -116,7 +116,7 @@ export async function GET(
     // Catch as unknown
     console.error(`Error fetching form configuration for key ${formKey}:`, error);
     let errorMessage = "Failed to load form configuration";
-    let statusCode = 500;
+    const statusCode = 500;
 
     if (isPrismaErrorWithCode(error)) {
       console.error(`Prisma Error (${error.code}): ${error.message}`);
@@ -133,7 +133,7 @@ export async function GET(
 /**
  * Cache invalidation helper - called when forms are updated/deleted
  */
-export function invalidateFormCache(formKey: string) {
+function invalidateFormCache(formKey: string) {
   if (formKey && typeof formKey === "string") {
     if (formCache[formKey]) {
       delete formCache[formKey];

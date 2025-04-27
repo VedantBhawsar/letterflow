@@ -90,11 +90,16 @@ export default function RegisterPage() {
       toast.success("Account created successfully! Please log in.");
       // Redirect to login page with success indicator
       router.push("/login?registered=true");
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Registration error:", error);
-      const errorMessage = error.message || "An unexpected error occurred during registration";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      if (error instanceof Error) {
+        const errorMessage = error.message || "An unexpected error occurred during registration";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } else {
+        setError("An unexpected error occurred during registration");
+        toast.error("An unexpected error occurred during registration");
+      }
     } finally {
       setIsLoading(false);
     }

@@ -21,7 +21,7 @@ export interface Subscriber {
   lastName?: string;
   status: "active" | "unsubscribed" | "bounced";
   tags: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, null>;
   createdAt: Date;
   updatedAt: Date;
   campaignIds: string[];

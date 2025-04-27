@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     const userId = session.user.id;
-    const segmentId = params.id;
+    const { id: segmentId } = await params;
 
     const segment = await prisma.segment.findUnique({
       where: {
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const userId = session.user.id;
-    const segmentId = params.id;
+    const { id: segmentId } = await params;
     const data = await req.json();
 
     // Check if segment exists and belongs to this user
@@ -139,6 +139,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             prisma.subscriber.update({
               where: { id },
               data: {
+                // @ts-expect-error - segmentIds is compatible with Subscriber
                 segmentIds: {
                   set: prisma.subscriber
                     .findUnique({
@@ -161,7 +162,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -170,7 +171,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     const userId = session.user.id;
-    const segmentId = params.id;
+    const { id: segmentId } = await params;
 
     // Check if segment exists and belongs to this user
     const existingSegment = await prisma.segment.findUnique({

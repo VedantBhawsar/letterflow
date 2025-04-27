@@ -211,11 +211,12 @@ export default function TestimonialsPage() {
                   </div>
                   <div className="md:w-2/3">
                     <blockquote className="text-xl italic">
-                      "I was struggling to grow my newsletter beyond a few hundred subscribers for
-                      months. Since switching to Letterflow, I've been able to grow to over 10,000
-                      subscribers in just 6 months. The analytics tools helped me understand what
-                      content resonates, and the email builder made my newsletter look professional
-                      without any design skills. It's completely transformed my business."
+                      I was struggling to grow my newsletter beyond a few hundred subscribers for
+                      months. Since switching to Letterflow, I&apos;ve been able to grow to over
+                      10,000 subscribers in just 6 months. The analytics tools helped me understand
+                      what content resonates, and the email builder made my newsletter look
+                      professional without any design skills. It&apos;s completely transformed my
+                      business.&quot;
                     </blockquote>
                     <div className="mt-6">
                       <p className="text-primary font-medium">Results:</p>
@@ -303,7 +304,7 @@ export default function TestimonialsPage() {
                       </div>
                     </div>
                     <blockquote className="italic text-muted-foreground mb-4">
-                      "{testimonial.quote}"
+                      &apos;{testimonial.quote}&apos;
                     </blockquote>
                     <div className="mt-auto">
                       <span className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded">

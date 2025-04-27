@@ -83,9 +83,9 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
   }, [status, segmentId, currentPage, refreshKey]);
 
   useEffect(() => {
-    const timeout = setTimeout(fetchSubscribers, 3000)
-    return () => clearTimeout(timeout)
-  }, [searchTerm])
+    const timeout = setTimeout(fetchSubscribers, 3000);
+    return () => clearTimeout(timeout);
+  }, [searchTerm]);
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
@@ -111,7 +111,6 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
     }
   };
 
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -129,7 +128,9 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
         <div className="text-sm text-muted-foreground">{totalSubscribers} subscribers found</div>
       </div>
 
-      {loading ? <LoadingTable /> : subscribers.length === 0 ? (
+      {loading ? (
+        <LoadingTable />
+      ) : subscribers.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8">
           <h3 className="text-lg font-semibold">No subscribers found</h3>
           <p className="text-sm text-muted-foreground mt-1">Try adjusting your search or filters</p>
@@ -196,15 +197,9 @@ export function SubscriberList({ status, segmentId, refreshKey = 0 }: Subscriber
               </TableBody>
             </Table>
           </div>
-
         </>
       )}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
-
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
     </div>
   );
 }
@@ -220,5 +215,5 @@ function LoadingTable() {
         </div>
       ))}
     </div>
-  )
+  );
 }

@@ -25,7 +25,7 @@ export default function ContactPage() {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">Get in Touch</h1>
               <p className="text-xl text-muted-foreground">
-                We'd love to hear from you. Reach out with questions, feedback, or partnership
+                We&apos;d love to hear from you. Reach out with questions, feedback, or partnership
                 inquiries.
               </p>
             </div>
@@ -95,7 +95,7 @@ export default function ContactPage() {
                 <CardHeader>
                   <CardTitle className="text-center">Send us a Message</CardTitle>
                   <CardDescription className="text-center">
-                    Fill out the form below and we'll get back to you as soon as possible.
+                    Fill out the form below and we&apos;ll get back to you as soon as possible.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -185,7 +185,7 @@ export default function ContactPage() {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Our Offices</h2>
               <p className="text-lg text-muted-foreground">
-                While we're primarily remote, we have physical locations in these cities.
+                While we&apos;re primarily remote, we have physical locations in these cities.
               </p>
             </div>
 

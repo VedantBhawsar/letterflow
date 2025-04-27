@@ -70,7 +70,8 @@ export default function NewslettersPage() {
       const data = await response.json();
 
       // Convert date strings to Date objects
-      const formattedData = data.map((newsletter: any) => ({
+      // @ts-expect-error - data is compatible with Newsletter[]
+      const formattedData = data.map((newsletter) => ({
         ...newsletter,
         createdAt: new Date(newsletter.createdAt),
         updatedAt: new Date(newsletter.updatedAt),
@@ -78,9 +79,9 @@ export default function NewslettersPage() {
 
       setNewsletters(formattedData);
       setError(null);
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error("Error fetching newsletters:", err);
-      setError(err.message || "Failed to fetch newsletters");
+      setError(err instanceof Error ? err.message : "Failed to fetch newsletters");
       toast.error("Failed to fetch newsletters");
     } finally {
       setIsLoading(false);

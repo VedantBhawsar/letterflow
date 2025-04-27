@@ -1,16 +1,28 @@
 // /app/api/campaigns/[campaignId]/route.ts
-import { NextResponse } from "next/server";
-import { PrismaClient, Campaign, CampaignStats } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server"; // Use NextRequest for potentially more features
+import { PrismaClient, Prisma } from "@prisma/client"; // Import Prisma namespace
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth"; // Adjust path if needed
 
+// Instantiate PrismaClient outside handlers (singleton pattern recommended)
 const prisma = new PrismaClient();
 
-export type CampaignWithStats = Campaign & {
-  stats: CampaignStats | null;
-};
+// Define a robust type for the GET response payload using Prisma's generated types
+export type CampaignWithDetails = Prisma.CampaignGetPayload<{
+  include: {
+    stats: true;
+    audiences: { select: { id: true } }; // Match the include/select shape
+  };
+}>;
 
-export async function GET(request: Request, { params }: { params: { campaignId: string } }) {
+// --- GET Handler ---
+export async function GET(
+  request: NextRequest, // Using NextRequest is often preferred
+  { params }: { params: Promise<{ campaignId: string }> } // Standard inline type for context obj
+) {
+  const par = await params;
+  // campaignId is directly available via destructuring
+  const campaignId = par.campaignId;
   try {
     const session = await getServerSession(authOptions);
 
@@ -19,23 +31,22 @@ export async function GET(request: Request, { params }: { params: { campaignId: 
     }
 
     const userId = session.user.id;
-    const { campaignId } = params;
 
     if (!campaignId) {
-      return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
+      // Should not happen if route matches, but belts and suspenders
+      return NextResponse.json({ error: "Campaign ID is missing" }, { status: 400 });
     }
 
-    const campaign = await prisma.campaign.findUnique({
+    const campaign: CampaignWithDetails | null = await prisma.campaign.findUnique({
       where: {
         id: campaignId,
-        // IMPORTANT: Ensure the campaign belongs to the logged-in user
-        userId: userId,
+        userId: userId, // Ensure user owns the campaign
       },
       include: {
-        stats: true, // Include the related CampaignStats
-        // Optionally include other relations if needed on the details page
-        // audiences: { select: { id: true, email: true } }, // Example: Get audience info
-        audiences: true,
+        stats: true,
+        audiences: {
+          select: { id: true }, // Fetch only IDs
+        },
       },
     });
 
@@ -45,21 +56,26 @@ export async function GET(request: Request, { params }: { params: { campaignId: 
 
     return NextResponse.json(campaign, { status: 200 });
   } catch (error) {
-    console.error(`Error fetching campaign ${params.campaignId}:`, error);
-    // Provide a generic error message in production
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to fetch campaign details";
+    console.error(`Error fetching campaign ${campaignId}:`, error);
     if (process.env.NODE_ENV === "development") {
       console.error(error); // Log full error in dev
     }
     return NextResponse.json({ error: "Failed to fetch campaign details" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
+  // finally {
+  //   // Avoid disconnecting if using a shared/singleton Prisma instance
+  //   // await prisma.$disconnect();
+  // }
 }
 
-// Optional: Add DELETE or PUT handlers here later if needed
-export async function DELETE(request: Request, { params }: { params: { campaignId: string } }) {
+// --- DELETE Handler ---
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ campaignId: string }> } // Standard inline type for context obj
+) {
+  const par = await params;
+  // campaignId is directly available via destructuring
+  const campaignId = par.campaignId;
   try {
     const session = await getServerSession(authOptions);
 
@@ -68,45 +84,34 @@ export async function DELETE(request: Request, { params }: { params: { campaignI
     }
 
     const userId = session.user.id;
-    const { campaignId } = params;
 
     if (!campaignId) {
-      return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
+      return NextResponse.json({ error: "Campaign ID is missing" }, { status: 400 });
     }
 
     // --- Perform deletion within a transaction ---
     const deletedCampaign = await prisma.$transaction(async (tx) => {
       // 1. Verify campaign exists and belongs to the user
       const campaignToDelete = await tx.campaign.findUnique({
-        where: {
-          id: campaignId,
-          userId: userId,
-        },
-        select: { id: true }, // Select only necessary fields
+        where: { id: campaignId, userId: userId },
+        select: { id: true },
       });
 
       if (!campaignToDelete) {
-        // Throw an error inside transaction to cause rollback
-        throw new Error("Campaign not found or access denied");
+        throw new Error("Campaign not found or access denied"); // Causes rollback
       }
 
-      const subscribers = await tx.subscriber.findMany({
-        where: {
-          userId: userId,
-          campaignIds: { has: campaignId },
-        },
-      });
+      // 2. Handle Subscribers (Optional - see previous comments)
+      // await tx.subscriber.updateMany({ ... });
 
+      // 3. Delete related CampaignStats (if not using cascade delete in schema)
       await tx.campaignStats.deleteMany({
         where: { campaignId: campaignId },
       });
-      // If relying purely on cascade, this step can be omitted.
 
       // 4. Delete the campaign itself
       const deleted = await tx.campaign.delete({
-        where: {
-          id: campaignId,
-        },
+        where: { id: campaignId },
       });
 
       return deleted;
@@ -116,22 +121,21 @@ export async function DELETE(request: Request, { params }: { params: { campaignI
       { message: "Campaign deleted successfully", campaign: deletedCampaign },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error(`Error deleting campaign ${params.campaignId}:`, error);
-
-    if (error.message === "Campaign not found or access denied") {
+  } catch (error: Error | unknown) {
+    console.error(`Error deleting campaign ${campaignId}:`, error);
+    if (error instanceof Error && error.message === "Campaign not found or access denied") {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
 
-    // Generic error for other issues
-    const errorMessage = error instanceof Error ? error.message : "Failed to delete campaign";
     if (process.env.NODE_ENV === "development") {
       console.error(error);
     }
     return NextResponse.json({ error: "Failed to delete campaign" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
+  // finally {
+  //   // Avoid disconnecting if using a shared/singleton Prisma instance
+  //   // await prisma.$disconnect();
+  // }
 }
 
-// export async function PUT(...) { ... }
+// export async function PUT(request: NextRequest, { params }: { params: { campaignId: string } }) { ... } // Use same signature

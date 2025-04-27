@@ -21,6 +21,7 @@ import {
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { Campaign } from "@/lib/types";
 
 // --- Helper function to fetch data ---
 // We fetch directly server-side. API route handles authentication/ownership.
@@ -98,7 +99,7 @@ export default function CampaignDetailPage({
 }: {
   params: Promise<{ campaignId: string }>;
 }) {
-  const { campaignId } = React.use(params) as any;
+  const { campaignId } = React.use(params);
   const {
     data: campaign,
     isLoading,
@@ -106,7 +107,7 @@ export default function CampaignDetailPage({
   } = useQuery({
     queryKey: ["campaign-detail"],
     queryFn: async () => {
-      let { data } = await axios.get(`/api/campaigns/${campaignId}`);
+      const { data } = await axios.get(`/api/campaigns/${campaignId}`);
       console.log(data);
       if (data) return data;
       else return undefined;
@@ -134,7 +135,8 @@ export default function CampaignDetailPage({
   }
 
   // If campaign data exists (TS knows campaign is not null here)
-  const { name, subject, status, content, createdAt, sentAt, scheduledAt, stats }: any = campaign;
+  const { name, subject, status, content, createdAt, sentAt, scheduledAt, stats }: Campaign =
+    campaign;
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {

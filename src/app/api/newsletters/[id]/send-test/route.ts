@@ -3,147 +3,329 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import { Prisma, Newsletter } from "@prisma/client"; // Import Prisma types
 
 // Correct type for route handler parameters
-type Params = { id: string };
+type RouteContext = {
+  params: { id: string };
+};
 
-export async function POST(req: Request, context: { params: Params }) {
+// Define expected input structure for the POST request body
+interface SendTestEmailInput {
+  testEmail?: string | null; // Make optional for better validation checks
+  subject?: string | null;
+  previewText?: string | null;
+}
+
+// --- Reusable Element Types & Type Guard ---
+interface HeadingElement {
+  type: "heading";
+  content?: string | null;
+}
+interface ParagraphElement {
+  type: "paragraph";
+  content?: string | null;
+}
+interface ImageElement {
+  type: "image";
+  src?: string | null;
+  alt?: string | null;
+}
+interface ButtonElement {
+  type: "button";
+  url?: string | null;
+  text?: string | null;
+}
+type NewsletterElement = HeadingElement | ParagraphElement | ImageElement | ButtonElement;
+
+function isNewsletterElement(obj: unknown): obj is NewsletterElement {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const element = obj as Record<string, unknown>;
+  if (typeof element.type !== "string") {
+    return false;
+  }
+  switch (element.type) {
+    case "heading":
+    case "paragraph":
+    case "image":
+    case "button":
+      return true;
+    default:
+      // Optionally log unknown types if needed during development/debugging
+      // console.warn(`isNewsletterElement: Unknown element type encountered: ${element.type}`);
+      return false;
+  }
+}
+
+// --- Type guard for Nodemailer errors ---
+interface NodemailerError extends Error {
+  code?: string;
+  command?: string;
+  responseCode?: number;
+  response?: string;
+}
+function isNodemailerError(error: unknown): error is NodemailerError {
+  return error instanceof Error && ("code" in error || "responseCode" in error);
+}
+
+// --- POST Handler ---
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = context.params.id;
+    const { id } = await params;
 
-    // Check if user is authenticated
     const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { message: "Unauthorized: Please sign in to send test emails" },
         { status: 401 }
       );
     }
-
-    // Get user ID from session
     const userId = session.user.id;
 
-    // Parse request body
-    const body = await req.json();
-    const { testEmail, subject, previewText } = body;
-
-    // Validate required fields
-    if (!testEmail) {
-      return NextResponse.json({ message: "Test email address is required" }, { status: 400 });
+    // Safely parse request body
+    let body: SendTestEmailInput;
+    try {
+      body = await req.json();
+    } catch (parseError) {
+      console.error("Error parsing POST request body:", parseError);
+      return NextResponse.json({ message: "Invalid request body format" }, { status: 400 });
     }
 
-    if (!subject) {
-      return NextResponse.json({ message: "Email subject is required" }, { status: 400 });
+    // --- Input Validation ---
+    if (
+      !body.testEmail ||
+      typeof body.testEmail !== "string" ||
+      !/\S+@\S+\.\S+/.test(body.testEmail)
+    ) {
+      // Basic email format check
+      return NextResponse.json(
+        { message: "A valid test email address is required" },
+        { status: 400 }
+      );
     }
+    const testEmail = body.testEmail; // Assign to new const after validation
 
-    // Check if newsletter exists and belongs to the user
-    const newsletter = await prisma.newsletter.findFirst({
-      where: {
-        id,
-        userId,
-      },
+    if (!body.subject || typeof body.subject !== "string" || body.subject.trim() === "") {
+      return NextResponse.json(
+        { message: "Email subject is required and cannot be empty" },
+        { status: 400 }
+      );
+    }
+    const subject = body.subject.trim(); // Assign to new const after validation
+
+    const previewText =
+      typeof body.previewText === "string" ? body.previewText : `Preview: ${subject}`; // Default preview text
+
+    // --- Fetch Newsletter ---
+    // Use findUnique for potentially better performance if `id` is unique constraint
+    const newsletter = await prisma.newsletter.findUnique({
+      where: { id },
     });
 
     if (!newsletter) {
+      return NextResponse.json({ message: "Newsletter not found" }, { status: 404 });
+    }
+
+    // Verify ownership
+    if (newsletter.userId !== userId) {
       return NextResponse.json(
-        {
-          message: "Newsletter not found or you don't have permission to access it",
-        },
-        { status: 404 }
+        { message: "Forbidden: You don't have permission to access this newsletter" },
+        { status: 403 }
       );
     }
 
-    // Get the newsletter content to send in the email
-    const newsletterElements = newsletter.elements;
+    // --- Generate HTML ---
+    // newsletter.elements is Prisma.JsonValue, pass it directly to the helper
+    const htmlContent = generateHTMLFromElements(newsletter.elements);
 
-    // Create HTML content from newsletter elements
-    // This is a simplified approach - you might need to build actual HTML from the elements
-    const htmlContent = generateHTMLFromElements(newsletterElements);
-
-    // Configure email transporter
+    // --- Nodemailer Configuration ---
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_SERVER_HOST || "smtp.example.com",
+      host: process.env.EMAIL_SERVER_HOST, // Require these env vars or throw error early
       port: Number(process.env.EMAIL_SERVER_PORT) || 587,
-      secure: process.env.EMAIL_SERVER_SECURE === "true",
+      secure: process.env.EMAIL_SERVER_PORT === "465",
       auth: {
-        user: process.env.EMAIL_SERVER_USER || "",
-        pass: process.env.EMAIL_SERVER_PASSWORD || "",
+        user: process.env.EMAIL_SERVER_USER,
+        pass: process.env.EMAIL_SERVER_PASSWORD,
       },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     });
 
-    // Setup email data
+    // --- Verify Transporter (Optional but Recommended) ---
+    try {
+      await transporter.verify();
+      console.log("Email transporter connection verified.");
+    } catch (verifyError: unknown) {
+      // Catch as unknown
+      console.error("Email transporter verification failed:", verifyError);
+      let details = "Could not verify connection.";
+      if (isNodemailerError(verifyError)) {
+        details += ` (Code: ${verifyError.code ?? "N/A"}, Command: ${verifyError.command ?? "N/A"})`;
+      } else if (verifyError instanceof Error) {
+        details = verifyError.message;
+      }
+      return NextResponse.json(
+        { message: "Email server configuration error.", details },
+        { status: 500 }
+      );
+    }
+
+    // --- Setup and Send Email ---
     const mailOptions = {
-      from: process.env.EMAIL_FROM || "noreply@letterflow.app",
+      from: `"${process.env.EMAIL_FROM_NAME || "Test Sender"}" <${process.env.EMAIL_FROM || "test@example.com"}>`,
       to: testEmail,
-      subject: subject,
-      text: previewText || "Preview of your newsletter", // Plain text version
-      html: htmlContent, // HTML version
+      subject: `[TEST] ${subject}`, // Prefix subject for clarity
+      text: previewText,
+      html: htmlContent,
+      // Optional: Add headers to prevent auto-responses or indicate test
+      headers: {
+        "X-Auto-Response-Suppress": "All",
+        "X-Mailer-Testing": "true",
+      },
     };
 
-    // Send the email
-    await transporter.sendMail(mailOptions);
+    // Send the email (already wrapped in outer try...catch)
+    const info = await transporter.sendMail(mailOptions);
 
-    console.log(`Sent test email for newsletter ${id} to ${testEmail}`);
+    console.log(
+      `Test email sent for newsletter ${id} to ${testEmail}. Message ID: ${info.messageId}`
+    );
 
     return NextResponse.json({
       message: "Test email sent successfully",
       recipient: testEmail,
+      messageId: info.messageId, // Return Nodemailer message ID if useful
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    // Catch as unknown
     console.error("Error sending test email:", error);
-    return NextResponse.json(
-      { message: "Failed to send test email", error: String(error) },
-      { status: 500 }
-    );
+    let errorMessage = "Failed to send test email";
+    let statusCode = 500;
+
+    if (isNodemailerError(error)) {
+      console.error(`Nodemailer Error Code: ${error.code}, Command: ${error.command}`);
+      errorMessage = `Email provider error: ${error.message}`;
+      // You might want specific status codes for certain Nodemailer errors (e.g., authentication failure)
+      if (error.code === "EAUTH")
+        statusCode = 535; // Authentication credentials invalid (example)
+      else if (error.code === "ECONNREFUSED") statusCode = 503; // Service unavailable (example)
+    } else if (isPrismaErrorWithCode(error)) {
+      // Use previously defined guard if needed
+      console.error("Prisma Error:", error.code, error.message);
+      errorMessage = "Database error occurred.";
+      if (error.code === "P2025") {
+        // Record not found (should be caught earlier)
+        errorMessage = "Newsletter not found during operation.";
+        statusCode = 404;
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    // console.error("Raw Error Object:", error); // Log raw error if needed
+
+    return NextResponse.json({ message: errorMessage }, { status: statusCode });
   }
 }
 
-// Helper function to generate HTML from newsletter elements
-function generateHTMLFromElements(elements: any): string {
-  // This is a placeholder implementation
-  // You would typically transform the elements into proper HTML here
-  // For now, we'll create a simple representation
+// --- Reusable Helper function --- (Same implementation as before, ensure types match)
+function generateHTMLFromElements(elementsData: unknown): string {
+  const styles = {
+    /* ... styles as before ... */
+    body: "margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;",
+    container:
+      "max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd;",
+    heading: "color: #333333; margin-top: 0;",
+    paragraph: "color: #555555; line-height: 1.6;",
+    image: "max-width: 100%; height: auto; margin: 15px 0; display: block;",
+    button:
+      "display: inline-block; padding: 12px 25px; margin: 15px 0; background-color: #0070f3; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;",
+    error: "color: red; font-weight: bold; border: 1px solid red; padding: 10px; margin: 10px 0;",
+    footer:
+      "margin-top: 20px; padding-top: 15px; border-top: 1px solid #eeeeee; font-size: 12px; color: #888888; text-align: center;",
+  };
 
   let html = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Newsletter</title>
+      <title>Newsletter Preview</title> 
     </head>
-    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif;">
-      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <body style="${styles.body}">
+       <div style="padding: 10px; background-color: #fffbe6; border: 1px solid #ffe58f; text-align: center; font-size: 14px; color: #ad8b00;">This is a test preview email.</div>
+      <div style="${styles.container}">
   `;
 
-  // Basic content processing - this should be enhanced based on your actual element structure
-  try {
-    if (Array.isArray(elements)) {
-      elements.forEach((element) => {
-        if (element.type === "heading") {
-          html += `<h2 style="color: #333;">${element.content || ""}</h2>`;
-        } else if (element.type === "paragraph") {
-          html += `<p style="color: #555; line-height: 1.5;">${element.content || ""}</p>`;
-        } else if (element.type === "image" && element.src) {
-          html += `<img src="${element.src}" alt="${element.alt || ""}" style="max-width: 100%; height: auto; margin: 10px 0;" />`;
-        } else if (element.type === "button" && element.url) {
-          html += `<a href="${element.url}" style="display: inline-block; padding: 10px 20px; margin: 10px 0; background-color: #0070f3; color: white; text-decoration: none; border-radius: 4px;">${element.text || "Click Here"}</a>`;
+  if (!Array.isArray(elementsData)) {
+    console.error("generateHTMLFromElements: Received non-array data:", elementsData);
+    html += `<div style="${styles.error}">Error: Invalid newsletter content format.</div>`;
+  } else {
+    elementsData.forEach((element: unknown, index: number) => {
+      if (!isNewsletterElement(element)) {
+        console.warn(
+          `generateHTMLFromElements: Skipping invalid element structure at index ${index}:`,
+          element
+        );
+        return;
+      }
+      try {
+        switch (element.type) {
+          case "heading":
+            html += `<h2 style="${styles.heading}">${element.content ?? ""}</h2>`;
+            break;
+          case "paragraph":
+            html += `<p style="${styles.paragraph}">${element.content ?? ""}</p>`;
+            break;
+          case "image":
+            if (
+              element.src &&
+              (element.src.startsWith("http:") || element.src.startsWith("https:"))
+            ) {
+              html += `<img src="${element.src}" alt="${element.alt ?? ""}" style="${styles.image}" />`;
+            } else {
+              console.warn(`Skipping image with invalid/missing src at index ${index}.`);
+            }
+            break;
+          case "button":
+            if (
+              element.url &&
+              (element.url.startsWith("http:") || element.url.startsWith("https:"))
+            ) {
+              html += `<a href="${element.url}" target="_blank" style="${styles.button}">${element.text ?? "Click Here"}</a>`;
+            } else {
+              console.warn(`Skipping button with invalid/missing URL at index ${index}.`);
+            }
+            break;
         }
-      });
-    } else if (typeof elements === "object") {
-      html += `<div>${JSON.stringify(elements)}</div>`;
-    }
-  } catch (err) {
-    console.error("Error generating HTML:", err);
-    html += `<p>There was an error generating the newsletter content.</p>`;
+      } catch (renderError) {
+        console.error(`Error rendering element at index ${index}:`, renderError);
+        html += `<p style="${styles.error}">Error rendering element ${index + 1}</p>`;
+      }
+    });
   }
 
   html += `
+        ${/* Minimal footer for test email */ ""}
+         <div style="${styles.footer}">This is a test email generated for preview purposes.</div>
       </div>
     </body>
     </html>
   `;
-
   return html;
+}
+
+// Helper type guard for Prisma errors (can be shared)
+function isPrismaErrorWithCode(error: unknown): error is { code: string; message: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code: unknown }).code === "string" &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  );
 }

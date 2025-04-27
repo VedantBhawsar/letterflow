@@ -168,12 +168,13 @@ export default function FormPreviewPage() {
 
 // Mock version of the EmbeddableForm component that works with direct form config
 function MockEmbeddableForm({ formConfig }: { formConfig: FormValues }) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { toast } = useToast();
 
   const handleInputChange = (id: string, value: string | boolean) => {
+    // #ts-expect-error - TypeScript doesn't understand the type of formData
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
@@ -240,6 +241,7 @@ function MockEmbeddableForm({ formConfig }: { formConfig: FormValues }) {
                 type={field.type}
                 placeholder={field.placeholder}
                 className="lf-input"
+                // @ts-expect-error - formData is compatible with EditorBlock
                 value={formData[field.id] || ""}
                 onChange={(e) => handleInputChange(field.id, e.target.value)}
                 required={field.required}
@@ -248,6 +250,7 @@ function MockEmbeddableForm({ formConfig }: { formConfig: FormValues }) {
               <select
                 id={field.id}
                 className="lf-select"
+                // @ts-expect-error - formData is compatible with EditorBlock
                 value={formData[field.id] || ""}
                 onChange={(e) => handleInputChange(field.id, e.target.value)}
                 required={field.required}

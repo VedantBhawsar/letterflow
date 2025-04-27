@@ -33,7 +33,17 @@ const loginSchema = z
 type LoginFormValues = z.infer<typeof loginSchema>;
 // LoginFormValues is { email: string; password: string; remember: boolean }
 
+import { Suspense } from "react";
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +97,7 @@ export default function LoginPage() {
         setError("An unexpected error occurred during login.");
         toast.error("An unexpected error occurred during login.");
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Login submit error:", error);
       setError("An unexpected error occurred. Please try again.");
       toast.error("An unexpected error occurred. Please try again.");

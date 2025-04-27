@@ -55,7 +55,17 @@ const TooltipTrigger = ({ asChild, children }: { asChild?: boolean; children: Re
   children;
 const TooltipContent = ({ children }: { children: React.ReactNode }) => null;
 
+import { Suspense } from "react";
+
 export default function NewsletterCreatePage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <NewsletterCreateContent />
+    </Suspense>
+  );
+}
+
+function NewsletterCreateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateType = searchParams.get("template") || "blank";
@@ -177,7 +187,7 @@ export default function NewsletterCreatePage() {
   // Handle adding a new element (no changes needed)
   const handleAddElement = (type: string) => {
     const newId = `${type}-${Date.now()}`;
-    let newElement: NewsletterElement = { id: newId, type };
+    const newElement: NewsletterElement = { id: newId, type };
 
     switch (type) {
       case "text":
@@ -380,9 +390,12 @@ export default function NewsletterCreatePage() {
         toast.warning("Newsletter created, but could not redirect to edit page.");
         router.push("/dashboard/newsletters");
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Newsletter save error:", error);
-      const errorMessage = error.message || "An unexpected error occurred while saving newsletter";
+      let errorMessage = "An unexpected error occurred while saving newsletter";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

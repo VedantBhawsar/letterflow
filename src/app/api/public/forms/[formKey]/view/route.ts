@@ -19,8 +19,8 @@ const PROCESSING_INTERVAL = 30 * 1000; // Process every 30 seconds
  * POST handler for recording form views
  * Uses batch processing to minimize database writes
  */
-export async function POST(req: NextRequest, { params }: { params: { formKey: string } }) {
-  const { formKey } = params;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ formKey: string }> }) {
+  const { formKey } = await params;
   let referrer = "direct";
   let userAgent: string | undefined;
 

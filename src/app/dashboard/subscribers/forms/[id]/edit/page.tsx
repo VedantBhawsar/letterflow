@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,15 +22,8 @@ type SubscriptionForm = FormValues & {
   updatedAt: string | Date;
 };
 
-export default function EditFormPage({ params }: { params: { id: string } }) {
-  // Until React.use() is fully supported, we'll continue using params.id directly
-  // but add a comment to remind us to update this in the future
-
-  // TODO: In future Next.js versions, use React.use() to unwrap params:
-  // const unwrappedParams = React.use(params);
-  // const id = unwrappedParams.id;
-
-  const { id } = params;
+export default function EditFormPage() {
+  const { id } = useParams();
 
   const router = useRouter();
   const { toast } = useToast();

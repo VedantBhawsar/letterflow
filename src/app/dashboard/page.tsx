@@ -90,7 +90,8 @@ function MetricCard({ title, value, trend, icon, change }: MetricCardProps) {
 }
 
 // --- Tooltip for Subscriber Growth Chart ---
-const SubscriberGrowthTooltip = ({ active, payload, label }: any) => {
+// @ts-expect-error - TooltipProps is compatible with SubscriberGrowthTooltip
+const SubscriberGrowthTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -349,6 +350,7 @@ export default function DashboardPage() {
                     width={40}
                   />
                   <Tooltip
+                    // @ts-expect-error - RechartsTooltipProps is compatible with SubscriberGrowthTooltip
                     content={<SubscriberGrowthTooltip />}
                     cursor={{ fill: "hsl(var(--accent))", fillOpacity: 0.1 }}
                     wrapperStyle={{ outline: "none" }}

@@ -1,3 +1,5 @@
+"use client"; // Make this component a Client Component
+
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
 import { Button } from "@/components/ui/button";
@@ -5,12 +7,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-
-export const metadata = {
-  title: "Pricing | Letterflow",
-  description:
-    "Choose the perfect Letterflow plan for your newsletter needs. Simple, transparent pricing with no hidden fees.",
-};
 
 // Animation variants
 const fadeIn = {
@@ -55,7 +51,7 @@ const plans = [
       "Email support",
     ],
     cta: "Start Free Trial",
-    ctaLink: "/signup",
+    ctaLink: "/signup", // Assuming signup route exists
     popular: false,
   },
   {
@@ -74,7 +70,7 @@ const plans = [
       "Priority support",
     ],
     cta: "Start Free Trial",
-    ctaLink: "/signup",
+    ctaLink: "/signup", // Assuming signup route exists
     popular: true,
   },
   {
@@ -93,7 +89,7 @@ const plans = [
       "24/7 priority support",
     ],
     cta: "Start Free Trial",
-    ctaLink: "/signup",
+    ctaLink: "/signup", // Assuming signup route exists
     popular: false,
   },
 ];
@@ -101,19 +97,21 @@ const plans = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen flex flex-col relative">
+      {/* Background Gradients */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50/30 to-slate-100/50 -z-10" />
+
       <Navbar />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative py-24">
+        <section className="relative py-24 overflow-hidden">
+          {/* Decorative gradients */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-blue-50/50 -z-10" />
-          <div className="absolute top-0 left-1/3 w-2/3 h-1/3 bg-gradient-to-r from-primary/10 to-purple-200/20 blur-3xl rounded-full -z-10" />
-
-          <div className="container mx-auto px-4">
+          <div className="absolute top-0 left-1/3 w-2/3 h-1/3 bg-gradient-to-r from-primary/10 to-purple-200/20 blur-3xl rounded-full -z-10 opacity-50" />
+          <div className="container mx-auto px-4 relative z-10">
             <motion.div
               className="max-w-3xl mx-auto text-center mb-16"
               initial="hidden"
-              animate="visible"
+              animate="visible" // Use animate for initial load animation
               variants={fadeIn}
             >
               <h1 className="text-4xl md:text-5xl font-bold mb-6">Simple, Transparent Pricing</h1>
@@ -121,11 +119,12 @@ export default function PricingPage() {
                 Choose the perfect plan for your newsletter needs. All plans include a 14-day free
                 trial.
               </p>
-              <div className="inline-flex items-center rounded-full border border-border p-1">
-                <button className="rounded-full px-4 py-2 text-sm font-medium bg-primary text-white">
+              {/* Optional: Add state for monthly/yearly toggle if needed */}
+              <div className="inline-flex items-center rounded-full border border-border p-1 bg-background/50 backdrop-blur-sm">
+                <button className="rounded-full px-4 py-1.5 text-sm font-medium bg-primary text-primary-foreground shadow-sm">
                   Monthly
                 </button>
-                <button className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground">
+                <button className="rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                   Yearly (Save 20%)
                 </button>
               </div>
@@ -134,66 +133,74 @@ export default function PricingPage() {
         </section>
 
         {/* Pricing Cards */}
-        <section className="relative py-12 -mt-8">
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-50/50 to-white -z-10" />
-
+        <section className="relative py-12 -mt-16">
           <div className="container mx-auto px-4">
             <motion.div
               className="grid grid-cols-1 md:grid-cols-3 gap-8"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, amount: 0.2 }} // Adjust viewport amount
               variants={staggerContainer}
             >
               {plans.map((plan, index) => (
                 <motion.div
-                  key={index}
-                  className="flex"
+                  key={plan.name} // Use a unique key like plan name
+                  className="flex" // Ensure motion div takes flex behaviour
                   variants={itemFadeIn}
-                  whileHover={plan.popular ? { scale: 1.02 } : { scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  // Optional: Tweak hover effect for less jarring movement
+                  whileHover={{
+                    scale: 1.03,
+                    transition: { type: "spring", stiffness: 400, damping: 15 },
+                  }}
                 >
                   <Card
-                    className={`flex flex-col w-full backdrop-blur-sm bg-white/80 border-border/60 ${
-                      plan.popular ? "relative shadow-xl border-primary/40 z-10" : "shadow-md"
+                    className={`flex flex-col w-full overflow-hidden rounded-xl transition-all duration-300 ${
+                      plan.popular
+                        ? "relative shadow-xl border-2 border-primary/60 bg-white/90 backdrop-blur-md z-10"
+                        : "shadow-md border border-border/60 bg-white/80 backdrop-blur-sm hover:shadow-lg"
                     }`}
                   >
                     {plan.popular && (
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full">
+                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full shadow-md">
                         Most Popular
                       </div>
                     )}
-                    <CardHeader className={plan.popular ? "pb-2 pt-8" : "pb-2"}>
-                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                      <div className="mt-2">
-                        <span className="text-4xl font-bold">{plan.price}</span>
-                        <span className="text-muted-foreground ml-1">{plan.period}</span>
+                    <CardHeader className={plan.popular ? "pt-10 pb-4" : "pt-6 pb-4"}>
+                      <CardTitle className="text-2xl font-semibold">{plan.name}</CardTitle>
+                      <div className="mt-4">
+                        <span className="text-4xl font-bold tracking-tight">{plan.price}</span>
+                        <span className="text-sm text-muted-foreground ml-1.5">{plan.period}</span>
                       </div>
-                      <p className="text-muted-foreground mt-2">{plan.description}</p>
+                      <p className="text-sm text-muted-foreground mt-3 min-h-[40px]">
+                        {plan.description}
+                      </p>
                     </CardHeader>
-                    <CardContent className="flex-grow">
+                    <CardContent className="flex-grow pt-4 pb-6">
                       <ul className="space-y-3">
                         {plan.features.map((feature, featureIndex) => (
                           <motion.li
                             key={featureIndex}
-                            className="flex items-start"
+                            className="flex items-start text-sm"
                             initial={{ opacity: 0, x: -10 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 * featureIndex }}
-                            viewport={{ once: true }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 + featureIndex * 0.05 }}
                           >
-                            <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
+                            <CheckCircle className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
                             <span>{feature}</span>
                           </motion.li>
                         ))}
                       </ul>
                     </CardContent>
-                    <CardFooter>
-                      <motion.div className="w-full" whileHover={{ scale: 1.03 }}>
+                    <CardFooter className="pt-4 pb-6">
+                      <motion.div
+                        className="w-full"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      >
                         <Button
                           variant={plan.popular ? "default" : "outline"}
                           size="lg"
-                          className="w-full"
+                          className="w-full font-semibold"
                           asChild
                         >
                           <Link href={plan.ctaLink}>{plan.cta}</Link>
@@ -208,26 +215,24 @@ export default function PricingPage() {
         </section>
 
         {/* Enterprise Plan */}
-        <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-white to-blue-50/30 -z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_50%_100%,rgba(16,185,129,0.05),transparent)] -z-10" />
+        <section className="relative py-20 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-white via-blue-50/20 to-slate-100/30 -z-10" />
+          <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_50%_100%,rgba(16,185,129,0.04),transparent)] -z-10" />
 
           <div className="container mx-auto px-4">
             <motion.div
               className="relative max-w-4xl mx-auto"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, amount: 0.3 }}
               variants={fadeIn}
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-100 via-primary/20 to-purple-100 rounded-xl blur-md opacity-50"></div>
-              <div className="relative rounded-xl border border-border/40 bg-white/80 backdrop-blur-sm p-8 md:p-12">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-100/50 via-primary/10 to-purple-100/50 rounded-xl blur-lg opacity-60 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 -z-10"></div>
+              <div className="relative rounded-xl border border-border/30 bg-white/85 backdrop-blur-lg p-8 md:p-12 shadow-sm overflow-hidden">
                 <div className="flex flex-col md:flex-row gap-8 items-center">
                   <div className="flex-grow">
-                    <h2 className="text-3xl font-bold mb-4">Enterprise Plan</h2>
-                    <p className="text-lg mb-6">
+                    <h2 className="text-3xl font-semibold mb-4">Enterprise Plan</h2>
+                    <p className="text-lg text-muted-foreground mb-6">
                       Custom solutions for larger newsletters, media companies, and organizations
                       with specific needs.
                     </p>
@@ -242,22 +247,22 @@ export default function PricingPage() {
                       ].map((feature, index) => (
                         <motion.li
                           key={index}
-                          className="flex items-center"
+                          className="flex items-center text-sm"
                           initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 * index }}
-                          viewport={{ once: true }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + index * 0.05 }}
                         >
-                          <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
+                          <CheckCircle className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
                           <span>{feature}</span>
                         </motion.li>
                       ))}
                     </ul>
                   </div>
-                  <div className="flex-shrink-0 text-center md:text-right">
-                    <p className="text-lg font-medium mb-4">Contact us for custom pricing</p>
+                  <div className="flex-shrink-0 text-center md:text-left mt-6 md:mt-0">
+                    <p className="text-base font-medium mb-4">Contact us for custom pricing</p>
                     <motion.div whileHover={{ scale: 1.05 }}>
-                      <Button size="lg" asChild>
+                      {/* CORRECTED LINE BELOW */}
+                      <Button size="lg" className="font-semibold" asChild>
                         <Link href="/contact">Get in Touch</Link>
                       </Button>
                     </motion.div>
@@ -270,20 +275,20 @@ export default function PricingPage() {
 
         {/* FAQ Section */}
         <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-50/50 to-white -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-100/40 to-white -z-10" />
 
           <div className="container mx-auto px-4">
             <motion.div
               className="max-w-3xl mx-auto"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, amount: 0.2 }}
               variants={fadeIn}
             >
               <h2 className="text-3xl font-bold mb-12 text-center">Frequently Asked Questions</h2>
 
               <motion.div
-                className="space-y-6"
+                className="space-y-4"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="visible"
@@ -293,42 +298,41 @@ export default function PricingPage() {
                   {
                     question: "How does the 14-day free trial work?",
                     answer:
-                      "You can sign up for any plan with full access to all features. No credit card is required. At the end of your trial, you can choose to subscribe or your account will automatically switch to a limited free plan.",
+                      "Sign up for any plan and get full access for 14 days, no credit card required. Afterwards, choose a paid plan or your account will switch to a limited free version.",
                   },
                   {
                     question: "What happens if I exceed my subscriber limit?",
                     answer:
-                      "We'll notify you when you reach 80% of your limit. If you go over, you'll have a 14-day grace period to upgrade your plan. During this time, your newsletter will continue to function normally.",
+                      "We'll notify you at 80% capacity. If you exceed the limit, you'll have a 14-day grace period to upgrade while your newsletter continues sending normally.",
                   },
                   {
                     question: "Can I switch plans later?",
                     answer:
-                      "Yes, you can upgrade or downgrade your plan at any time. Upgrades take effect immediately, while downgrades will apply at the end of your current billing cycle.",
+                      "Yes, upgrade or downgrade anytime. Upgrades are immediate; downgrades apply at the end of your current billing cycle.",
                   },
                   {
-                    question: "Do you offer discounts for non-profits or educational institutions?",
+                    question: "Do you offer discounts for non-profits or education?",
                     answer:
-                      "Yes, we offer special pricing for verified non-profits, educational institutions, and student publications. Please contact us for more information.",
+                      "Yes! We provide special pricing for verified non-profits, educational institutions, and student publications. Please contact us for details.",
                   },
                   {
                     question: "What payment methods do you accept?",
                     answer:
-                      "We accept all major credit cards, as well as PayPal. For Enterprise customers, we can also accommodate invoicing and purchase orders.",
+                      "We accept all major credit cards and PayPal. For Enterprise plans, invoicing and purchase orders can be arranged.",
                   },
                   {
                     question: "Is there a contract or commitment?",
                     answer:
-                      "No, all our plans are month-to-month with no long-term contracts. You can cancel at any time.",
+                      "No long-term contracts. All plans are typically month-to-month (unless you choose an annual plan), and you can cancel anytime.",
                   },
                 ].map((faq, index) => (
                   <motion.div
-                    key={index}
-                    className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"
+                    key={faq.question}
+                    className="bg-white/85 backdrop-blur-md rounded-lg p-6 border border-border/40 shadow-sm transition-shadow hover:shadow-md"
                     variants={itemFadeIn}
-                    whileHover={{ y: -5 }}
                   >
                     <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
-                    <p className="text-muted-foreground">{faq.answer}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -337,30 +341,39 @@ export default function PricingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/30 to-white -z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_50%,rgba(16,185,129,0.08),transparent)] -z-10" />
-
+        <section className="relative py-24">
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-100/30 to-primary/5 -z-10" />
+          <div className="absolute inset-0 bg-[radial-gradient(40%_60%_at_50%_0%,rgba(16,185,129,0.06),transparent)] -z-10" />
           <div className="container mx-auto px-4 text-center">
             <motion.div
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, amount: 0.3 }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-6">Ready to Start Your Newsletter Journey?</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Ready to Start Your Newsletter Journey?
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
                 Join thousands of creators who trust Letterflow to grow and monetize their
-                newsletters.
+                newsletters. Start building your audience today.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <Button size="lg" asChild>
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                >
+                  {/* CORRECTED LINE BELOW */}
+                  <Button size="lg" className="font-semibold px-8 py-3" asChild>
                     <Link href="/signup">Start Your Free Trial</Link>
                   </Button>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <Button variant="outline" size="lg" asChild>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                >
+                  {/* CORRECTED LINE BELOW */}
+                  <Button variant="outline" size="lg" className="font-semibold px-8 py-3" asChild>
                     <Link href="/contact">Contact Sales</Link>
                   </Button>
                 </motion.div>

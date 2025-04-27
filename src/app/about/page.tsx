@@ -24,8 +24,8 @@ export default function AboutPage() {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">About Letterflow</h1>
               <p className="text-xl text-muted-foreground">
-                We're on a mission to empower newsletter creators with powerful tools, insightful
-                analytics, and beautiful designs.
+                We&apos;re on a mission to empower newsletter creators with powerful tools,
+                insightful analytics, and beautiful designs.
               </p>
             </div>
           </div>
@@ -87,8 +87,8 @@ export default function AboutPage() {
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8">
                 <h3 className="text-xl font-bold mb-4 text-primary">Data-Driven Insights</h3>
                 <p className="text-muted-foreground">
-                  We're committed to providing actionable analytics that help creators understand
-                  their audience and optimize their content strategy.
+                  We&apos;re committed to providing actionable analytics that help creators
+                  understand their audience and optimize their content strategy.
                 </p>
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-border/60 p-8">
@@ -186,7 +186,7 @@ export default function AboutPage() {
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Our Journey</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Key milestones in the Letterflow story as we've grown and evolved.
+                Key milestones in the Letterflow story as we&apos;ve grown and evolved.
               </p>
             </div>
 
@@ -271,8 +271,8 @@ export default function AboutPage() {
               <div className="relative backdrop-blur-sm bg-white/80 border-border/60 p-8 rounded-xl">
                 <h2 className="text-3xl font-bold mb-4">Join Our Team</h2>
                 <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-6">
-                  We're always looking for passionate, talented people to help us build the future
-                  of newsletters.
+                  We&apos;re always looking for passionate, talented people to help us build the
+                  future of newsletters.
                 </p>
                 <Button size="lg" asChild>
                   <Link href="/careers">View Open Positions</Link>

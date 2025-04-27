@@ -23,7 +23,7 @@ interface SubscriberFormProps {
     status: "active" | "unsubscribed" | "bounced" | "complained";
     tags: string[];
   };
-  onSubmit: (data: any) => void;
+  onSubmit: (data: unknown) => void;
   onCancel?: () => void;
 }
 

@@ -146,10 +146,14 @@ export default function NewsletterEditorPage() {
         // Initialize history with loaded elements
         setHistory([data.elements]);
         setHistoryIndex(0);
-      } catch (err: any) {
+      } catch (err: Error | unknown) {
         console.error("Error loading newsletter:", err);
-        toast.error(`Failed to load newsletter: ${err.message}`);
-        setError(err.message || "An error occurred loading the newsletter");
+        let errorMessage = "An error occurred loading the newsletter";
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        toast.error(`Failed to load newsletter: ${errorMessage}`);
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -221,7 +225,7 @@ export default function NewsletterEditorPage() {
   // Handle adding a new element (no changes needed)
   const handleAddElement = (type: string) => {
     const newId = `${type}-${Date.now()}`;
-    let newElement: NewsletterElement = { id: newId, type };
+    const newElement: NewsletterElement = { id: newId, type };
 
     switch (type) {
       case "text":
@@ -406,9 +410,13 @@ export default function NewsletterEditorPage() {
       if (id === "new" && data.id) {
         router.push(`/newsletter/${data.id}`);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
+      // Catch as unknown
       console.error("Newsletter save error:", error);
-      const errorMessage = error.message || "An unexpected error occurred while saving newsletter";
+      let errorMessage = "An unexpected error occurred while saving newsletter";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -530,9 +538,13 @@ export default function NewsletterEditorPage() {
 
       toast.success(`Test email sent to ${testEmail}`);
       setIsSendDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error sending test email:", error);
-      toast.error(error.message || "Failed to send test email");
+      let errorMessage = "Failed to send test email";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsSending(false);
     }
@@ -555,9 +567,13 @@ export default function NewsletterEditorPage() {
       toast.success("Newsletter deleted successfully");
       setIsDeleteDialogOpen(false);
       router.push("/dashboard/newsletters");
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error("Error deleting newsletter:", err);
-      toast.error(err.message || "Failed to delete newsletter");
+      let errorMessage = "Failed to delete newsletter";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsDeleting(false);
     }
@@ -595,9 +611,13 @@ export default function NewsletterEditorPage() {
       });
 
       toast.success(`Newsletter published to ${data.sentCount} subscribers`);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error publishing newsletter:", error);
-      toast.error(error.message || "Failed to publish newsletter");
+      let errorMessage = "Failed to publish newsletter";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsPublishing(false);
     }
@@ -1730,8 +1750,8 @@ export default function NewsletterEditorPage() {
           <DialogHeader>
             <DialogTitle>Publish Newsletter</DialogTitle>
             <DialogDescription>
-              This will send your newsletter to all active subscribers. Make sure you've tested it
-              first.
+              This will send your newsletter to all active subscribers. Make sure you&apos;ve tested
+              it first.
             </DialogDescription>
           </DialogHeader>
 
@@ -1759,8 +1779,8 @@ export default function NewsletterEditorPage() {
             <div className="space-y-4 py-2">
               <div className="space-y-2">
                 <p className="text-sm">
-                  You're about to publish <span className="font-medium">{newsletterName}</span> with
-                  subject: <span className="font-medium">{emailSubject}</span>
+                  You&apos;re about to publish <span className="font-medium">{newsletterName}</span>{" "}
+                  with subject: <span className="font-medium">{emailSubject}</span>
                 </p>
 
                 <Alert>
@@ -1794,7 +1814,8 @@ export default function NewsletterEditorPage() {
           <DialogHeader>
             <DialogTitle>Delete Newsletter</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{newsletterName}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{newsletterName}&quot;? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

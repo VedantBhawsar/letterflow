@@ -180,9 +180,9 @@ export default function CareersPage() {
                 <h2 className="text-3xl font-bold mb-6">Life at Letterflow</h2>
                 <div className="space-y-4 text-muted-foreground">
                   <p>
-                    At Letterflow, we're passionate about helping newsletter creators succeed. We're
-                    building a company where talented people can do their best work in a supportive
-                    and collaborative environment.
+                    At Letterflow, we&apos;re passionate about helping newsletter creators succeed.
+                    We&apos;re building a company where talented people can do their best work in a
+                    supportive and collaborative environment.
                   </p>
                   <p>
                     We value diversity of thought, background, and experience. Our team is
@@ -190,8 +190,8 @@ export default function CareersPage() {
                     regardless of location.
                   </p>
                   <p>
-                    We're a small but growing team, which means you'll have the opportunity to make
-                    a significant impact and grow your career as we scale.
+                    We&apos;re a small but growing team, which means you&apos;ll have the
+                    opportunity to make a significant impact and grow your career as we scale.
                   </p>
                 </div>
               </motion.div>

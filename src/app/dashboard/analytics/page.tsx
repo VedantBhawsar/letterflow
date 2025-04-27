@@ -22,13 +22,15 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-} from "recharts"; // Ensure recharts is installed: npm install recharts
-import { useTheme } from "next-themes"; // Ensure next-themes is installed and setup
+  // Import TooltipProps type from recharts
+  TooltipProps,
+} from "recharts";
+import { useTheme } from "next-themes";
 import axios from "axios";
 
-// --- Interface matches the *updated* API response ---
+// --- Types remain the same ---
 interface AnalyticsData {
-  totalSubscribers: number; // Represents ACTIVE subscribers based on API logic
+  totalSubscribers: number;
   avgOpenRate: number;
   avgClickRate: number;
   avgUnsubscribeRate: number;
@@ -37,25 +39,28 @@ interface AnalyticsData {
     name: string;
     openRate: number;
     clickRate: number;
-    // Add mock trend client-side for display
-    trend: "up" | "down";
+    trend: "up" | "down"; // Client-side mock trend added after fetch
   }[];
   topSources: {
     name: string;
     count: number;
   }[];
-  subscriberGrowthData: { date: string; count: number }[]; // Expected from API now
+  subscriberGrowthData: { date: string; count: number }[];
 }
 
-// --- Metric Card Component ---
 interface MetricCardProps {
   title: string;
   value: string;
-  trend: "up" | "down"; // Note: Trend here is static/visual for now
+  trend: "up" | "down";
   icon: React.ReactNode;
 }
+
+// --- Specific type for the data shown in the LineChart ---
+type ChartDataValue = number;
+type ChartDataName = string; // Represents the 'date' key
+
+// --- Metric Card Component (no 'any' here) ---
 function MetricCard({ title, value, trend, icon }: MetricCardProps) {
-  // Determine icon color based on metric type (simple example)
   const isPositiveMetric = !title.toLowerCase().includes("unsubscribe");
   return (
     <Card className="p-4">
@@ -81,97 +86,128 @@ function MetricCard({ title, value, trend, icon }: MetricCardProps) {
   );
 }
 
-// --- Recharts Custom Tooltip ---
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-lg border bg-background p-2 shadow-sm">
-        <div className="grid grid-cols-1 gap-1">
-          <div className="flex flex-col">
-            <span className="text-[0.70rem] uppercase text-muted-foreground">Date</span>
-            <span className="font-bold text-muted-foreground">{label}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[0.70rem] uppercase text-muted-foreground">
-              Active Subscribers
-            </span>
-            <span className="font-bold" style={{ color: payload[0].stroke }}>
-              {payload[0].value.toLocaleString()}
-            </span>
+// --- Recharts Custom Tooltip with proper types ---
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: // Use TooltipProps with specific value/name types from the chart
+TooltipProps<ChartDataValue, ChartDataName>) => {
+  // Check if tooltip is active and payload exists and is not empty
+  if (active && payload && payload.length > 0) {
+    // Get the first payload item (assuming one line in the chart)
+    const dataPoint = payload[0];
+
+    // Check if the payload has a valid value (number)
+    if (dataPoint?.value !== undefined && dataPoint.stroke) {
+      return (
+        <div className="rounded-lg border bg-background p-2 shadow-sm">
+          <div className="grid grid-cols-1 gap-1">
+            <div className="flex flex-col">
+              <span className="text-[0.70rem] uppercase text-muted-foreground">Date</span>
+              {/* Label can be string or number, display it */}
+              <span className="font-bold text-muted-foreground">{label ?? "N/A"}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                Active Subscribers
+              </span>
+              {/* Access value and stroke safely */}
+              <span className="font-bold" style={{ color: dataPoint.stroke }}>
+                {typeof dataPoint.value === "number" ? dataPoint.value.toLocaleString() : "N/A"}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
+  // Return null if tooltip shouldn't be shown
   return null;
 };
 
-// --- Main Analytics Page Component ---
+// --- Main Analytics Page Component (no 'any' here) ---
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Use a more specific type for the state, allowing null initially
+  // Use specific types for state, omitting the client-side 'trend' initially
   const [analyticsData, setAnalyticsData] = useState<
     | (Omit<AnalyticsData, "topPerformingCampaigns"> & {
         topPerformingCampaigns: Omit<AnalyticsData["topPerformingCampaigns"][number], "trend">[];
       })
     | null
   >(null);
+  // Separate state for campaigns with the *client-added* trend
   const [displayCampaigns, setDisplayCampaigns] = useState<AnalyticsData["topPerformingCampaigns"]>(
     []
   );
 
+  // UseTheme hook with null check and default
   const { theme = "light" } = useTheme() ?? {};
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       setLoading(true);
       setError(null);
-      setAnalyticsData(null); // Clear previous data
+      setAnalyticsData(null);
       setDisplayCampaigns([]);
-      try {
-        const {
-          data,
-        }: {
-          data: Omit<AnalyticsData, "topPerformingCampaigns"> & {
-            topPerformingCampaigns: Omit<
-              AnalyticsData["topPerformingCampaigns"][number],
-              "trend"
-            >[];
-          };
-        } = await axios.get("/api/analytics");
-        // Backend now returns the correct structure, including subscriberGrowthData
-        setAnalyticsData(data);
 
-        // Add mock trend for display purposes *after* fetching
-        const campaignsWithMockTrend = data.topPerformingCampaigns.map((c, i) => ({
-          ...c,
-          trend: i % 2 === 0 ? "up" : ("down" as "up" | "down"), // Simple alternating trend
-        }));
-        setDisplayCampaigns(campaignsWithMockTrend);
-      } catch (e) {
+      try {
+        // Define the expected structure of the data within the axios response
+        type ApiResponseType = Omit<AnalyticsData, "topPerformingCampaigns"> & {
+          topPerformingCampaigns: Omit<AnalyticsData["topPerformingCampaigns"][number], "trend">[];
+        };
+
+        // Use the specific type with axios.get
+        const response = await axios.get<{ data: ApiResponseType }>("/api/analytics");
+
+        // Check if data exists in the response (axios structure)
+        if (response?.data?.data) {
+          const fetchedData = response.data.data;
+          setAnalyticsData(fetchedData);
+
+          // Add mock trend for display purposes after fetching
+          const campaignsWithMockTrend: AnalyticsData["topPerformingCampaigns"] =
+            fetchedData.topPerformingCampaigns.map((c, i) => ({
+              ...c,
+              // Ensure the value is explicitly 'up' or 'down'
+              trend: i % 2 === 0 ? "up" : "down",
+            }));
+          setDisplayCampaigns(campaignsWithMockTrend);
+        } else {
+          // Handle case where response structure is unexpected
+          console.error("Unexpected API response structure:", response);
+          throw new Error("Received invalid data format from analytics API.");
+        }
+      } catch (e: unknown) {
+        // Catch error as unknown
         console.error("Failed to fetch analytics:", e);
-        setError(e instanceof Error ? e.message : "An unknown error occurred");
+        let errorMessage = "An unknown error occurred while fetching analytics data.";
+        if (e instanceof Error) {
+          errorMessage = e.message;
+        } else if (axios.isAxiosError(e)) {
+          // Check specifically for Axios errors
+          errorMessage = e.response?.data?.message || e.message || "Network or server error.";
+        }
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
     fetchAnalytics();
-  }, []); // Fetch on mount
+  }, []); // Empty dependency array means fetch only on mount
 
-  // --- Recharts Theming ---
+  // --- Recharts Theming (no 'any' here) ---
   const axisStrokeColor =
     theme === "dark" ? "hsl(var(--muted-foreground))" : "hsl(var(--muted-foreground))";
   const gridStrokeColor = theme === "dark" ? "hsl(var(--border))" : "hsl(var(--border))";
   const linePrimaryColor = theme === "dark" ? "hsl(var(--primary))" : "hsl(var(--primary))";
 
-  // --- Render Loading State ---
+  // --- Render Loading State (no 'any' here) ---
   if (loading) {
     return (
       <div className="space-y-6 p-4 md:p-6">
-        {" "}
-        {/* Add padding */}
-        {/* Header Skeleton */}
+        {/* Skeletons... */}
         <div className="flex justify-between items-center">
           <div>
             <Skeleton className="h-8 w-48 mb-2" />
@@ -182,11 +218,9 @@ export default function AnalyticsPage() {
             <Skeleton className="h-10 w-28 rounded-md" />
           </div>
         </div>
-        {/* Tabs Skeleton */}
         <div className="w-full max-w-md mb-6">
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
-        {/* Metrics Skeleton */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <Card key={index} className="p-4">
@@ -201,7 +235,6 @@ export default function AnalyticsPage() {
             </Card>
           ))}
         </div>
-        {/* Charts/Lists Skeleton */}
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="p-6">
             <Skeleton className="h-6 w-40 mb-4 rounded-md" />
@@ -226,7 +259,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  // --- Render Error State ---
+  // --- Render Error State (no 'any' here) ---
   if (error) {
     return (
       <div className="space-y-6 flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center p-4">
@@ -235,7 +268,8 @@ export default function AnalyticsPage() {
         <p className="text-muted-foreground max-w-md">
           Could not fetch analytics data. Please check your connection or try again later.
         </p>
-        <p className="text-sm text-destructive mt-2">Error: {error}</p>
+        <p className="text-sm text-destructive mt-2">Error details: {error}</p>{" "}
+        {/* Display error message */}
         <Button variant="outline" onClick={() => window.location.reload()} className="mt-6">
           Retry
         </Button>
@@ -243,33 +277,26 @@ export default function AnalyticsPage() {
     );
   }
 
-  // --- Render Data State (Ensure data exists) ---
+  // --- Render Data State (Ensure data exists - no 'any' here) ---
   if (!analyticsData) {
-    // This case should ideally only happen briefly or if fetch fails silently
-    return <div className="text-center p-10">No analytics data available.</div>;
+    // Fallback if fetch failed but didn't set error state, or data is invalid
+    return <div className="text-center p-10">No analytics data could be loaded.</div>;
   }
 
-  // Calculate total for source percentage (using active subscribers)
+  // Calculate total using validated analyticsData
   const totalSourceCount = analyticsData.topSources.reduce((sum, source) => sum + source.count, 0);
 
+  // --- Return JSX (no 'any' here) ---
   return (
     <div className="space-y-6 p-4 md:p-6">
-      {" "}
-      {/* Add padding */}
       {/* --- Header --- */}
       <div className="flex flex-wrap justify-between items-center gap-4">
-        {" "}
-        {/* Allow wrapping */}
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">Track and analyze your newsletter performance</p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          {" "}
-          {/* Prevent buttons shrinking too much */}
           <Button variant="outline" size="sm">
-            {" "}
-            {/* Use smaller buttons */}
             <Calendar className="mr-2 h-4 w-4" />
             Date Range
           </Button>
@@ -279,6 +306,7 @@ export default function AnalyticsPage() {
           </Button>
         </div>
       </div>
+
       {/* --- Tabs --- */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="w-full max-w-md mb-6">
@@ -296,6 +324,7 @@ export default function AnalyticsPage() {
         <TabsContent value="overview" className="space-y-6">
           {/* --- Key Metrics --- */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Metric Cards using validated analyticsData */}
             <MetricCard
               title="Active Subscribers"
               value={analyticsData.totalSubscribers.toLocaleString()}
@@ -324,25 +353,19 @@ export default function AnalyticsPage() {
 
           {/* --- Row 1: Engagement & Top Campaigns --- */}
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Engagement Graph Placeholder */}
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Engagement Over Time</h3>
               <div className="h-[300px] flex items-center justify-center border rounded-md bg-muted/20 text-center">
                 <p className="text-muted-foreground text-sm">
-                  Engagement chart visualization
-                  <br />
-                  (Placeholder - Requires separate data source)
+                  Engagement chart visualization placeholder
                 </p>
               </div>
             </Card>
-            {/* Top Performing Campaigns List */}
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Top Performing Campaigns</h3>
               <div className="space-y-4">
                 {displayCampaigns.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">
-                    No campaign data available yet.
-                  </p>
+                  <p className="text-muted-foreground text-center py-4">No campaign data.</p>
                 ) : (
                   displayCampaigns.map((campaign) => (
                     <div
@@ -350,8 +373,6 @@ export default function AnalyticsPage() {
                       className="flex items-center justify-between border-b pb-3 last:border-none"
                     >
                       <div className="overflow-hidden mr-2">
-                        {" "}
-                        {/* Prevent long names pushing icon */}
                         <p className="font-medium truncate" title={campaign.name}>
                           {campaign.name}
                         </p>
@@ -378,21 +399,16 @@ export default function AnalyticsPage() {
 
           {/* --- Row 2: Growth & Sources --- */}
           <div className="grid gap-6 md:grid-cols-2">
-            {/* --- Subscriber Growth Chart (Inline Implementation) --- */}
             <Card className="p-6">
-              <h3 className="text-lg font-medium mb-4">Active Subscriber Growth (Last 30 Days)</h3>
+              <h3 className="text-lg font-medium mb-4">Active Subscriber Growth</h3>
               <div className="h-[300px] w-full">
-                {" "}
-                {/* Container with defined height */}
                 {analyticsData.subscriberGrowthData &&
-                analyticsData.subscriberGrowthData.length > 1 ? ( // Need at least 2 points to draw a line
+                analyticsData.subscriberGrowthData.length > 1 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={analyticsData.subscriberGrowthData}
                       margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
                     >
-                      {" "}
-                      {/* Adjust left margin */}
                       <CartesianGrid
                         strokeDasharray="3 3"
                         stroke={gridStrokeColor}
@@ -406,24 +422,21 @@ export default function AnalyticsPage() {
                         tickLine={false}
                         axisLine={false}
                         dy={5}
-                      />{" "}
-                      {/* Slightly move labels down */}
+                      />
                       <YAxis
                         stroke={axisStrokeColor}
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={(value) => value.toLocaleString()}
+                        tickFormatter={(value: number) => value.toLocaleString()}
                         allowDecimals={false}
                         width={40}
-                      />{" "}
-                      {/* Reserve space for Y labels */}
+                      />
                       <Tooltip
                         cursor={{ fill: "hsl(var(--accent))", fillOpacity: 0.1 }}
                         content={<CustomTooltip />}
                         wrapperStyle={{ outline: "none" }}
-                      />{" "}
-                      {/* Style tooltip hover */}
+                      />
                       <Line
                         type="monotone"
                         dataKey="count"
@@ -437,24 +450,19 @@ export default function AnalyticsPage() {
                 ) : (
                   <div className="flex h-full items-center justify-center text-center">
                     <p className="text-muted-foreground text-sm">
-                      {analyticsData.subscriberGrowthData &&
-                      analyticsData.subscriberGrowthData.length <= 1
-                        ? "Not enough data points to show growth trend."
-                        : "No subscriber growth data available."}
+                      {analyticsData.subscriberGrowthData?.length <= 1
+                        ? "Not enough data."
+                        : "No growth data."}
                     </p>
                   </div>
                 )}
               </div>
             </Card>
-
-            {/* Top Sources List */}
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Top Subscriber Sources</h3>
               <div className="space-y-4">
                 {analyticsData.topSources.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">
-                    No subscriber source data available.
-                  </p>
+                  <p className="text-muted-foreground text-center py-4">No source data.</p>
                 ) : (
                   analyticsData.topSources.map((source, index) => {
                     const percentage =
@@ -463,8 +471,6 @@ export default function AnalyticsPage() {
                         : 0;
                     return (
                       <div key={index} className="space-y-1.5">
-                        {" "}
-                        {/* Adjust spacing */}
                         <div className="flex justify-between text-sm">
                           <span className="font-medium truncate mr-2" title={source.name}>
                             {source.name}
@@ -477,8 +483,7 @@ export default function AnalyticsPage() {
                           <div
                             className="h-full bg-primary rounded-full"
                             style={{ width: `${percentage}%` }}
-                          />{" "}
-                          {/* Add rounded to inner bar */}
+                          />
                         </div>
                       </div>
                     );
@@ -489,14 +494,12 @@ export default function AnalyticsPage() {
           </div>
         </TabsContent>
 
-        {/* --- Other Tabs Content (Placeholders) --- */}
+        {/* --- Other Tabs Content Placeholders --- */}
         <TabsContent value="campaigns" className="space-y-6">
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Campaign Performance</h3>
             <div className="h-[400px] flex items-center justify-center border rounded-md bg-muted/20 text-center">
-              <p className="text-muted-foreground">
-                Detailed campaign analytics table coming soon.
-              </p>
+              <p className="text-muted-foreground">Campaign details coming soon.</p>
             </div>
           </Card>
         </TabsContent>
@@ -504,9 +507,7 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Subscriber Metrics</h3>
             <div className="h-[400px] flex items-center justify-center border rounded-md bg-muted/20 text-center">
-              <p className="text-muted-foreground">
-                Detailed subscriber engagement data coming soon.
-              </p>
+              <p className="text-muted-foreground">Subscriber details coming soon.</p>
             </div>
           </Card>
         </TabsContent>

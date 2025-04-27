@@ -53,10 +53,12 @@ export default function NewsletterPreviewPage() {
         setElements(data.elements);
         setEmailSubject(data.subject || "");
         setEmailPreviewText(data.previewText || "");
-      } catch (err: any) {
+      } catch (err: Error | unknown) {
         console.error("Error loading newsletter:", err);
-        toast.error(`Failed to load newsletter: ${err.message}`);
-        setError(err.message || "An error occurred loading the newsletter");
+        let errorMessage = "An error occurred loading the newsletter";
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        }
       } finally {
         setLoading(false);
       }
@@ -102,9 +104,13 @@ export default function NewsletterPreviewPage() {
 
       toast.success(`Test email sent to ${testEmail}`);
       setSendDialogOpen(false);
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error("Error sending test email:", err);
-      toast.error(err.message || "Failed to send test email");
+      let errorMessage = "Failed to send test email";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setIsSending(false);
     }

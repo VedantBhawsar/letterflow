@@ -16,7 +16,7 @@ const navLinks = [
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { data: session } = useSession()
+  const { data: session } = useSession();
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -32,8 +32,9 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-200 ${isScrolled ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent"
-        }`}
+      className={`sticky top-0 z-50 w-full transition-all duration-200 ${
+        isScrolled ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent"
+      }`}
     >
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         <Link href={"/"} className="flex items-center gap-2">
@@ -73,19 +74,22 @@ export default function Navbar() {
         </nav>
 
         {/* Desktop Auth Buttons */}
-        {!session?.user ? <div className="hidden md:flex items-center gap-4">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/get-started">Get Started</Link>
-          </Button>
-        </div> : <div className="hidden md:flex items-center gap-4">
-          <Button variant="default" size="sm" asChild>
-            <Link href="/dashboard">Dashboard</Link>
-          </Button>
-        </div>
-        }
+        {!session?.user ? (
+          <div className="hidden md:flex items-center gap-4">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/login">Login</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/get-started">Get Started</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center gap-4">
+            <Button variant="default" size="sm" asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          </div>
+        )}
         {/* Mobile Navigation */}
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
