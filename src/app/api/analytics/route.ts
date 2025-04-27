@@ -115,7 +115,7 @@ export async function GET(request: Request) {
         openRate: stat.sent > 0 ? (stat.opened / stat.sent) * 100 : 0,
         clickRate: stat.sent > 0 ? (stat.clicked / stat.sent) * 100 : 0,
       }))
-      .sort((a, b) => b.openRate - a.openRate)
+      .sort((a: any, b: any) => b.openRate - a.openRate)
       .slice(0, 3);
 
     // Format Top Sources (as before)
