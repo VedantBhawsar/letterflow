@@ -99,7 +99,7 @@ export async function GET(request: Request) {
     let totalSent = 0,
       totalOpened = 0,
       totalClicked = 0;
-    campaignStatsList.forEach((stat) => {
+    campaignStatsList.forEach((stat: any) => {
       totalSent += stat.sent;
       totalOpened += stat.opened;
       totalClicked += stat.clicked;
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
     const dailyEngagement: { [key: string]: { opens: number; clicks: number } } = {};
 
     // 1. Aggregate stats by day based on campaign's sentAt date
-    campaignStatsList.forEach((stat) => {
+    campaignStatsList.forEach((stat: any) => {
       // Ensure sentAt is valid and within our date range
       if (stat.campaign.sentAt) {
         try {
