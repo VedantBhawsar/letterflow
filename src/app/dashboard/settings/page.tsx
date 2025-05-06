@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Bell, Key, Mail, CreditCard, LogOut } from "lucide-react";
+import { User, Bell, Key, Mail, CreditCard, LogOut, Copy } from "lucide-react";
+import { format } from "date-fns";
 
 // Profile form schema
 const profileFormSchema = z.object({
@@ -53,9 +54,18 @@ const passwordFormSchema = z
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 type PasswordFormData = z.infer<typeof passwordFormSchema>;
 
+interface ApiKey {
+  id: string;
+  key: string;
+  createdAt: string;
+  expiresAt?: string;
+}
+
 export default function SettingsPage() {
   const { data: session } = useSession();
   const [profileSaved, setProfileSaved] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [generatedApiKey, setGeneratedApiKey] = useState<string | null>(null);
 
   // Profile form
   const profileForm = useForm<ProfileFormData>({
@@ -78,20 +88,74 @@ export default function SettingsPage() {
     },
   });
 
-  // Profile form submit handler
+  useEffect(() => {
+    const fetchApiKeys = async () => {
+      const res = await fetch("/api/api-keys");
+      if (res.ok) {
+        const data = await res.json();
+        setApiKeys(data);
+      } else {
+        console.error("Failed to fetch API keys");
+      }
+    };
+
+    if (session) {
+      fetchApiKeys();
+    }
+  }, [session]);
+
   function onProfileSubmit(data: ProfileFormData) {
-    // In a real application, update user profile via API
     console.log("Profile form submitted:", data);
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 3000);
   }
 
-  // Password form submit handler
   function onPasswordSubmit(data: PasswordFormData) {
-    // In a real application, update password via API
     console.log("Password form submitted:", data);
     passwordForm.reset();
   }
+
+  const handleGenerateApiKey = async () => {
+    const res = await fetch("/api/api-keys", {
+      method: "POST",
+    });
+
+    if (res.ok) {
+      const newKey = await res.json();
+      setGeneratedApiKey(newKey.key);
+      const fetchRes = await fetch("/api/api-keys");
+      if (fetchRes.ok) {
+        const data = await fetchRes.json();
+        setApiKeys(data);
+      }
+    } else {
+      console.error("Failed to generate API key");
+      setGeneratedApiKey(null);
+    }
+  };
+
+  const handleRevokeApiKey = async (apiKeyId: string) => {
+    const res = await fetch(`/api/api-keys?id=${apiKeyId}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      setApiKeys(apiKeys.filter((key) => key.id !== apiKeyId));
+    } else {
+      console.error("Failed to revoke API key");
+    }
+  };
+
+  const handleCopyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        console.log("API key copied to clipboard");
+      })
+      .catch((err) => {
+        console.error("Failed to copy API key:", err);
+      });
+  };
 
   return (
     <div className="space-y-6">
@@ -101,7 +165,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-5">
+        <TabsList className="">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-fit" />
             <span className="hidden sm:inline">Profile</span>
@@ -314,8 +378,78 @@ export default function SettingsPage() {
                 Manage your API keys and access tokens
               </p>
             </div>
-            <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">API settings coming soon</p>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Your API Keys</h3>
+                <p className="text-sm text-muted-foreground">
+                  Generate and manage your API keys for accessing the Letterflow API.
+                </p>
+              </div>
+
+              {/* Generate New API Key */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-md font-medium">Generate New Key</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Generate a new API key for your account.
+                  </p>
+                </div>
+                <Button onClick={handleGenerateApiKey}>Generate Key</Button>
+              </div>
+
+              {generatedApiKey && (
+                <div className="space-y-2">
+                  <h4 className="text-md font-medium">Generated API Key</h4>
+                  <div className="flex items-center space-x-2">
+                    <Input type="text" value={generatedApiKey} readOnly />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCopyToClipboard(generatedApiKey)}
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copy
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Keep your API key secure and do not share it.
+                  </p>
+                </div>
+              )}
+
+              {apiKeys.length > 0 ? (
+                <div>
+                  <h4 className="text-md font-medium">Existing API Keys</h4>
+                  <div className="border rounded-md p-4">
+                    {apiKeys.map((apiKey) => (
+                      <div
+                        key={apiKey.id}
+                        className="flex items-center justify-between py-2 border-b last:border-b-0"
+                      >
+                        <div className="flex-1 mr-4">
+                          <p className="font-mono text-sm truncate">{apiKey.key}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Created: {format(new Date(apiKey.createdAt), "PPP")}
+                          </p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleRevokeApiKey(apiKey.id)}
+                        >
+                          Revoke
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h4 className="text-md font-medium">Existing API Keys</h4>
+                  <div className="border rounded-md p-4">
+                    <p className="text-muted-foreground">No API keys found.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </Card>
         </TabsContent>

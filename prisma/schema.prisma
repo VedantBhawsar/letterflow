@@ -24,6 +24,7 @@ model User {
   newsletters   Newsletter[]
   forms         SubscriptionForm[]
   segments      Segment[]
+  apiKeys       ApiKey[] // Added relation to ApiKey model
 }
 
 model Account {
@@ -136,13 +137,18 @@ model Newsletter {
   publishedAt DateTime?
   lastAttemptedSend DateTime?
   previewText String?
-  status      String   @default("draft") // Possible values: "draft", "published"
+  status      NewsletterStatus   @default(DRAFT) // Possible values: "draft", "published"
   userId      String   @db.ObjectId
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relation to User
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NewsletterStatus {
+  DRAFT
+  PUBLISHED
 }
 
 model SubscriptionForm {
@@ -179,4 +185,15 @@ model Segment {
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscribers   Subscriber[] @relation(fields: [subscriberIds], references: [id])
   subscriberIds String[]     @db.ObjectId
+}
+
+// New model for API keys
+model ApiKey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma, Newsletter } from "@prisma/client"; // Import Prisma types
+import { Prisma, Newsletter, NewsletterStatus } from "@prisma/client"; // Import Prisma types
 
 // --- Helper Type Guard for Prisma Errors ---
 function isPrismaErrorWithCode(error: unknown): error is { code: string; message: string } {
@@ -33,6 +33,8 @@ export async function GET(req: Request) {
     const search = searchParams.get("search") || "";
     const status = searchParams.get("status") || "";
 
+    console.log("status", status);
+
     // --- Explicitly type whereConditions ---
     const whereConditions: Prisma.NewsletterWhereInput = {
       userId: userId, // Correctly type userId
@@ -48,11 +50,12 @@ export async function GET(req: Request) {
 
     if (status && status !== "all") {
       // Ensure status filter matches Prisma schema expectations (string or enum type)
-      whereConditions.status = status;
+      whereConditions.status =
+        status === "draft" ? NewsletterStatus.DRAFT : NewsletterStatus.PUBLISHED;
     }
 
     const newsletters: Newsletter[] = await prisma.newsletter.findMany({
-      where: whereConditions,
+      where: whereConditions, // Ensure whereConditions is correct type
       orderBy: {
         updatedAt: "desc",
       },
@@ -78,12 +81,16 @@ export async function GET(req: Request) {
 }
 
 // --- Define expected input structure for POST ---
+// Let's assume your Prisma generated type for the status enum is `NewsletterStatus`
+// If it's just a string field, you'd manually define allowed statuses.
+const ALLOWED_NEWSLETTER_STATUSES = Object.values(NewsletterStatus || {}); // Fallback if enum not found
+
 interface CreateNewsletterInput {
-  name?: string | null; // Use optional/null for better validation
-  elements?: unknown[] | null; // Expect an array, will validate further
+  name?: string | null;
+  elements?: unknown[] | null; // Stays as unknown[] for initial parsing flexibility
   subject?: string | null;
   previewText?: string | null;
-  status?: string | null; // Use Prisma enum type if available
+  status?: NewsletterStatus | string | null; // Allow string for input, then validate against enum
 }
 
 // --- POST Handler ---
@@ -92,85 +99,104 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { message: "Unauthorized: Please sign in to create newsletters" },
+        { message: "Unauthorized: Please sign in to create newsletters." },
         { status: 401 }
       );
     }
     const userId = session.user.id;
 
-    // Safely parse request body
     let body: CreateNewsletterInput;
     try {
-      body = await req.json();
+      body = (await req.json()) as CreateNewsletterInput;
     } catch (parseError) {
       console.error("Error parsing POST request body:", parseError);
-      return NextResponse.json({ message: "Invalid request body format" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid request body: Malformed JSON." },
+        { status: 400 }
+      );
     }
 
     // --- Input Validation ---
     if (!body.name || typeof body.name !== "string" || body.name.trim() === "") {
       return NextResponse.json(
-        { message: "Newsletter name is required and cannot be empty" },
+        { message: "Newsletter name is required and cannot be empty." },
         { status: 400 }
       );
     }
-    const name = body.name.trim(); // Use validated & trimmed name
+    const name = body.name.trim();
 
-    // Validate elements: must be an array (can be empty)
     if (!body.elements || !Array.isArray(body.elements)) {
+      // Allow empty array for elements, but it must be an array
       return NextResponse.json(
-        { message: "Newsletter elements are required and must be an array (can be empty)" },
+        { message: "Newsletter elements are required and must be an array (can be empty)." },
         { status: 400 }
       );
     }
-    const elements = body.elements; // Use validated elements
+    // Further validation of individual elements inside the array could be done here if necessary
+    // For Prisma JSON, ensuring it's an array is the main structural validation needed at this stage.
+    const elements = body.elements;
 
-    // Validate optional fields (provide defaults or null)
-    const subject = typeof body.subject === "string" ? body.subject : null;
-    const previewText = typeof body.previewText === "string" ? body.previewText : null;
-    const status = typeof body.status === "string" ? body.status : "draft"; // Default to draft
+    const subject = typeof body.subject === "string" ? body.subject.trim() : null;
+    const previewText = typeof body.previewText === "string" ? body.previewText.trim() : null;
 
-    // Add validation for status if using Prisma enum, e.g.:
-    // const allowedStatuses = Object.values(Prisma.NewsletterStatus); // If enum is NewsletterStatus
-    // if (!allowedStatuses.includes(status)) {
-    //   return NextResponse.json({ message: `Invalid status. Allowed: ${allowedStatuses.join(', ')}` }, { status: 400 });
-    // }
+    let status: NewsletterStatus = NewsletterStatus.DRAFT; // Default to DRAFT
+    if (body.status && typeof body.status === "string") {
+      const upperStatus = body.status.toUpperCase() as NewsletterStatus; // Attempt to cast
+      if (ALLOWED_NEWSLETTER_STATUSES.includes(upperStatus)) {
+        status = upperStatus;
+      } else {
+        return NextResponse.json(
+          {
+            message: `Invalid status: '${body.status}'. Allowed statuses are: ${ALLOWED_NEWSLETTER_STATUSES.join(", ")}.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Create the newsletter with type safety
     const newsletter: Newsletter = await prisma.newsletter.create({
       data: {
         name,
-        // --- Correctly type elements for Prisma JSON field ---
-        // Since 'elements' is validated as Array, cast to Prisma.JsonArray
-        elements: elements as Prisma.JsonArray,
+        elements: elements as Prisma.JsonArray, // Cast to Prisma.JsonArray after Array.isArray check
         subject,
         previewText,
-        status,
+        status, // Now this is type-safe if using Prisma enum
         userId,
-        // Prisma handles createdAt/updatedAt automatically
+        // organizationId: session.user.organizationId, // If you have org-level data
       },
     });
 
-    console.log(`Newsletter created: ${newsletter.id}`);
-    return NextResponse.json(newsletter, { status: 201 }); // Use 201 Created status
+    console.log(`Newsletter created: ${newsletter.id} by user ${userId}`);
+    return NextResponse.json(newsletter, { status: 201 });
   } catch (error: unknown) {
-    // Catch as unknown
     console.error("Error creating newsletter:", error);
-    let errorMessage = "Failed to create newsletter";
+    let errorMessage = "An unexpected error occurred while creating the newsletter.";
     let statusCode = 500;
 
     if (isPrismaErrorWithCode(error)) {
-      console.error("Prisma Error:", error.code, error.message);
-      // Handle specific Prisma errors, e.g., unique constraint violation
-      if (error.code === "P2002") {
-        // Assuming 'name' and 'userId' might form a unique constraint
-        errorMessage = "A newsletter with this name might already exist.";
-        statusCode = 409; // Conflict status code
-      } else {
-        errorMessage = "Database error occurred during creation.";
+      console.error(`Prisma Error ${error.code}: ${error.message}`, error || "");
+      switch (error.code) {
+        case "P2002":
+          // P2002 is unique constraint violation.
+          // Check error.meta.target to see which fields caused it.
+          // For example, if it's on a unique index like (name, userId)
+          const target = (error as { target?: string[] })?.target?.join(", ");
+          errorMessage = `A newsletter with similar details (${target || "name"}) already exists. Please use a different name.`;
+          statusCode = 409; // Conflict
+          break;
+        // Add other specific Prisma error codes as needed
+        // e.g., P2003 (foreign key constraint failed)
+        // e.g., P2025 (record to update/delete does not exist) - though not for create
+        default:
+          errorMessage = "A database error occurred. Please try again.";
+          // Keep statusCode 500 or adjust if certain Prisma errors imply client issues
+          break;
       }
     } else if (error instanceof Error) {
+      // Generic JavaScript error
       errorMessage = error.message;
+      // Potentially inspect error.name for specific JS errors if needed
     }
 
     return NextResponse.json({ message: errorMessage }, { status: statusCode });

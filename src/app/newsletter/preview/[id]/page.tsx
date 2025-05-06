@@ -94,6 +94,7 @@ export default function NewsletterPreviewPage() {
           testEmail,
           subject: emailSubject,
           previewText: emailPreviewText,
+          elements,
         }),
       });
 
@@ -123,6 +124,8 @@ export default function NewsletterPreviewPage() {
         return <h2 style={element.style}>{element.content}</h2>;
       case "text":
         return <p style={element.style}>{element.content}</p>;
+      case "passage":
+        return <div style={element.style} className="passage-content" dangerouslySetInnerHTML={{ __html: element.content || "" }} />;
       case "image":
         return element.src ? (
           <img

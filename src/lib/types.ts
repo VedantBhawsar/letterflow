@@ -82,7 +82,8 @@ export interface NewsletterElement {
   content?: string;
   src?: string;
   url?: string;
-  style?: Record<string, string>;
+  alt?: string;
+  style?: React.CSSProperties;
   columns?: NewsletterElement[][];
   personalizedFields?: { fieldName: string; defaultValue: string }[];
   height?: string;

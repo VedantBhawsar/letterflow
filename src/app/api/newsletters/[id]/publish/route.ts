@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
-import { Newsletter } from "@prisma/client"; // Import Newsletter type if available
+import { Newsletter, NewsletterStatus } from "@prisma/client"; // Import Newsletter type if available
 
 // --- Define Types for Newsletter Elements ---
 
@@ -89,10 +89,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Ensure newsletter.elements is handled safely, expecting NewsletterElement[]
-    if (newsletter.status !== "published") {
+    if (newsletter.status !== NewsletterStatus.PUBLISHED) {
       await prisma.newsletter.update({
         where: { id },
-        data: { status: "published", publishedAt: new Date() }, // Record publish time
+        data: { status: NewsletterStatus.PUBLISHED, publishedAt: new Date() }, // Record publish time
       });
       console.log(`Newsletter ${id} status updated to published.`);
     } else {

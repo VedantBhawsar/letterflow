@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma, Newsletter, NewsletterStatus } from "@prisma/client";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -63,7 +64,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         elements: elements, // Store as JSON
         subject: subject || "",
         previewText: previewText || "",
-        status: status || "draft", // Default to draft if not provided
+        status: status === "draft" ? NewsletterStatus.DRAFT : NewsletterStatus.PUBLISHED, // Default to draft if not provided
         updatedAt: new Date(),
       },
     });
