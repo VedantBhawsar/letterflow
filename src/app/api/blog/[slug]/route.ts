@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET handler to fetch a single blog by slug
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     // Fetch blog from database
     const blog = await prisma.blog.findUnique({
@@ -31,9 +31,9 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
 }
 
 // PUT handler to update a blog
-export async function PUT(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const data = await req.json();
 
     // Update blog in database
@@ -50,9 +50,9 @@ export async function PUT(req: NextRequest, { params }: { params: { slug: string
 }
 
 // DELETE handler to delete a blog
-export async function DELETE(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     // Delete blog from database
     await prisma.blog.delete({
