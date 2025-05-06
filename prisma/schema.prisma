@@ -25,6 +25,7 @@ model User {
   forms         SubscriptionForm[]
   segments      Segment[]
   apiKeys       ApiKey[] // Added relation to ApiKey model
+  blogs         Blog[]
 }
 
 model Account {
@@ -195,5 +196,26 @@ model ApiKey {
   createdAt DateTime @default(now())
   expiresAt DateTime?
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Blog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  content     String   @db.String
+  image       String?
+  date        DateTime @default(now())
+  readTime    String?
+  slug        String   @unique
+  gradient    String?
+  categories  String[]
+  tags        String[]
+  featured    Boolean  @default(false)
+  userId      String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relation to User
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

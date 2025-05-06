@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Router, Search, Tag } from "lucide-react";
+import { ArrowRight, Router, Search, Tag, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,365 +68,482 @@ const itemFadeIn = {
   },
 };
 
-// Blog posts data (in a real app, this would come from a CMS or API)
-const blogPosts = [
-  {
-    title: "Content Strategy Essentials",
-    description:
-      "Learn the fundamentals of creating a content strategy that drives newsletter growth and engagement.",
-    image:
-      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000&auto=format&fit=crop",
-    date: "April 12, 2023",
-    readTime: "8 min read",
-    slug: "content-strategy-essentials",
-    gradient: "from-blue-600/20 to-purple-500/20",
-    categories: ["Strategy", "Growth"],
-    tags: ["content strategy", "newsletter growth", "engagement"],
-    featured: true,
-  },
-  {
-    title: "Email Marketing Demystified",
-    description:
-      "Discover the secrets behind successful email marketing campaigns and how to apply them to your newsletter.",
-    image:
-      "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?q=80&w=1000&auto=format&fit=crop",
-    date: "March 28, 2023",
-    readTime: "6 min read",
-    slug: "email-marketing-demystified",
-    gradient: "from-primary/20 to-emerald-500/20",
-    categories: ["Marketing", "Email"],
-    tags: ["email marketing", "campaigns", "newsletter"],
-    featured: true,
-  },
-  {
-    title: "Productivity Hacks for Writers",
-    description:
-      "Boost your writing productivity with these proven techniques and tools for newsletter creators.",
-    image:
-      "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1000&auto=format&fit=crop",
-    date: "March 15, 2023",
-    readTime: "5 min read",
-    slug: "productivity-hacks-writers",
-    gradient: "from-amber-500/20 to-rose-500/20",
-    categories: ["Productivity", "Writing"],
-    tags: ["productivity", "writing", "tools"],
-    featured: false,
-  },
-  {
-    title: "The Art of Newsletter Design",
-    description:
-      "Create visually stunning newsletters that capture attention and drive engagement with these design principles.",
-    image:
-      "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=1000&auto=format&fit=crop",
-    date: "February 28, 2023",
-    readTime: "7 min read",
-    slug: "art-of-newsletter-design",
-    gradient: "from-pink-500/20 to-yellow-500/20",
-    categories: ["Design", "Creativity"],
-    tags: ["design", "visual", "layout", "creativity"],
-    featured: false,
-  },
-  {
-    title: "Building Your Subscriber Base",
-    description:
-      "Strategies and tactics to grow your newsletter subscriber base organically and through paid channels.",
-    image:
-      "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1000&auto=format&fit=crop",
-    date: "February 15, 2023",
-    readTime: "9 min read",
-    slug: "building-subscriber-base",
-    gradient: "from-green-500/20 to-blue-500/20",
-    categories: ["Growth", "Marketing"],
-    tags: ["subscribers", "growth", "audience building"],
-    featured: true,
-  },
-  {
-    title: "Monetizing Your Newsletter",
-    description:
-      "Explore different revenue models and strategies to turn your newsletter into a profitable business.",
-    image:
-      "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=1000&auto=format&fit=crop",
-    date: "January 30, 2023",
-    readTime: "10 min read",
-    slug: "monetizing-your-newsletter",
-    gradient: "from-purple-500/20 to-red-500/20",
-    categories: ["Business", "Monetization"],
-    tags: ["monetization", "revenue", "business model"],
-    featured: false,
-  },
-];
-
-// Extract all unique categories and tags
-const allCategories = Array.from(new Set(blogPosts.flatMap((post) => post.categories)));
-const allTags = Array.from(new Set(blogPosts.flatMap((post) => post.tags)));
+// Blog post type definition
+type BlogPost = {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  date: string;
+  readTime?: string;
+  slug: string;
+  gradient?: string;
+  categories: string[];
+  tags: string[];
+  featured: boolean;
+  userId: string;
+  user?: {
+    name: string | null;
+    image: string | null;
+  };
+};
 
 export default function BlogPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedTag, setSelectedTag] = useState("");
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter posts based on search query, category, and tag
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 9; // Number of posts to display per page
+
+  // Fetch blog posts from API
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/blog");
+        if (!response.ok) {
+          throw new Error("Failed to fetch blogs");
+        }
+        const data = await response.json();
+        setBlogPosts(data);
+
+        // Extract all unique categories and tags
+        const categories = Array.from(
+          new Set(data.flatMap((post: BlogPost) => post.categories))
+        ) as string[];
+        const tags = Array.from(new Set(data.flatMap((post: BlogPost) => post.tags))) as string[];
+
+        setAllCategories(categories);
+        setAllTags(tags);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  // Filter blog posts based on search, category, and tag
   const filteredPosts = blogPosts.filter((post) => {
-    // Filter by search query
     const matchesSearch =
-      searchQuery === "" ||
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.description.toLowerCase().includes(searchQuery.toLowerCase());
+      searchTerm === "" ||
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Filter by category
-    const matchesCategory = selectedCategory === null || post.categories.includes(selectedCategory);
+    const matchesCategory = selectedCategory === "" || post.categories.includes(selectedCategory);
 
-    // Filter by tag
-    const matchesTag = selectedTag === null || post.tags.includes(selectedTag);
+    const matchesTag = selectedTag === "" || post.tags.includes(selectedTag);
 
-    // Filter by tab
-    const matchesTab = activeTab === "all" || (activeTab === "featured" && post.featured);
-
-    return matchesSearch && matchesCategory && matchesTag && matchesTab;
+    return matchesSearch && matchesCategory && matchesTag;
   });
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchTerm(e.target.value);
   };
 
   // Handle category selection
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory(selectedCategory === category ? null : category);
+    setSelectedCategory(category === selectedCategory ? "" : category);
   };
 
   // Handle tag selection
   const handleTagClick = (tag: string) => {
-    setSelectedTag(selectedTag === tag ? null : tag);
+    setSelectedTag(tag === selectedTag ? "" : tag);
   };
 
   // Clear all filters
   const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory(null);
-    setSelectedTag(null);
-    setActiveTab("all");
+    setSearchTerm("");
+    setSelectedCategory("");
+    setSelectedTag("");
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pageNumbers: (number | string)[] = [];
+    const maxPagesToShow = 5; // Maximum number of page buttons to show
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+    if (totalPages <= maxPagesToShow) {
+      // If total pages is less than or equal to maxPagesToShow, show all pages
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Always show first page
+      pageNumbers.push(1);
+
+      // Calculate start and end of page range around current page
+      let startPage = Math.max(2, currentPage - 1);
+      let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+      // Adjust if we're at the start or end
+      if (currentPage <= 2) {
+        endPage = Math.min(4, totalPages - 1);
+      } else if (currentPage >= totalPages - 1) {
+        startPage = Math.max(2, totalPages - 3);
+      }
+
+      // Add ellipsis if needed before the range
+      if (startPage > 2) {
+        pageNumbers.push("...");
+      }
+
+      // Add the page range
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      // Add ellipsis if needed after the range
+      if (endPage < totalPages - 1) {
+        pageNumbers.push("...");
+      }
+
+      // Always show last page if there is more than one page
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
+
+  // Handle page change
+  const handlePageChange = (pageNumber: number | string) => {
+    if (typeof pageNumber === "number") {
+      setCurrentPage(pageNumber);
+      // Scroll to top when changing pages
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
-    <div className="min-h-screen smooth-scroll bg-gradient-to-b from-white via-blue-50/20 to-primary/5">
-      {/* Header section */}
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <BlogHeroSectionV1 />
-      {/* Filter and search section */}
-      <section id={"explore"} className="py-8 border-y border-slate-200">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between gap-6">
-            {/* Search input */}
-            <div className="relative w-full md:w-1/3">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search articles..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-            </div>
+      <BlogHeroSection />
 
-            {/* Tabs */}
-            <Tabs
-              defaultValue="all"
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full md:w-auto"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="all">All Posts</TabsTrigger>
-                <TabsTrigger value="featured">Featured</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          {/* Categories */}
-          <div className="mt-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Tag className="h-4 w-4 text-primary" />
-              <h3 className="font-medium">Categories:</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {allCategories.map((category) => (
-                <Badge
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => handleCategoryClick(category)}
-                >
-                  {category}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div className="mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Tag className="h-4 w-4 text-primary" />
-              <h3 className="font-medium">Popular Tags:</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {allTags.slice(0, 8).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTag === tag ? "default" : "secondary"}
-                  className="cursor-pointer"
-                  onClick={() => handleTagClick(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          {/* Active filters */}
-          {(searchQuery || selectedCategory || selectedTag || activeTab !== "all") && (
-            <div className="mt-6 flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Active filters:</span>
-              {searchQuery && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Search: {searchQuery}
-                </Badge>
-              )}
-              {selectedCategory && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Category: {selectedCategory}
-                </Badge>
-              )}
-              {selectedTag && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Tag: {selectedTag}
-                </Badge>
-              )}
-              {activeTab === "featured" && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Featured only
-                </Badge>
-              )}
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2">
-                Clear all
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Blog posts grid */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          {filteredPosts.length > 0 ? (
-            <>
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-              >
-                {filteredPosts.map((post) => (
-                  <motion.div
-                    key={post.slug}
-                    variants={itemFadeIn}
-                    whileHover={{ y: -10, transition: { duration: 0.2 } }}
-                  >
-                    <Card className="overflow-hidden flex flex-col h-full border-0 shadow-lg hover:shadow-xl transition-all">
-                      <div className="relative h-52 w-full overflow-hidden rounded-sm">
-                        {/* Gradient overlay based on post's gradient */}
-                        <div
-                          className={`absolute inset-0 bg-gradient-to-tr ${post.gradient} opacity-30 z-10`}
-                        />
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">Latest Articles</h2>
+          </div>
 
-                        {/* Featured badge */}
-                        {post.featured && (
-                          <div className="absolute top-2 right-2 z-20">
-                            <Badge className="bg-primary text-white">Featured</Badge>
-                          </div>
-                        )}
-
-                        {/* Image with zoom effect on hover */}
-                        <div className="relative h-full w-full transform transition-transform duration-700 hover:scale-110 rounded-2xl">
-                          <Image
-                            src={post.image}
-                            alt={post.title}
-                            fill
-                            className="object-cover rounded-b-2xl"
-                          />
-                        </div>
-
-                        {/* Gradient overlay at bottom for better text readability */}
-                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/70 to-transparent z-20" />
-                      </div>
-
-                      <CardHeader className="relative z-30 bg-white rounded-t-2xl pb-2">
-                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                          <span className="font-medium text-primary">{post.date}</span>
-                          <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
-                            {post.readTime}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-bold">{post.title}</h3>
-                      </CardHeader>
-
-                      <CardContent className="flex-grow pt-0">
-                        <p className="text-muted-foreground">{post.description}</p>
-
-                        {/* Categories */}
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {post.categories.map((category) => (
-                            <Badge key={category} variant="outline" className="text-xs">
-                              {category}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-
-                      <CardFooter className="border-t border-border/30 pt-4">
-                        <Button variant="link" className="px-0 group" asChild>
-                          <Link href={`/blog/${post.slug}`} className="flex items-center gap-2">
-                            Read Article
-                            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                          </Link>
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {/* Pagination (simplified) */}
-              <div className="mt-16 flex justify-center">
-                <div className="flex space-x-2">
-                  <Button variant="outline" disabled>
-                    Previous
-                  </Button>
-                  <Button variant="outline" className="bg-primary text-white">
-                    1
-                  </Button>
-                  <Button variant="outline">2</Button>
-                  <Button variant="outline">3</Button>
-                  <Button variant="outline">Next</Button>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            {/* Sidebar with filters */}
+            <div className="space-y-8">
+              {/* Search */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Search</h3>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="Search articles..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                  />
                 </div>
               </div>
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <h3 className="text-xl font-semibold mb-2">No articles found</h3>
-              <p className="text-muted-foreground mb-6">
-                Try adjusting your search or filter criteria
-              </p>
-              <Button onClick={clearFilters}>Clear all filters</Button>
+
+              {/* Categories */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Categories</h3>
+                <div className="space-y-2">
+                  {allCategories.map((category) => (
+                    <Badge
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      className="mr-2 mb-2 cursor-pointer"
+                      onClick={() => handleCategoryClick(category)}
+                    >
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Tags</h3>
+                <div className="flex flex-wrap">
+                  {allTags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant={selectedTag === tag ? "secondary" : "outline"}
+                      className="mr-2 mb-2 cursor-pointer"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      <Tag className="h-3 w-3 mr-1" />
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Clear filters */}
+              {(searchTerm || selectedCategory || selectedTag) && (
+                <Button variant="ghost" onClick={clearFilters} className="w-full">
+                  Clear all filters
+                </Button>
+              )}
             </div>
-          )}
+
+            {/* Blog posts grid */}
+            <div className="md:col-span-3">
+              {loading ? (
+                <div className="text-center py-16">
+                  <p className="text-muted-foreground">Loading blog posts...</p>
+                </div>
+              ) : filteredPosts.length > 0 ? (
+                <>
+                  <Tabs defaultValue="all">
+                    <TabsList className="mb-8">
+                      <TabsTrigger value="all">All Posts</TabsTrigger>
+                      <TabsTrigger value="featured">Featured</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="all">
+                      <motion.div
+                        variants={staggerContainer}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      >
+                        {filteredPosts
+                          .slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
+                          .map((post) => (
+                            <motion.div key={post.slug} variants={itemFadeIn}>
+                              <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow duration-300">
+                                <div className="relative h-48 w-full overflow-hidden">
+                                  {post.image ? (
+                                    <Image
+                                      src={post.image}
+                                      alt={post.title}
+                                      fill
+                                      className="object-cover transition-transform duration-500 hover:scale-105"
+                                    />
+                                  ) : (
+                                    <div
+                                      className={`h-full w-full bg-gradient-to-br ${post.gradient || "from-blue-600/20 to-purple-500/20"}`}
+                                    />
+                                  )}
+                                </div>
+
+                                <CardHeader>
+                                  <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
+                                    <span>
+                                      {new Date(post.date).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </span>
+                                    {post.readTime && <span>{post.readTime}</span>}
+                                  </div>
+                                  <h3 className="text-xl font-bold">{post.title}</h3>
+                                </CardHeader>
+
+                                <CardContent className="flex-grow">
+                                  <p className="text-muted-foreground mb-4">{post.description}</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {post.categories.map((category) => (
+                                      <Badge key={category} variant="secondary" className="text-xs">
+                                        {category}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </CardContent>
+
+                                <CardFooter className="border-t border-border/30 pt-4">
+                                  <Button variant="link" className="px-0 group" asChild>
+                                    <Link
+                                      href={`/blog/${post.slug}`}
+                                      className="flex items-center gap-2"
+                                    >
+                                      Read Article
+                                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                                    </Link>
+                                  </Button>
+                                </CardFooter>
+                              </Card>
+                            </motion.div>
+                          ))}
+                      </motion.div>
+                    </TabsContent>
+
+                    <TabsContent value="featured">
+                      <motion.div
+                        variants={staggerContainer}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      >
+                        {filteredPosts
+                          .filter((post) => post.featured)
+                          .slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
+                          .map((post) => (
+                            <motion.div key={post.slug} variants={itemFadeIn}>
+                              <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow duration-300">
+                                <div className="relative h-48 w-full overflow-hidden">
+                                  {post.image ? (
+                                    <Image
+                                      src={post.image}
+                                      alt={post.title}
+                                      fill
+                                      className="object-cover transition-transform duration-500 hover:scale-105"
+                                    />
+                                  ) : (
+                                    <div
+                                      className={`h-full w-full bg-gradient-to-br ${post.gradient || "from-blue-600/20 to-purple-500/20"}`}
+                                    />
+                                  )}
+                                </div>
+
+                                <CardHeader>
+                                  <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
+                                    <span>
+                                      {new Date(post.date).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </span>
+                                    {post.readTime && <span>{post.readTime}</span>}
+                                  </div>
+                                  <h3 className="text-xl font-bold">{post.title}</h3>
+                                </CardHeader>
+
+                                <CardContent className="flex-grow">
+                                  <p className="text-muted-foreground mb-4">{post.description}</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {post.categories.map((category) => (
+                                      <Badge key={category} variant="secondary" className="text-xs">
+                                        {category}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </CardContent>
+
+                                <CardFooter className="border-t border-border/30 pt-4">
+                                  <Button variant="link" className="px-0 group" asChild>
+                                    <Link
+                                      href={`/blog/${post.slug}`}
+                                      className="flex items-center gap-2"
+                                    >
+                                      Read Article
+                                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                                    </Link>
+                                  </Button>
+                                </CardFooter>
+                              </Card>
+                            </motion.div>
+                          ))}
+                      </motion.div>
+                    </TabsContent>
+                  </Tabs>
+
+                  {/* Pagination */}
+                  <div className="mt-16 flex justify-center">
+                    <div className="flex space-x-2">
+                      {/* Previous button */}
+                      <Button
+                        variant="outline"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="flex items-center gap-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          <path d="m15 18-6-6 6-6" />
+                        </svg>
+                        Prev
+                      </Button>
+
+                      {/* Page numbers */}
+                      {getPageNumbers().map((pageNumber, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          className={
+                            typeof pageNumber === "number" && pageNumber === currentPage
+                              ? "bg-primary text-white"
+                              : pageNumber === "..."
+                                ? "cursor-default bg-transparent"
+                                : ""
+                          }
+                          onClick={() => handlePageChange(pageNumber)}
+                          disabled={pageNumber === "..."}
+                        >
+                          {pageNumber}
+                        </Button>
+                      ))}
+
+                      {/* Next button */}
+                      <Button
+                        variant="outline"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={
+                          currentPage === Math.ceil(filteredPosts.length / postsPerPage) ||
+                          filteredPosts.length === 0
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        Next
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16">
+                  <h3 className="text-xl font-semibold mb-2">No articles found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Try adjusting your search or filter criteria
+                  </p>
+                  <Button onClick={clearFilters}>Clear all filters</Button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 }
 
-export function BlogHeroSectionV1() {
+function BlogHeroSection() {
   return (
     <section className="py-14 relative overflow-hidden isolate">
       {" "}
@@ -459,14 +576,6 @@ export function BlogHeroSectionV1() {
             Unlock the secrets to captivating newsletters. Discover insights, expert guides, and
             proven strategies to elevate your content and expand your reach.
           </motion.p>
-          {/* Optional Call to Action */}
-          <motion.div variants={itemVariants}>
-            <Link href="#explore">
-              <Button className="px-8 py-3 bg-emerald-600 text-white font-semibold rounded-lg shadow-lg hover:bg-emerald-700 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                Explore Articles
-              </Button>
-            </Link>
-          </motion.div>
         </motion.div>
       </div>
     </section>

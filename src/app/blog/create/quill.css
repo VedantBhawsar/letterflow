@@ -1,0 +1,54 @@
+/* Quill Editor Styles */
+
+/* Import Quill core styles */
+@import "react-quill/dist/quill.snow.css";
+
+/* Custom styles for the Quill editor */
+.quill-editor-container {
+  margin-bottom: 2rem;
+}
+
+.quill-editor-container .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  background: white;
+  font-family: inherit;
+  font-size: 1rem;
+  height: 300px;
+  overflow-y: auto;
+}
+
+.quill-editor-container .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  background: white;
+  border-color: hsl(var(--border));
+}
+
+.quill-editor-container .ql-editor {
+  min-height: 250px;
+}
+
+/* Dark mode support */
+.dark .quill-editor-container .ql-toolbar,
+.dark .quill-editor-container .ql-container {
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+.dark .quill-editor-container .ql-toolbar .ql-stroke {
+  stroke: hsl(var(--foreground));
+}
+
+.dark .quill-editor-container .ql-toolbar .ql-fill {
+  fill: hsl(var(--foreground));
+}
+
+.dark .quill-editor-container .ql-toolbar .ql-picker {
+  color: hsl(var(--foreground));
+}
+
+.dark .quill-editor-container .ql-editor.ql-blank::before {
+  color: hsl(var(--muted-foreground));
+}
