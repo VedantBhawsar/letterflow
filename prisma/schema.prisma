@@ -4,11 +4,12 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = "mongodb+srv://admin:admin@cluster0.d92qsmv.mongodb.net/myDatabase"
+  url      = env("DATABASE_URL")
 }
 
 model User {
   id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  username      String?            @unique
   name          String?
   email         String             @unique
   emailVerified DateTime?
@@ -24,7 +25,7 @@ model User {
   newsletters   Newsletter[]
   forms         SubscriptionForm[]
   segments      Segment[]
-  apiKeys       ApiKey[] // Added relation to ApiKey model
+  apiKeys       ApiKey[] 
   blogs         Blog[]
 }
 
@@ -70,7 +71,7 @@ model Campaign {
   name        String
   subject     String
   content     String
-  status      String         @default("draft") // draft, scheduled, sent, archived
+  status      String         @default("draft") 
   sentAt      DateTime?
   scheduledAt DateTime?
   createdAt   DateTime       @default(now())
@@ -87,7 +88,7 @@ model Subscriber {
   email           String
   firstName       String?
   lastName        String?
-  status          String     @default("active") // active, unsubscribed, bounced, complained
+  status          String     @default("active") 
   source          String?
   subscribedAt    DateTime   @default(now())
   unsubscribedAt  DateTime?
@@ -138,7 +139,7 @@ model Newsletter {
   publishedAt DateTime?
   lastAttemptedSend DateTime?
   previewText String?
-  status      NewsletterStatus   @default(DRAFT) // Possible values: "draft", "published"
+  status      NewsletterStatus   @default(DRAFT) 
   userId      String   @db.ObjectId
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

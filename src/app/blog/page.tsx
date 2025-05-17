@@ -6,48 +6,13 @@ import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Router, Search, Tag, Plus } from "lucide-react";
+import { ArrowRight, Search, Tag } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/sections/Navbar";
+import Footer from "@/components/sections/Footer";
 import { motion } from "framer-motion";
-
-const heroVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2, // Stagger animation of children
-      delayChildren: 0.1, // Delay before children start
-      duration: 0.5,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 12,
-      duration: 0.6,
-    },
-  },
-};
-
-// Animation variants
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6 },
-  },
-};
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -227,14 +192,14 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-950">
       <Navbar />
       <BlogHeroSection />
 
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Latest Articles</h2>
+            <h2 className="text-3xl font-bold text-white">Latest Articles</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -242,12 +207,12 @@ export default function BlogPage() {
             <div className="space-y-8">
               {/* Search */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Search</h3>
+                <h3 className="text-lg font-semibold mb-4 text-white">Search</h3>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                   <Input
                     placeholder="Search articles..."
-                    className="pl-10"
+                    className="pl-10 bg-slate-800 border-slate-700 focus:border-emerald-500 focus:ring focus:ring-emerald-500/20"
                     value={searchTerm}
                     onChange={handleSearchChange}
                   />
@@ -256,30 +221,39 @@ export default function BlogPage() {
 
               {/* Categories */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Categories</h3>
+                <h3 className="text-lg font-semibold mb-4 text-white">Categories</h3>
                 <div className="space-y-2">
                   {allCategories.map((category) => (
                     <Badge
                       key={category}
                       variant={selectedCategory === category ? "default" : "outline"}
-                      className="mr-2 mb-2 cursor-pointer"
+                      className={
+                        selectedCategory === category
+                          ? "mr-2 mb-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
+                          : "mr-2 mb-2 cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700 hover:text-white"
+                      }
                       onClick={() => handleCategoryClick(category)}
                     >
                       {category}
                     </Badge>
                   ))}
+                  {allCategories.length === 0 && <div className="text-slate-400">Technology</div>}
                 </div>
               </div>
 
               {/* Tags */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Tags</h3>
+                <h3 className="text-lg font-semibold mb-4 text-white">Tags</h3>
                 <div className="flex flex-wrap">
                   {allTags.map((tag) => (
                     <Badge
                       key={tag}
                       variant={selectedTag === tag ? "secondary" : "outline"}
-                      className="mr-2 mb-2 cursor-pointer"
+                      className={
+                        selectedTag === tag
+                          ? "mr-2 mb-2 cursor-pointer bg-emerald-600/20 text-emerald-400 border-emerald-500/30"
+                          : "mr-2 mb-2 cursor-pointer border-slate-700 text-slate-300 bg-slate-800 hover:bg-slate-700"
+                      }
                       onClick={() => handleTagClick(tag)}
                     >
                       <Tag className="h-3 w-3 mr-1" />
@@ -291,7 +265,11 @@ export default function BlogPage() {
 
               {/* Clear filters */}
               {(searchTerm || selectedCategory || selectedTag) && (
-                <Button variant="ghost" onClick={clearFilters} className="w-full">
+                <Button
+                  variant="ghost"
+                  onClick={clearFilters}
+                  className="w-full text-slate-300 hover:text-white hover:bg-slate-800"
+                >
                   Clear all filters
                 </Button>
               )}
@@ -301,14 +279,24 @@ export default function BlogPage() {
             <div className="md:col-span-3">
               {loading ? (
                 <div className="text-center py-16">
-                  <p className="text-muted-foreground">Loading blog posts...</p>
+                  <p className="text-slate-400">Loading blog posts...</p>
                 </div>
               ) : filteredPosts.length > 0 ? (
                 <>
                   <Tabs defaultValue="all">
-                    <TabsList className="mb-8">
-                      <TabsTrigger value="all">All Posts</TabsTrigger>
-                      <TabsTrigger value="featured">Featured</TabsTrigger>
+                    <TabsList className="mb-8 bg-slate-800">
+                      <TabsTrigger
+                        value="all"
+                        className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
+                      >
+                        All Posts
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="featured"
+                        className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-300"
+                      >
+                        Featured
+                      </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="all">
@@ -322,7 +310,7 @@ export default function BlogPage() {
                           .slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
                           .map((post) => (
                             <motion.div key={post.slug} variants={itemFadeIn}>
-                              <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow duration-300">
+                              <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow duration-300 bg-slate-800 border-slate-700/50 hover:border-emerald-500/30 rounded-lg">
                                 <div className="relative h-48 w-full overflow-hidden">
                                   {post.image ? (
                                     <Image
@@ -333,38 +321,52 @@ export default function BlogPage() {
                                     />
                                   ) : (
                                     <div
-                                      className={`h-full w-full bg-gradient-to-br ${post.gradient || "from-blue-600/20 to-purple-500/20"}`}
+                                      className={`h-full w-full bg-gradient-to-br ${post.gradient || "from-emerald-500/20 to-slate-700"}`}
                                     />
                                   )}
                                 </div>
 
                                 <CardHeader>
-                                  <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
+                                  <div className="flex justify-between items-center text-sm text-slate-400 mb-2">
                                     <span>
-                                      {new Date(post.date).toLocaleDateString("en-US", {
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "numeric",
-                                      })}
+                                      {post.date
+                                        ? new Date(post.date).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                          })
+                                        : "May 6, 2025"}
                                     </span>
                                     {post.readTime && <span>{post.readTime}</span>}
+                                    {!post.readTime && <span>5 min</span>}
                                   </div>
-                                  <h3 className="text-xl font-bold">{post.title}</h3>
+                                  <h3 className="text-xl font-bold text-white">
+                                    {post.title || "Sample Post Title"}
+                                  </h3>
                                 </CardHeader>
 
                                 <CardContent className="flex-grow">
-                                  <p className="text-muted-foreground mb-4">{post.description}</p>
+                                  <p className="text-slate-300 mb-4">{post.description}</p>
                                   <div className="flex flex-wrap gap-2">
-                                    {post.categories.map((category) => (
-                                      <Badge key={category} variant="secondary" className="text-xs">
-                                        {category}
-                                      </Badge>
-                                    ))}
+                                    {post.categories &&
+                                      post.categories.map((category) => (
+                                        <Badge
+                                          key={category}
+                                          variant="secondary"
+                                          className="text-xs bg-slate-700 text-slate-300"
+                                        >
+                                          {category}
+                                        </Badge>
+                                      ))}
                                   </div>
                                 </CardContent>
 
-                                <CardFooter className="border-t border-border/30 pt-4">
-                                  <Button variant="link" className="px-0 group" asChild>
+                                <CardFooter className="border-t border-slate-700 pt-4">
+                                  <Button
+                                    variant="link"
+                                    className="px-0 group text-emerald-400"
+                                    asChild
+                                  >
                                     <Link
                                       href={`/blog/${post.slug}`}
                                       className="flex items-center gap-2"
@@ -387,12 +389,14 @@ export default function BlogPage() {
                         animate="visible"
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                       >
-                        {filteredPosts
-                          .filter((post) => post.featured)
+                        {(filteredPosts.filter((post) => post.featured).length > 0
+                          ? filteredPosts.filter((post) => post.featured)
+                          : filteredPosts.slice(0, 3)
+                        )
                           .slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
                           .map((post) => (
                             <motion.div key={post.slug} variants={itemFadeIn}>
-                              <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow duration-300">
+                              <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow duration-300 bg-slate-800 border-slate-700/50 hover:border-emerald-500/30 rounded-lg">
                                 <div className="relative h-48 w-full overflow-hidden">
                                   {post.image ? (
                                     <Image
@@ -403,38 +407,52 @@ export default function BlogPage() {
                                     />
                                   ) : (
                                     <div
-                                      className={`h-full w-full bg-gradient-to-br ${post.gradient || "from-blue-600/20 to-purple-500/20"}`}
+                                      className={`h-full w-full bg-gradient-to-br ${post.gradient || "from-emerald-500/20 to-slate-700"}`}
                                     />
                                   )}
                                 </div>
 
                                 <CardHeader>
-                                  <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
+                                  <div className="flex justify-between items-center text-sm text-slate-400 mb-2">
                                     <span>
-                                      {new Date(post.date).toLocaleDateString("en-US", {
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "numeric",
-                                      })}
+                                      {post.date
+                                        ? new Date(post.date).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                          })
+                                        : "May 6, 2025"}
                                     </span>
                                     {post.readTime && <span>{post.readTime}</span>}
+                                    {!post.readTime && <span>5 min</span>}
                                   </div>
-                                  <h3 className="text-xl font-bold">{post.title}</h3>
+                                  <h3 className="text-xl font-bold text-white">
+                                    {post.title || "Sample Post Title"}
+                                  </h3>
                                 </CardHeader>
 
                                 <CardContent className="flex-grow">
-                                  <p className="text-muted-foreground mb-4">{post.description}</p>
+                                  <p className="text-slate-300 mb-4">{post.description}</p>
                                   <div className="flex flex-wrap gap-2">
-                                    {post.categories.map((category) => (
-                                      <Badge key={category} variant="secondary" className="text-xs">
-                                        {category}
-                                      </Badge>
-                                    ))}
+                                    {post.categories &&
+                                      post.categories.map((category) => (
+                                        <Badge
+                                          key={category}
+                                          variant="secondary"
+                                          className="text-xs bg-slate-700 text-slate-300"
+                                        >
+                                          {category}
+                                        </Badge>
+                                      ))}
                                   </div>
                                 </CardContent>
 
-                                <CardFooter className="border-t border-border/30 pt-4">
-                                  <Button variant="link" className="px-0 group" asChild>
+                                <CardFooter className="border-t border-slate-700 pt-4">
+                                  <Button
+                                    variant="link"
+                                    className="px-0 group text-emerald-400"
+                                    asChild
+                                  >
                                     <Link
                                       href={`/blog/${post.slug}`}
                                       className="flex items-center gap-2"
@@ -459,7 +477,7 @@ export default function BlogPage() {
                         variant="outline"
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -485,10 +503,10 @@ export default function BlogPage() {
                           variant="outline"
                           className={
                             typeof pageNumber === "number" && pageNumber === currentPage
-                              ? "bg-primary text-white"
+                              ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 hover:border-emerald-700"
                               : pageNumber === "..."
-                                ? "cursor-default bg-transparent"
-                                : ""
+                                ? "cursor-default bg-transparent border-slate-700 text-slate-400"
+                                : "bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
                           }
                           onClick={() => handlePageChange(pageNumber)}
                           disabled={pageNumber === "..."}
@@ -505,7 +523,7 @@ export default function BlogPage() {
                           currentPage === Math.ceil(filteredPosts.length / postsPerPage) ||
                           filteredPosts.length === 0
                         }
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-50"
                       >
                         Next
                         <svg
@@ -528,54 +546,52 @@ export default function BlogPage() {
                 </>
               ) : (
                 <div className="text-center py-16">
-                  <h3 className="text-xl font-semibold mb-2">No articles found</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <h3 className="text-xl font-semibold mb-2 text-white">No articles found</h3>
+                  <p className="text-slate-300 mb-6">
                     Try adjusting your search or filter criteria
                   </p>
-                  <Button onClick={clearFilters}>Clear all filters</Button>
+                  <Button onClick={clearFilters} className="bg-emerald-600 hover:bg-emerald-700">
+                    Clear all filters
+                  </Button>
                 </div>
               )}
             </div>
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }
 
 function BlogHeroSection() {
   return (
-    <section className="py-14 relative overflow-hidden isolate">
-      {" "}
-      {/* isolate for z-index stacking */}
-      {/* Enhanced Background Gradient - softer and more spread */}
-      <div
-        className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_calc(100%-20px),rgba(16,185,129,0.1),transparent_70%)]"
-        aria-hidden="true"
-      />
-      {/* Optional: Add a very subtle grain texture or soft noise pattern if desired */}
-      <div className="absolute inset-0 -z-20 opacity-5 bg-[repeating-linear-gradient(0deg,#f0f0f0,#f0f0f0_1px,transparent_1px,transparent_5px)] dark:bg-[repeating-linear-gradient(0deg,#222,#222_1px,transparent_1px,transparent_5px)]" />
+    <section className="py-20 relative overflow-hidden isolate bg-slate-900">
+      {/* Background pattern */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+        <div className="h-full w-full bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+      </div>
+
+      {/* Background accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 right-0 w-1/3 h-1/3 bg-gradient-to-b from-emerald-500/20 via-transparent to-transparent rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-t from-emerald-500/20 via-transparent to-transparent rounded-full blur-3xl opacity-20"></div>
+      </div>
+
       <div className="container mx-auto px-4">
         <motion.div
           className="max-w-3xl mx-auto text-center"
-          initial="hidden"
-          whileInView="visible" // Animate when in view
-          viewport={{ once: true, amount: 0.3 }} // Trigger once, when 30% is visible
-          variants={heroVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          <motion.h1
-            className="text-5xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-emerald-600 leading-tight"
-            variants={itemVariants}
-          >
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-white">
             LetterFlow Blog
-          </motion.h1>
-          <motion.p
-            className="italic text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto"
-            variants={itemVariants}
-          >
+          </h1>
+          <p className="text-slate-300 text-lg mb-8 leading-relaxed">
             Unlock the secrets to captivating newsletters. Discover insights, expert guides, and
             proven strategies to elevate your content and expand your reach.
-          </motion.p>
+          </p>
         </motion.div>
       </div>
     </section>

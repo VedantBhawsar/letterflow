@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,19 +18,58 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Bell, Key, Mail, CreditCard, LogOut, Copy } from "lucide-react";
-import { format } from "date-fns";
+import {
+  User,
+  Bell,
+  Key,
+  Mail,
+  CreditCard,
+  Check,
+  AlertTriangle,
+  ChevronDown,
+  MapPin,
+  Phone,
+  Home,
+  Building,
+  IndianRupee,
+} from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { CldUploadWidget } from "next-cloudinary";
+import { motion } from "framer-motion";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 },
+  },
+};
 
 // Profile form schema
 const profileFormSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
+  location: z.string().optional(),
+  currency: z.string().optional(),
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  company: z.string().optional(),
-  website: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
 });
 
 // Password form schema
@@ -54,27 +93,98 @@ const passwordFormSchema = z
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 type PasswordFormData = z.infer<typeof passwordFormSchema>;
 
-interface ApiKey {
+interface NotificationPreference {
   id: string;
-  key: string;
-  createdAt: string;
-  expiresAt?: string;
+  title: string;
+  description: string;
+  enabled: boolean;
 }
 
+// Get Cloudinary configuration from environment variables
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "letterflow_preset";
+
+// Indian states for dropdown
+const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
+
 export default function SettingsPage() {
-  const { data: session } = useSession();
-  const [profileSaved, setProfileSaved] = useState(false);
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [generatedApiKey, setGeneratedApiKey] = useState<string | null>(null);
+  const { data: session, update } = useSession();
+  const [profileImage, setProfileImage] = useState("");
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [showStatesDropdown, setShowStatesDropdown] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationPreference[]>([
+    {
+      id: "order-confirmation",
+      title: "Order Confirmation",
+      description: "You will be notified when customer places an order.",
+      enabled: true,
+    },
+    {
+      id: "order-status-changed",
+      title: "Order Status Changed",
+      description: "You will be notified when customer make changes to the order.",
+      enabled: true,
+    },
+    {
+      id: "order-delivered",
+      title: "Order Delivered",
+      description: "You will be notified when the order is delivered.",
+      enabled: true,
+    },
+    {
+      id: "email-notification",
+      title: "Email Notification",
+      description: "You will get email notification to get updates through email.",
+      enabled: true,
+    },
+  ]);
 
   // Profile form
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: session?.user?.name || "",
+      location: "Mumbai, Maharashtra",
+      currency: "Indian Rupee (₹)",
       email: session?.user?.email || "",
-      company: "",
-      website: "",
+      phone: "9876543210",
+      address: "123 Main Street, Mumbai, Maharashtra, 400001, India",
     },
   });
 
@@ -88,384 +198,460 @@ export default function SettingsPage() {
     },
   });
 
+  // Create locations dropdown ref to handle outside clicks
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
+  const statesDropdownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const fetchApiKeys = async () => {
-      const res = await fetch("/api/api-keys");
-      if (res.ok) {
-        const data = await res.json();
-        setApiKeys(data);
-      } else {
-        console.error("Failed to fetch API keys");
+    if (session?.user?.image) {
+      setProfileImage(session.user.image);
+    }
+
+    // Update form values if session changes
+    if (session?.user) {
+      profileForm.setValue("name", session.user.name || "");
+      profileForm.setValue("email", session.user.email || "");
+    }
+  }, [session, profileForm]);
+
+  // Debug Cloudinary configuration
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("Cloudinary upload preset:", UPLOAD_PRESET);
+    }
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        locationDropdownRef.current &&
+        !locationDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowLocationDropdown(false);
       }
+      if (statesDropdownRef.current && !statesDropdownRef.current.contains(event.target as Node)) {
+        setShowStatesDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
 
-    if (session) {
-      fetchApiKeys();
-    }
-  }, [session]);
-
-  function onProfileSubmit(data: ProfileFormData) {
-    console.log("Profile form submitted:", data);
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 3000);
-  }
-
-  function onPasswordSubmit(data: PasswordFormData) {
-    console.log("Password form submitted:", data);
-    passwordForm.reset();
-  }
-
-  const handleGenerateApiKey = async () => {
-    const res = await fetch("/api/api-keys", {
-      method: "POST",
-    });
-
-    if (res.ok) {
-      const newKey = await res.json();
-      setGeneratedApiKey(newKey.key);
-      const fetchRes = await fetch("/api/api-keys");
-      if (fetchRes.ok) {
-        const data = await fetchRes.json();
-        setApiKeys(data);
-      }
-    } else {
-      console.error("Failed to generate API key");
-      setGeneratedApiKey(null);
-    }
-  };
-
-  const handleRevokeApiKey = async (apiKeyId: string) => {
-    const res = await fetch(`/api/api-keys?id=${apiKeyId}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      setApiKeys(apiKeys.filter((key) => key.id !== apiKeyId));
-    } else {
-      console.error("Failed to revoke API key");
-    }
-  };
-
-  const handleCopyToClipboard = (text: string) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        console.log("API key copied to clipboard");
-      })
-      .catch((err) => {
-        console.error("Failed to copy API key:", err);
+  async function onProfileSubmit(data: ProfileFormData) {
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          image: profileImage,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      // Update session with new data
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          name: data.name,
+          email: data.email,
+          image: profileImage,
+        },
+      });
+
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error("Failed to update profile");
+      console.error("Error updating profile:", error);
+    }
+  }
+
+  async function onPasswordSubmit(data: PasswordFormData) {
+    try {
+      const response = await fetch("/api/user/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to change password");
+      }
+
+      toast.success("Password changed successfully");
+      passwordForm.reset();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to change password");
+      console.error("Error changing password:", error);
+    }
+  }
+
+  const handleNotificationToggle = (id: string) => {
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === id ? { ...notification, enabled: !notification.enabled } : notification
+      )
+    );
+  };
+
+  const handleImageUpload = (result: any) => {
+    setProfileImage(result.info.secure_url);
+    toast.success("Profile image uploaded successfully");
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account settings and preferences</p>
-      </div>
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-300">Settings</h1>
+        <p className="text-slate-400">Manage your account settings and preferences</p>
+      </motion.div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-fit" />
-            <span className="hidden sm:inline">Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="password" className="flex items-center gap-2">
-            <Key className="h-4 w-fit" />
-            <span className="hidden sm:inline">Password</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-fit" />
-            <span className="hidden sm:inline">Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="billing" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-fit" />
-            <span className="hidden sm:inline">Billing</span>
-          </TabsTrigger>
-          <TabsTrigger value="api" className="flex items-center gap-2">
-            <Key className="h-4 w-fit" />
-            <span className="hidden sm:inline">API</span>
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Profile Settings */}
-        <TabsContent value="profile" className="mt-6">
-          <Card className="p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">Profile Settings</h3>
-              <p className="text-sm text-muted-foreground">
-                Update your personal information and public profile
-              </p>
-            </div>
-
-            {profileSaved && (
-              <div className="mb-4 rounded-md bg-green-50 p-4 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                Your profile has been successfully updated!
-              </div>
-            )}
-
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Left Column */}
+        <motion.div variants={itemVariants}>
+          <Card className="p-6 bg-slate-800 border-slate-700/50 shadow-lg shadow-emerald-900/5">
+            <h2 className="text-lg font-semibold mb-6 text-slate-300">Edit Profile</h2>
             <Form {...profileForm}>
-              <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={profileForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+              <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                {/* Profile image upload */}
+                <div className="mb-6 flex flex-col items-center sm:items-start">
+                  <div className="mb-2">
+                    <div className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-slate-700 bg-slate-900">
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt="Profile"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-emerald-500/10 text-xl font-medium text-emerald-500">
+                          {session?.user?.name?.charAt(0) || "U"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <CldUploadWidget
+                    uploadPreset={UPLOAD_PRESET}
+                    options={{
+                      maxFiles: 1,
+                      resourceType: "image",
+                      sources: ["local", "url", "camera"],
+                      clientAllowedFormats: ["jpg", "png", "jpeg", "gif"],
+                      maxFileSize: 2000000,
+                      multiple: false,
+                      showAdvancedOptions: false,
+                      singleUploadAutoClose: true,
+                    }}
+                    onSuccess={handleImageUpload}
+                  >
+                    {({ open }) => (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => open()}
+                        className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700"
+                      >
+                        Change Avatar
+                      </Button>
                     )}
-                  />
-                  <FormField
-                    control={profileForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="email" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  </CldUploadWidget>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={profileForm.control}
-                    name="company"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Company</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormDescription>Optional: Your company or organization</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={profileForm.control}
-                    name="website"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Website</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="url" placeholder="https://" />
-                        </FormControl>
-                        <FormDescription>
-                          Optional: Your personal or company website
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <Button type="submit">Save Changes</Button>
-                </div>
-              </form>
-            </Form>
-          </Card>
-        </TabsContent>
-
-        {/* Password Settings */}
-        <TabsContent value="password" className="mt-6">
-          <Card className="p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">Change Password</h3>
-              <p className="text-sm text-muted-foreground">
-                Update your password to keep your account secure
-              </p>
-            </div>
-
-            <Form {...passwordForm}>
-              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
                 <FormField
-                  control={passwordForm.control}
-                  name="currentPassword"
+                  control={profileForm.control}
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Password</FormLabel>
+                      <FormLabel className="text-slate-300">Your Name</FormLabel>
                       <FormControl>
-                        <Input {...field} type="password" />
+                        <div className="relative">
+                          <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                          <Input
+                            placeholder="Your full name"
+                            className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-500" />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={profileForm.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Location</FormLabel>
+                      <FormControl>
+                        <div className="relative" ref={statesDropdownRef}>
+                          <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                          <div className="relative">
+                            <Input
+                              placeholder="Your location"
+                              value={field.value}
+                              onChange={field.onChange}
+                              onClick={() => setShowStatesDropdown(!showStatesDropdown)}
+                              className="cursor-pointer pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                            />
+                            <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-slate-500" />
+                          </div>
+
+                          {showStatesDropdown && (
+                            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-slate-700 bg-slate-900 py-1 shadow-lg">
+                              {INDIAN_STATES.map((state) => (
+                                <div
+                                  key={state}
+                                  className="px-2 py-1.5 text-sm hover:bg-slate-800 cursor-pointer text-slate-300"
+                                  onClick={() => {
+                                    field.onChange(state);
+                                    setShowStatesDropdown(false);
+                                  }}
+                                >
+                                  {state}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={profileForm.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Currency</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                          <Input
+                            placeholder="Your preferred currency"
+                            {...field}
+                            readOnly
+                            value="Indian Rupee (₹)"
+                            className="cursor-not-allowed pl-10 bg-slate-900 border-slate-700 text-slate-300"
+                          />
+                          <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-slate-500" />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={profileForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                          <Input
+                            type="email"
+                            placeholder="Your email address"
+                            className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={profileForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Phone</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                          <Input
+                            placeholder="Your phone number"
+                            className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={profileForm.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Address</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Home className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                          <Input
+                            placeholder="Your address"
+                            className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="pt-4 flex justify-end">
+                  <Button
+                    type="submit"
+                    className="px-6 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </Card>
+        </motion.div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          <motion.div variants={itemVariants}>
+            <Card className="p-6 bg-slate-800 border-slate-700/50 shadow-lg shadow-emerald-900/5">
+              <h2 className="text-lg font-semibold mb-6 text-slate-300">Change Password</h2>
+              <Form {...passwordForm}>
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                  <FormField
+                    control={passwordForm.control}
+                    name="currentPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-300">Current Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Key className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                            <Input
+                              type="password"
+                              placeholder="••••••••••"
+                              className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={passwordForm.control}
                     name="newPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>New Password</FormLabel>
+                        <FormLabel className="text-slate-300">New Password</FormLabel>
                         <FormControl>
-                          <Input {...field} type="password" />
+                          <div className="relative">
+                            <Key className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                            <Input
+                              type="password"
+                              placeholder="••••••••••"
+                              className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                              {...field}
+                            />
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={passwordForm.control}
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirm New Password</FormLabel>
+                        <FormLabel className="text-slate-300">Confirm Password</FormLabel>
                         <FormControl>
-                          <Input {...field} type="password" />
+                          <div className="relative">
+                            <Key className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                            <Input
+                              type="password"
+                              placeholder="••••••••••"
+                              className="pl-10 bg-slate-900 border-slate-700 focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20 text-slate-300"
+                              {...field}
+                            />
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="flex justify-end">
-                  <Button type="submit">Update Password</Button>
-                </div>
-              </form>
-            </Form>
-          </Card>
-        </TabsContent>
-
-        {/* Notifications Settings */}
-        <TabsContent value="notifications" className="mt-6">
-          <Card className="p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">Notification Settings</h3>
-              <p className="text-sm text-muted-foreground">
-                Configure how and when you receive notifications
-              </p>
-            </div>
-            <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">Notification settings coming soon</p>
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* Billing Settings */}
-        <TabsContent value="billing" className="mt-6">
-          <Card className="p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">Billing Information</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage your subscription and payment methods
-              </p>
-            </div>
-            <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-              <p className="text-muted-foreground">Billing settings coming soon</p>
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* API Settings */}
-        <TabsContent value="api" className="mt-6">
-          <Card className="p-6">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">API Access</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage your API keys and access tokens
-              </p>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium">Your API Keys</h3>
-                <p className="text-sm text-muted-foreground">
-                  Generate and manage your API keys for accessing the Letterflow API.
-                </p>
-              </div>
-
-              {/* Generate New API Key */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-md font-medium">Generate New Key</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Generate a new API key for your account.
-                  </p>
-                </div>
-                <Button onClick={handleGenerateApiKey}>Generate Key</Button>
-              </div>
-
-              {generatedApiKey && (
-                <div className="space-y-2">
-                  <h4 className="text-md font-medium">Generated API Key</h4>
-                  <div className="flex items-center space-x-2">
-                    <Input type="text" value={generatedApiKey} readOnly />
+                  <div className="pt-4 flex justify-end">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCopyToClipboard(generatedApiKey)}
+                      type="submit"
+                      className="px-6 bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
-                      <Copy className="h-4 w-4 mr-2" /> Copy
+                      Save
                     </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Keep your API key secure and do not share it.
-                  </p>
-                </div>
-              )}
+                </form>
+              </Form>
+            </Card>
+          </motion.div>
 
-              {apiKeys.length > 0 ? (
-                <div>
-                  <h4 className="text-md font-medium">Existing API Keys</h4>
-                  <div className="border rounded-md p-4">
-                    {apiKeys.map((apiKey) => (
-                      <div
-                        key={apiKey.id}
-                        className="flex items-center justify-between py-2 border-b last:border-b-0"
-                      >
-                        <div className="flex-1 mr-4">
-                          <p className="font-mono text-sm truncate">{apiKey.key}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Created: {format(new Date(apiKey.createdAt), "PPP")}
-                          </p>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRevokeApiKey(apiKey.id)}
-                        >
-                          Revoke
-                        </Button>
-                      </div>
-                    ))}
+          <motion.div variants={itemVariants}>
+            <Card className="p-6 bg-slate-800 border-slate-700/50 shadow-lg shadow-emerald-900/5">
+              <h2 className="text-lg font-semibold mb-6 text-slate-300">Notifications</h2>
+              <div className="space-y-5">
+                {notifications.map((notification) => (
+                  <div key={notification.id} className="flex items-center justify-between py-1">
+                    <div className="space-y-0.5">
+                      <h3 className="font-semibold text-slate-300">{notification.title}</h3>
+                      <p className="text-sm text-slate-400">{notification.description}</p>
+                    </div>
+                    <Switch
+                      checked={notification.enabled}
+                      onCheckedChange={() => handleNotificationToggle(notification.id)}
+                      className="data-[state=checked]:bg-emerald-600"
+                    />
                   </div>
-                </div>
-              ) : (
-                <div>
-                  <h4 className="text-md font-medium">Existing API Keys</h4>
-                  <div className="border rounded-md p-4">
-                    <p className="text-muted-foreground">No API keys found.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <Card className="p-6 border-red-200 dark:border-red-900/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-medium text-red-600 dark:text-red-400">Danger Zone</h3>
-            <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all of your data
-            </p>
-          </div>
-          <Button variant="destructive">Delete Account</Button>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </motion.div>
   );
 }

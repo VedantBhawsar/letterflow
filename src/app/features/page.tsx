@@ -17,8 +17,9 @@ import {
   Zap,
   ShieldCheck,
   Globe,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
-import { PlaceholderImage } from "@/components/ui/PlaceholderImage";
 
 // Animation variants
 const fadeIn = {
@@ -51,38 +52,73 @@ const itemFadeIn = {
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50/30 to-slate-100/50 -z-10" />
+    <div className="min-h-screen flex flex-col relative bg-slate-900 text-slate-300">
+      {/* Main background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 -z-10" />
+
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 opacity-[0.03] -z-10">
+        <div className="h-full w-full bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
+      </div>
+
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden -z-10">
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-emerald-500/10 via-transparent to-transparent rounded-full blur-3xl opacity-30" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-full blur-3xl opacity-30" />
+      </div>
+
       <Navbar />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative py-24">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-blue-50/50 -z-10" />
-          <div className="absolute top-0 left-1/3 w-2/3 h-1/3 bg-gradient-to-r from-primary/10 to-purple-200/20 blur-3xl rounded-full -z-10" />
+        <section className="relative py-16 md:py-24 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_50%,rgba(16,185,129,0.08),transparent)] -z-10" />
 
           <div className="container mx-auto px-4">
             <motion.div
-              className="max-w-3xl mx-auto text-center mb-16"
+              className="max-w-3xl mx-auto text-center mb-12 md:mb-16"
               initial="hidden"
               animate="visible"
               variants={fadeIn}
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                Powerful Features for Newsletter Creators
+              <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 rounded-full px-3 py-1 text-sm font-medium mb-6 border border-emerald-500/20">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Features Overview</span>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
+                Powerful Features for <span className="text-emerald-400">Newsletter Creators</span>
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-lg md:text-xl text-slate-400">
                 Everything you need to create, grow, and monetize your newsletter in one platform.
               </p>
+            </motion.div>
+
+            <motion.div
+              className="max-w-6xl mx-auto mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+            >
+              <div className="relative rounded-xl overflow-hidden border border-slate-800 shadow-2xl shadow-emerald-500/5">
+                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 via-slate-900 to-slate-900"></div>
+                <Image
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop"
+                  alt="Letterflow Dashboard"
+                  width={1200}
+                  height={600}
+                  className="w-full h-auto relative z-10 opacity-90"
+                />
+              </div>
             </motion.div>
           </div>
         </section>
 
         {/* Email Builder Features */}
         <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#134e4a] to-[#0d3330] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950 to-slate-900 -z-10" />
           <div className="absolute inset-0 bg-[radial-gradient(40%_40%_at_50%_60%,rgba(16,185,129,0.1),transparent)] -z-10" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/20 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
 
           <div className="container mx-auto px-4">
             <motion.div
@@ -93,21 +129,21 @@ export default function FeaturesPage() {
               variants={fadeIn}
             >
               <h2 className="text-3xl font-bold mb-4 text-white">Email Builder</h2>
-              <p className="text-lg text-white/70">
+              <p className="text-lg text-slate-400">
                 Create beautiful newsletters without writing a single line of code.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <motion.div
-                className="order-2 lg:order-1 relative"
+                className="order-2 lg:order-1 relative lg:col-span-7"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeIn}
               >
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary/50 to-teal-700/50 blur-lg opacity-70"></div>
-                <div className="relative rounded-xl border border-white/10 bg-[#0f3f3d] overflow-hidden shadow-xl">
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-500/30 to-emerald-700/30 blur-lg opacity-60"></div>
+                <div className="relative rounded-xl border border-slate-700/50 bg-slate-800 overflow-hidden shadow-xl">
                   <Image
                     src="https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=2070&auto=format&fit=crop"
                     alt="Email Builder Interface"
@@ -119,7 +155,7 @@ export default function FeaturesPage() {
               </motion.div>
 
               <motion.div
-                className="order-1 lg:order-2 space-y-8"
+                className="order-1 lg:order-2 space-y-8 lg:col-span-5"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
@@ -148,18 +184,18 @@ export default function FeaturesPage() {
                       title: "A/B User Testing",
                       description: "Optimize your emails with data-driven A/B testing.",
                     },
-                  ].map((feature: any, index: any) => (
+                  ].map((feature, index) => (
                     <motion.div
                       key={index}
-                      className="flex items-start gap-4"
+                      className="flex items-start gap-4 group"
                       variants={itemFadeIn}
                     >
-                      <div className="flex-shrink-0 rounded-full bg-primary/20 p-2 text-primary">
+                      <div className="flex-shrink-0 rounded-full bg-emerald-500/20 p-3 text-emerald-400 group-hover:bg-emerald-500/30 transition-colors">
                         {feature.icon}
                       </div>
                       <div>
-                        <h3 className="font-medium text-white">{feature.title}</h3>
-                        <p className="text-white/70">{feature.description}</p>
+                        <h3 className="font-medium text-white text-lg mb-1">{feature.title}</h3>
+                        <p className="text-slate-400">{feature.description}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -171,9 +207,11 @@ export default function FeaturesPage() {
 
         {/* Analytics Features */}
         <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-blue-50/20 -z-10" />
-          <div className="absolute inset-y-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-50/40 to-transparent -z-10" />
-          <div className="absolute top-1/4 left-0 w-1/3 h-1/2 bg-gradient-to-r from-primary/5 to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-950 -z-10" />
+          <div className="absolute inset-y-0 right-0 w-1/3 h-full bg-gradient-to-l from-emerald-500/5 to-transparent -z-10" />
+          <div className="absolute inset-0 overflow-hidden -z-10">
+            <div className="absolute top-1/4 left-0 w-1/3 h-1/2 bg-gradient-to-r from-emerald-500/5 to-transparent blur-3xl opacity-30" />
+          </div>
 
           <div className="container mx-auto px-4">
             <motion.div
@@ -183,15 +221,15 @@ export default function FeaturesPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-4">Analytics & Insights</h2>
-              <p className="text-lg text-muted-foreground">
+              <h2 className="text-3xl font-bold mb-4 text-white">Analytics & Insights</h2>
+              <p className="text-lg text-slate-400">
                 Understand your audience and optimize your content with detailed analytics.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <motion.div
-                className="space-y-8"
+                className="space-y-8 lg:col-span-5"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
@@ -222,18 +260,18 @@ export default function FeaturesPage() {
                       description:
                         "Create and export custom reports to share with your team or sponsors.",
                     },
-                  ].map((feature: any, index: any) => (
+                  ].map((feature, index) => (
                     <motion.div
                       key={index}
-                      className="flex items-start gap-4"
+                      className="flex items-start gap-4 group"
                       variants={itemFadeIn}
                     >
-                      <div className="flex-shrink-0 rounded-full bg-primary/10 p-2 text-primary">
+                      <div className="flex-shrink-0 rounded-full bg-emerald-500/20 p-3 text-emerald-400 group-hover:bg-emerald-500/30 transition-colors">
                         {feature.icon}
                       </div>
                       <div>
-                        <h3 className="font-medium">{feature.title}</h3>
-                        <p className="text-muted-foreground">{feature.description}</p>
+                        <h3 className="font-medium text-white text-lg mb-1">{feature.title}</h3>
+                        <p className="text-slate-400">{feature.description}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -241,14 +279,14 @@ export default function FeaturesPage() {
               </motion.div>
 
               <motion.div
-                className="relative"
+                className="relative lg:col-span-7"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeIn}
               >
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 to-primary/20 blur-lg opacity-70"></div>
-                <div className="relative rounded-xl border border-border/40 overflow-hidden shadow-xl">
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-500/30 to-emerald-700/30 blur-lg opacity-60"></div>
+                <div className="relative rounded-xl border border-slate-700/50 bg-slate-800 overflow-hidden shadow-xl">
                   <Image
                     src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop"
                     alt="Analytics Dashboard"
@@ -264,9 +302,9 @@ export default function FeaturesPage() {
 
         {/* Integrations */}
         <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-50/80 to-white -z-10" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_50%,rgba(16,185,129,0.04),transparent)] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950 to-slate-900 -z-10" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_50%,rgba(16,185,129,0.06),transparent)] -z-10" />
 
           <div className="container mx-auto px-4">
             <motion.div
@@ -276,8 +314,8 @@ export default function FeaturesPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-4">Seamless Integrations</h2>
-              <p className="text-lg text-muted-foreground">
+              <h2 className="text-3xl font-bold mb-4 text-white">Seamless Integrations</h2>
+              <p className="text-lg text-slate-400">
                 Connect with your favorite tools and services to streamline your workflow.
               </p>
             </motion.div>
@@ -305,25 +343,39 @@ export default function FeaturesPage() {
                   title: "Social Media",
                   description: "Share your newsletters automatically on social platforms.",
                 },
-              ].map((integration: any, index: any) => (
+              ].map((integration, index) => (
                 <motion.div
                   key={index}
-                  className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"
+                  className="bg-slate-800/80 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 shadow-lg shadow-emerald-900/5 hover:border-emerald-500/30 transition-colors"
                   variants={itemFadeIn}
                   whileHover={{ y: -5 }}
                 >
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4 text-primary">
+                  <div className="rounded-full bg-emerald-500/20 w-14 h-14 flex items-center justify-center mb-4 text-emerald-400">
                     {integration.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{integration.title}</h3>
-                  <p className="text-muted-foreground">{integration.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-white">{integration.title}</h3>
+                  <p className="text-slate-400">{integration.description}</p>
                 </motion.div>
               ))}
             </motion.div>
 
-            <motion.div className="text-center mt-12" whileHover={{ scale: 1.05 }}>
-              <Button variant="outline" asChild>
-                <Link href="#all-integrations">View All Integrations</Link>
+            <motion.div
+              className="text-center mt-12"
+              whileHover={{ scale: 1.05 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+            >
+              <Button
+                variant="ghost"
+                asChild
+                className="border border-slate-700/50 bg-slate-800/40 text-slate-300 hover:bg-slate-800 hover:text-emerald-400 hover:border-emerald-500/40 py-2 px-4 rounded-md backdrop-blur-sm"
+              >
+                <Link href="#all-integrations" className="flex items-center gap-2">
+                  <span>View All Integrations</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </Button>
             </motion.div>
           </div>
@@ -331,8 +383,8 @@ export default function FeaturesPage() {
 
         {/* Additional Features */}
         <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-white to-blue-50/30 -z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_50%_100%,rgba(16,185,129,0.05),transparent)] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-950 -z-10" />
+          <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_50%_100%,rgba(16,185,129,0.08),transparent)] -z-10" />
 
           <div className="container mx-auto px-4">
             <motion.div
@@ -342,14 +394,14 @@ export default function FeaturesPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <h2 className="text-3xl font-bold mb-4">More Powerful Features</h2>
-              <p className="text-lg text-muted-foreground">
+              <h2 className="text-3xl font-bold mb-4 text-white">More Powerful Features</h2>
+              <p className="text-lg text-slate-400">
                 Designed to help you at every stage of your newsletter journey.
               </p>
             </motion.div>
 
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -390,18 +442,18 @@ export default function FeaturesPage() {
                   title: "Mobile Optimization",
                   description: "All newsletters are automatically optimized for mobile devices.",
                 },
-              ].map((feature: any, index: any) => (
+              ].map((feature, index) => (
                 <motion.div
                   key={index}
-                  className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-border/60 shadow-sm"
+                  className="bg-slate-800/70 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 shadow-lg shadow-emerald-900/5 hover:border-emerald-500/30 transition-all"
                   variants={itemFadeIn}
                   whileHover={{ y: -5 }}
                 >
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4 text-primary">
+                  <div className="rounded-full bg-emerald-500/20 w-14 h-14 flex items-center justify-center mb-4 text-emerald-400">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
+                  <p className="text-slate-400">{feature.description}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -410,8 +462,8 @@ export default function FeaturesPage() {
 
         {/* CTA Section */}
         <section className="relative py-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/30 to-white -z-10" />
-          <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_50%,rgba(16,185,129,0.08),transparent)] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950 to-slate-900 -z-10" />
+          <div className="absolute inset-0 bg-[radial-gradient(50%_50%_at_50%_50%,rgba(16,185,129,0.1),transparent)] -z-10" />
 
           <div className="container mx-auto px-4">
             <motion.div
@@ -421,23 +473,38 @@ export default function FeaturesPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeIn}
             >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-100 via-primary/20 to-purple-100 rounded-xl blur-md opacity-50"></div>
-              <div className="relative rounded-xl border border-border/40 bg-white/80 backdrop-blur-sm p-12 text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-emerald-600/20 rounded-xl blur-lg opacity-70"></div>
+              <div className="relative rounded-xl border border-slate-700/50 bg-slate-800/90 backdrop-blur-sm p-12 text-center">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
                   Ready to Elevate Your Newsletter?
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+                <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8">
                   Start your 14-day free trial today and experience all these powerful features.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   <motion.div whileHover={{ scale: 1.05 }}>
-                    <Button size="lg" asChild>
-                      <Link href="/signup">Start Free Trial</Link>
+                    <Button
+                      size="lg"
+                      asChild
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-6 shadow-md shadow-emerald-500/20"
+                    >
+                      <Link href="/signup" className="flex items-center gap-2">
+                        <Zap className="h-4 w-4" />
+                        <span>Start Free Trial</span>
+                      </Link>
                     </Button>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }}>
-                    <Button variant="outline" size="lg" asChild>
-                      <Link href="/pricing">View Pricing</Link>
+                    <Button
+                      variant="ghost"
+                      size="lg"
+                      asChild
+                      className="border border-slate-700/50 bg-slate-800/50 text-slate-300 hover:text-emerald-400 hover:bg-slate-800 hover:border-emerald-500/40 h-12 px-6 backdrop-blur-sm"
+                    >
+                      <Link href="/pricing" className="flex items-center gap-2">
+                        <span>View Pricing</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </Button>
                   </motion.div>
                 </div>

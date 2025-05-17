@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     const userId = session.user.id;
     const searchParams = req.nextUrl.searchParams;
-    const status = searchParams.get("status");
+    let status = searchParams.get("status");
     const tag = searchParams.get("tag");
     const search = searchParams.get("search");
     const segmentId = searchParams.get("segmentId");
@@ -22,6 +22,11 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
 
+    console.log("status", status);
+
+    if (status === "all") {
+      status = null;
+    }
     // Build the where clause
     const where: Prisma.SubscriberWhereInput = {
       userId: userId,

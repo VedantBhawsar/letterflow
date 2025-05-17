@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma"; // Assuming prisma client is exported as 'prisma'
+import prisma from "@/lib/prisma"; // Assuming prisma client is exported as 'prisma'
 import nodemailer from "nodemailer";
 import { Newsletter } from "@prisma/client"; // Import Prisma types
 

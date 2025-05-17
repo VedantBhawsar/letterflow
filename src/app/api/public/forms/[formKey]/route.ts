@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client"; // Import Prisma namespace
 
 // --- Define the specific type for the cached form data ---

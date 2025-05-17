@@ -25,6 +25,7 @@ interface SubscriberFormProps {
   };
   onSubmit: (data: unknown) => void;
   onCancel?: () => void;
+  isSubmitting?: boolean;
 }
 
 export function SubscriberForm({ initialData, onSubmit, onCancel }: SubscriberFormProps) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 // GET handler to fetch a single blog by slug
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {

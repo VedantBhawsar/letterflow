@@ -43,14 +43,14 @@ export default function BlogDetailPage() {
         setLoading(true);
         const slug = params.slug as string;
         const response = await fetch(`/api/blog/${slug}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error("Blog post not found");
           }
           throw new Error("Failed to fetch blog post");
         }
-        
+
         const data = await response.json();
         setBlog(data);
       } catch (error) {
@@ -111,27 +111,27 @@ export default function BlogDetailPage() {
         </div>
 
         {/* Hero section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-12"
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-6">{blog.title}</h1>
-          
+
           <div className="flex flex-wrap items-center gap-4 text-muted-foreground mb-8">
             <div className="flex items-center">
               <Calendar className="h-4 w-4 mr-2" />
               <span>{formattedDate}</span>
             </div>
-            
+
             {blog.readTime && (
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-2" />
                 <span>{blog.readTime}</span>
               </div>
             )}
-            
+
             {blog.user?.name && (
               <div className="flex items-center">
                 <span>By {blog.user.name}</span>
@@ -142,16 +142,12 @@ export default function BlogDetailPage() {
           {/* Featured image */}
           {blog.image ? (
             <div className="relative w-full h-96 md:h-[500px] rounded-lg overflow-hidden mb-8">
-              <Image 
-                src={blog.image} 
-                alt={blog.title}
-                fill
-                className="object-cover"
-                priority
-              />
+              <Image src={blog.image} alt={blog.title} fill className="object-cover" priority />
             </div>
           ) : (
-            <div className={`w-full h-64 md:h-96 rounded-lg mb-8 bg-gradient-to-br ${blog.gradient || 'from-blue-600/20 to-purple-500/20'}`} />
+            <div
+              className={`w-full h-64 md:h-96 rounded-lg mb-8 bg-gradient-to-br ${blog.gradient || "from-blue-600/20 to-purple-500/20"}`}
+            />
           )}
 
           {/* Categories and tags */}
@@ -161,7 +157,7 @@ export default function BlogDetailPage() {
                 {category}
               </Badge>
             ))}
-            
+
             {blog.tags.map((tag) => (
               <Badge key={tag} variant="outline" className="text-sm">
                 <Tag className="h-3 w-3 mr-1" />
@@ -190,16 +186,16 @@ export default function BlogDetailPage() {
             <h2 className="text-2xl font-bold mb-4">About the Author</h2>
             <div className="flex items-center gap-4">
               {blog.user.image ? (
-                <Image 
-                  src={blog.user.image} 
-                  alt={blog.user.name || 'Author'}
+                <Image
+                  src={blog.user.image}
+                  alt={blog.user.name || "Author"}
                   width={64}
                   height={64}
                   className="rounded-full"
                 />
               ) : (
                 <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">
-                  {blog.user.name?.charAt(0) || 'A'}
+                  {blog.user.name?.charAt(0) || "A"}
                 </div>
               )}
               <div>

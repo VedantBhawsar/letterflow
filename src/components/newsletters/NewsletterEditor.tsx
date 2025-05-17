@@ -41,7 +41,6 @@ export function NewsletterEditor({ newsletterId, onSaveSuccess }: NewsletterEdit
   // Debounced subject update
   const updateSubject = useMemo(
     () =>
-      // @ts-expect-error - updateContent is compatible with EditorBlock
       debounce((value: string) => {
         updateContent({
           ...content,
@@ -54,7 +53,6 @@ export function NewsletterEditor({ newsletterId, onSaveSuccess }: NewsletterEdit
   // Debounced preview text update
   const updatePreviewText = useMemo(
     () =>
-      // @ts-expect-error - updateContent is compatible with EditorBlock
       debounce((value: string) => {
         updateContent({
           ...content,

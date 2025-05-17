@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Link2, Zap } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
@@ -64,16 +64,48 @@ const integrationLogos = [
 const LogoPlaceholder = ({ name, color }: { name: string; color: string }) => (
   <div
     className="w-full h-full flex items-center justify-center rounded-full"
-    style={{ backgroundColor: `${color}15` }}
+    style={{ backgroundColor: `${color}30` }}
   >
     <div
-      className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
       style={{ backgroundColor: color }}
     >
       {name.charAt(0)}
     </div>
   </div>
 );
+
+// Animation variants
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6 },
+  },
+};
+
+const logoVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: (index: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      delay: index * 0.05,
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  }),
+  hover: {
+    y: -8,
+    scale: 1.05,
+    boxShadow: "0 15px 30px -10px rgba(0, 0, 0, 0.3)",
+    transition: {
+      duration: 0.2,
+      ease: "easeOut",
+    },
+  },
+};
 
 export default function Integrations() {
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -121,30 +153,52 @@ export default function Integrations() {
   };
 
   return (
-    <section id="integrations" className="relative py-20">
-      <div className="absolute inset-0 bg-white -z-10" />
-      <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_50%_100%,rgba(16,185,129,0.05),transparent)] -z-10" />
+    <section
+      id="integrations"
+      className="relative py-24 bg-gradient-to-b from-slate-950 to-slate-900 text-white overflow-hidden"
+    >
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-[url('/images/grid.svg')] bg-repeat opacity-5"></div>
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
+      <div className="absolute top-20 right-40 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-40 left-20 w-72 h-72 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
-          className="max-w-3xl mx-auto text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          className="max-w-3xl mx-auto text-center mb-16"
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
+          variants={fadeIn}
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Connect, Sync, and Automate</h2>
-          <p className="text-lg text-gray-600">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-block mb-4"
+          >
+            <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent text-sm font-medium tracking-wider uppercase flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-emerald-400" />
+              Powerful Integrations
+            </span>
+          </motion.div>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            Connect, Sync, and Automate
+          </h2>
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Enhance your capabilities by integrating Letterflow with the tools you already use
           </p>
         </motion.div>
 
-        <div className="relative max-w-5xl mx-auto mb-12">
+        <div className="relative max-w-5xl mx-auto mb-16">
           {/* Navigation arrows */}
-          <div className="absolute -left-12 top-1/2 transform -translate-y-1/2 z-10">
+          <div className="absolute -left-12 top-1/2 transform -translate-y-1/2 z-10 md:block hidden">
             <motion.button
-              className={`bg-white rounded-full p-2 shadow-md border border-gray-100 text-gray-400 ${
-                showLeftArrow ? "hover:text-primary" : "opacity-40 cursor-not-allowed"
+              className={`bg-slate-800/80 backdrop-blur-sm rounded-full p-3 shadow-lg border border-slate-700 text-slate-400 ${
+                showLeftArrow
+                  ? "hover:text-emerald-400 hover:border-emerald-500/50"
+                  : "opacity-40 cursor-not-allowed"
               }`}
               onClick={scrollLeft}
               disabled={!showLeftArrow}
@@ -153,14 +207,16 @@ export default function Integrations() {
               whileHover={showLeftArrow ? { scale: 1.1 } : {}}
               whileTap={showLeftArrow ? { scale: 0.95 } : {}}
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </motion.button>
           </div>
 
-          <div className="absolute -right-12 top-1/2 transform -translate-y-1/2 z-10">
+          <div className="absolute -right-12 top-1/2 transform -translate-y-1/2 z-10 md:block hidden">
             <motion.button
-              className={`bg-white rounded-full p-2 shadow-md border border-gray-100 text-gray-400 ${
-                showRightArrow ? "hover:text-primary" : "opacity-40 cursor-not-allowed"
+              className={`bg-slate-800/80 backdrop-blur-sm rounded-full p-3 shadow-lg border border-slate-700 text-slate-400 ${
+                showRightArrow
+                  ? "hover:text-emerald-400 hover:border-emerald-500/50"
+                  : "opacity-40 cursor-not-allowed"
               }`}
               onClick={scrollRight}
               disabled={!showRightArrow}
@@ -169,87 +225,78 @@ export default function Integrations() {
               whileHover={showRightArrow ? { scale: 1.1 } : {}}
               whileTap={showRightArrow ? { scale: 0.95 } : {}}
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </motion.button>
           </div>
 
           {/* Integration logos container */}
           <div
             ref={scrollContainerRef}
-            className="flex space-x-8 py-4 px-2 overflow-x-auto scrollbar-hide"
+            className="flex space-x-8 py-6 px-2 overflow-x-auto scrollbar-hide"
             onScroll={handleScroll}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {integrationLogos.map(
-              (
-                integration: {
-                  name: string;
-                  logo: string;
-                  color: string;
-                },
-                index: number
-              ) => (
-                <motion.div
-                  key={index}
-                  className="flex-shrink-0 w-20 h-20 bg-white rounded-full border border-gray-100 shadow-sm flex items-center justify-center"
-                  whileHover={{
-                    y: -5,
-                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                  }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                    transition: { delay: index * 0.05 },
-                  }}
-                  viewport={{ once: true }}
-                >
-                  {!failedImages[index] ? (
-                    <Image
-                      src={integration.logo || "/integrations/placeholder.svg"}
-                      alt={integration.name}
-                      width={40}
-                      height={40}
-                      onError={() => handleImageError(index)}
-                    />
-                  ) : (
-                    <LogoPlaceholder name={integration.name} color={integration.color} />
-                  )}
-                </motion.div>
-              )
-            )}
-            {integrationLogos.length > 0 &&
-              Array.from({
-                length: Math.ceil(integrationLogos.length / 4),
-              }).map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    scrollPosition > index * 300 && scrollPosition < (index + 1) * 300
-                      ? "w-6 bg-primary"
-                      : "w-1.5 bg-gray-200"
-                  }`}
-                />
-              ))}
+            {integrationLogos.map((integration, index) => (
+              <motion.div
+                key={index}
+                className="flex-shrink-0 w-24 h-24 bg-slate-800/70 backdrop-blur-sm rounded-full border border-slate-700 shadow-lg flex items-center justify-center cursor-pointer"
+                custom={index}
+                variants={logoVariants}
+                initial="hidden"
+                whileInView="visible"
+                whileHover="hover"
+                viewport={{ once: true }}
+              >
+                {!failedImages[index] ? (
+                  <Image
+                    src={integration.logo || "/integrations/placeholder.svg"}
+                    alt={integration.name}
+                    width={48}
+                    height={48}
+                    onError={() => handleImageError(index)}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <LogoPlaceholder name={integration.name} color={integration.color} />
+                )}
+                <span className="sr-only">{integration.name}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Mobile navigation dots */}
+          <div className="flex justify-center mt-8 space-x-2 md:hidden">
+            {Array.from({
+              length: Math.ceil(integrationLogos.length / 3),
+            }).map((_, index) => (
+              <div
+                key={index}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  scrollPosition > index * 300 && scrollPosition < (index + 1) * 300
+                    ? "w-8 bg-emerald-500"
+                    : "w-2 bg-slate-700"
+                }`}
+              />
+            ))}
           </div>
         </div>
 
         <motion.div
           className="flex justify-center"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
         >
           <Button
-            variant="outline"
             size="lg"
+            className="bg-slate-800 hover:bg-slate-700 text-white shadow-lg border border-slate-700 hover:border-emerald-500/30 group"
             asChild
-            className="group border-primary/20 text-primary hover:bg-primary/5"
           >
             <Link href="/integrations" className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-emerald-400" />
               View all integrations
-              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <ChevronRight className="h-4 w-4 text-emerald-400 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
         </motion.div>

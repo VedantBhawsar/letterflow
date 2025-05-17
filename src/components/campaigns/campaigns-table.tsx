@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Campaign } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Calendar,
@@ -21,8 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import axios from "axios";
@@ -37,6 +34,7 @@ interface CampaignsTableProps {
     key: string;
     direction: "asc" | "desc";
   };
+  isLoading?: boolean;
 }
 
 const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsTableProps) => {
@@ -51,54 +49,54 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
   };
 
   return (
-    <Card>
-      <div className="rounded-md border">
+    <Card className="bg-slate-800 border-slate-700 text-white">
+      <div className="rounded-md border border-slate-700">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
             <thead>
-              <tr className="border-b bg-muted/50 transition-colors">
+              <tr className="border-b border-slate-700 bg-slate-900/50 transition-colors">
                 <th
                   onClick={() => onSort("name")}
-                  className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
+                  className="h-12 px-4 text-left align-middle font-medium text-slate-300 cursor-pointer hover:bg-slate-800"
                 >
                   <div className="flex items-center gap-1">
                     Name
                     <ArrowUpDown
-                      className={`h-4 w-4 ${sortConfig.key === "name" ? "text-primary" : ""}`}
+                      className={`h-4 w-4 ${sortConfig.key === "name" ? "text-emerald-400" : ""}`}
                     />
                   </div>
                 </th>
                 <th
                   onClick={() => onSort("createdAt")}
-                  className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
+                  className="h-12 px-4 text-left align-middle font-medium text-slate-300 cursor-pointer hover:bg-slate-800"
                 >
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     Date
                     <ArrowUpDown
-                      className={`h-4 w-4 ${sortConfig.key === "createdAt" ? "text-primary" : ""}`}
+                      className={`h-4 w-4 ${sortConfig.key === "createdAt" ? "text-emerald-400" : ""}`}
                     />
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <Mail className="h-4 w-4" />
                     Recipients
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <Eye className="h-4 w-4" />
                     Opens
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <MousePointer className="h-4 w-4" />
                     Clicks
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   Status
                 </th>
                 <th className="h-12 w-[50px] px-4"></th>
@@ -114,30 +112,37 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
                     transition={{
                       ease: "linear",
                     }}
-                    className="border-b transition-colors hover:bg-muted/50"
+                    className="border-b border-slate-700 transition-colors hover:bg-slate-700/50"
                   >
                     <td className="p-4 align-middle font-medium">
                       <div>
-                        <Link href={`/dashboard/campaigns/${campaign.id}`}>{campaign.name}</Link>
-                        <div className="text-xs text-muted-foreground">{campaign.subject}</div>
+                        <Link
+                          href={`/dashboard/campaigns/${campaign.id}`}
+                          className="text-emerald-400 hover:text-emerald-300"
+                        >
+                          {campaign.name}
+                        </Link>
+                        <div className="text-xs text-slate-400">{campaign.subject}</div>
                       </div>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-4 align-middle text-slate-300">
                       {campaign.status === "sent"
                         ? formatDate(campaign.sentAt)
                         : campaign.status === "scheduled"
                           ? formatDate(campaign.scheduledAt)
                           : formatDate(campaign.createdAt)}
                     </td>
-                    <td className="p-4 align-middle">{campaign.audienceIds.length}</td>
-                    <td className="p-4 align-middle">
+                    <td className="p-4 align-middle text-slate-300">
+                      {campaign.audienceIds.length}
+                    </td>
+                    <td className="p-4 align-middle text-slate-300">
                       {campaign.status === "sent" && campaign.stats
                         ? `${campaign.stats.opened} (${Math.round(
                             (campaign.stats.opened / (campaign.stats.sent || 1)) * 100
                           )}%)`
                         : "-"}
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-4 align-middle text-slate-300">
                       {campaign.status === "sent" && campaign.stats
                         ? `${campaign.stats.clicked} (${Math.round(
                             (campaign.stats.clicked / (campaign.stats.opened || 1)) * 100
@@ -148,12 +153,12 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
                       <div
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                           campaign.status === "sent"
-                            ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400"
+                            ? "bg-green-900/20 text-green-400"
                             : campaign.status === "draft"
-                              ? "bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-400"
+                              ? "bg-slate-800/40 text-slate-300"
                               : campaign.status === "scheduled"
-                                ? "bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400"
-                                : "bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-400"
+                                ? "bg-emerald-900/20 text-emerald-400"
+                                : "bg-amber-900/20 text-amber-400"
                         }`}
                       >
                         {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
@@ -161,20 +166,23 @@ const CampaignsTable = React.memo(({ campaigns, onSort, sortConfig }: CampaignsT
                     </td>
                     <td className="p-4 align-super">
                       <DropdownMenu>
-                        <DropdownMenuTrigger>
+                        <DropdownMenuTrigger className="text-slate-300 hover:text-white">
                           <MoreHorizontal className="h-4 w-4" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem>
-                            <Link href={`/dashboard/campaigns/${campaign.id}/edit`}>
-                              <Edit /> Edit
+                        <DropdownMenuContent className="bg-slate-800 border-slate-700 text-white">
+                          <DropdownMenuItem className="hover:bg-slate-700 cursor-pointer">
+                            <Link
+                              href={`/dashboard/campaigns/${campaign.id}/edit`}
+                              className="flex items-center gap-2"
+                            >
+                              <Edit className="h-4 w-4" /> Edit
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            variant="destructive"
+                            className="text-red-400 hover:bg-red-900/20 hover:text-red-300 cursor-pointer"
                             onClick={() => handleDelete(campaign.id)}
                           >
-                            <Trash /> Delete
+                            <Trash className="h-4 w-4 mr-2" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -194,44 +202,44 @@ CampaignsTable.displayName = "CampaignsTable";
 
 export function CampaignsTableSkeleton() {
   return (
-    <Card>
-      <div className="rounded-md border">
+    <Card className="bg-slate-800 border-slate-700 text-white">
+      <div className="rounded-md border border-slate-700">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
             <thead>
-              <tr className="border-b bg-muted/50 transition-colors">
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+              <tr className="border-b border-slate-700 bg-slate-900/50 transition-colors">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     Name
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     Date
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <Mail className="h-4 w-4" />
                     Recipients
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <Eye className="h-4 w-4" />
                     Opens
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   <div className="flex items-center gap-1">
                     <MousePointer className="h-4 w-4" />
                     Clicks
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-left align-middle font-medium text-slate-300">
                   Status
                 </th>
                 <th className="h-12 w-[50px] px-4"></th>

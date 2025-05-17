@@ -1,13 +1,14 @@
 // pages/register.tsx OR app/register/page.tsx (adjust path as needed)
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,22 +21,23 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { signIn } from "next-auth/react";
 
-// Schema remains the same
+// Schema for form validation
 const registerSchema = z
   .object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    username: z
+      .string()
+      .min(3, { message: "Username must be at least 3 characters" })
+      .regex(/^[a-zA-Z0-9_]+$/, {
+        message: "Username can only contain letters, numbers, and underscores",
+      }),
+    firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
+    lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
     email: z.string().email({ message: "Please enter a valid email address" }),
     password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-    confirmPassword: z.string(),
     terms: z.boolean({
       required_error: "You must accept the terms and conditions",
     }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
   })
   .refine((data) => data.terms === true, {
     message: "You must accept the terms and conditions",
@@ -48,17 +50,66 @@ export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
 
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema), // Removed 'as any' - should work now
+    resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
+      username: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
-      confirmPassword: "",
       terms: false,
     },
   });
+
+  // Real API call to check username availability
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username || username.length < 3) return;
+
+    setIsCheckingUsername(true);
+
+    try {
+      const response = await fetch(
+        `/api/auth/check-username?username=${encodeURIComponent(username)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      setUsernameAvailable(data.available);
+    } catch (error) {
+      console.error("Error checking username:", error);
+      // In case of error, we don't change availability state
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  // Watch for username changes to check availability
+  const username = form.watch("username");
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (username && username.length >= 3) {
+        checkUsernameAvailability(username);
+      } else {
+        setUsernameAvailable(null);
+      }
+    }, 500); // Debounce to avoid too many API calls
+
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const onSubmit: SubmitHandler<RegisterFormValues> = async (values) => {
     setIsLoading(true);
@@ -71,9 +122,10 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        // Send only necessary data (name, email, password)
+        // Send all necessary data including username
         body: JSON.stringify({
-          name: values.name,
+          username: values.username,
+          name: `${values.firstName} ${values.lastName}`,
           email: values.email,
           password: values.password,
         }),
@@ -82,13 +134,10 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle errors from the API (e.g., user already exists, validation errors)
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
-      // Registration successful
       toast.success("Account created successfully! Please log in.");
-      // Redirect to login page with success indicator
       router.push("/login?registered=true");
     } catch (error: Error | unknown) {
       console.error("Registration error:", error);
@@ -105,195 +154,362 @@ export default function RegisterPage() {
     }
   };
 
-  // ... rest of the component remains the same (JSX)
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            Create your account
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{" "}
-            <Link href="/login" className="font-medium text-primary hover:text-primary/90">
-              Sign in
-            </Link>
-          </p>
+    <div className="flex h-screen bg-slate-950">
+      {/* Left side - Background and text */}
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="hidden md:flex md:w-1/2 bg-gradient-to-br from-slate-900 to-slate-950 text-white p-10 relative overflow-hidden"
+      >
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="h-full w-full bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
         </div>
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white dark:bg-gray-800 px-4 py-8 shadow sm:rounded-lg sm:px-10">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {error && (
-                  <div className="rounded-md bg-red-50 dark:bg-red-900/30 p-4">
-                    <div className="text-sm text-red-700 dark:text-red-400">{error}</div>
-                  </div>
-                )}
+        {/* Background accents */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 right-0 w-1/3 h-1/3 bg-gradient-to-b from-emerald-500/20 via-transparent to-transparent rounded-full blur-3xl opacity-30"></div>
+          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-t from-emerald-500/20 via-transparent to-transparent rounded-full blur-3xl opacity-20"></div>
+        </div>
 
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center mb-8">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-8 w-8 text-emerald-400 mr-2"
+            >
+              <path d="M6.8 22 12 19l5.2 3V7.8l-5.2-3-5.2 3Z" />
+              <path d="m19 7.8 2-1.2V18l-2.2 1.2" />
+              <path d="M5 7.8 3 6.6V18l2 1.2" />
+              <path d="m12 10.5-5-3" />
+              <path d="m17 7.5-5 3" />
+              <path d="M12 13v6" />
+            </svg>
+            <Link href="/" className="text-xl font-bold text-white">
+              LetterFlow
+            </Link>
+          </div>
+
+          {/* Main content */}
+          <div className="flex-grow flex flex-col justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <div className="text-sm font-semibold mb-2 text-emerald-400">START FOR FREE</div>
+              <h1 className="text-4xl font-bold mb-4 text-white">
+                Create stunning
+                <div>
+                  <span className="text-emerald-400">newsletters</span> with ease
+                </div>
+                <div>and grow your audience</div>
+              </h1>
+              <p className="text-sm text-slate-300 mb-8 max-w-sm">
+                The all-in-one platform for creating, managing, and analyzing your newsletters.
+                Engage your audience and boost your subscriber growth.
+              </p>
+            </motion.div>
+
+            <div className="flex space-x-4">
+              <Button
+                variant="outline"
+                className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+              >
+                Explore features
+              </Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                View templates
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Right side - Registration form */}
+      <motion.div
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full md:w-1/2 bg-slate-900 flex items-center justify-center p-6 overflow-auto"
+      >
+        <div className="w-full max-w-md py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className="mb-8"
+          >
+            <h2 className="text-3xl font-bold text-white mb-1">
+              Create your
+              <span className="text-emerald-400"> account</span>
+              <span className="text-emerald-400">.</span>
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Fill in the details below to get started with your newsletter
+            </p>
+          </motion.div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-md bg-red-900/30 p-4 border border-red-700/50"
+                >
+                  <div className="text-sm text-red-400">{error}</div>
+                </motion.div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                >
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-200">First name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="John"
+                            className="bg-slate-800 border-slate-700 text-white focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-400" />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                >
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-200">Last name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Doe"
+                            className="bg-slate-800 border-slate-700 text-white focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-400" />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+              >
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel className="text-slate-200">
+                        Username
+                        {isCheckingUsername && (
+                          <span className="ml-2 text-slate-400 text-xs">(checking...)</span>
+                        )}
+                        {usernameAvailable === true && (
+                          <span className="ml-2 text-emerald-400 text-xs">(available)</span>
+                        )}
+                        {usernameAvailable === false && (
+                          <span className="ml-2 text-red-400 text-xs">(already taken)</span>
+                        )}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input
+                          placeholder="username"
+                          className="bg-slate-800 border-slate-700 text-white focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
+              </motion.div>
 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+              >
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email address</FormLabel>
+                      <FormLabel className="text-slate-200">Email address</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="you@example.com" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="you@example.com"
+                          className="bg-slate-800 border-slate-700 text-white focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
+              </motion.div>
 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+              >
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-slate-200">Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            className="bg-slate-800 border-slate-700 text-white focus:border-emerald-500/50 focus:ring focus:ring-emerald-500/20"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
+                            onClick={togglePasswordVisibility}
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                <line x1="2" x2="22" y1="2" y2="22" />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                <circle cx="12" cy="12" r="3" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
+              </motion.div>
 
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+              >
                 <FormField
                   control={form.control}
                   name="terms"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormItem className="flex flex-row items-start space-x-2 space-y-0 mt-6">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        <Checkbox
+                          className="mt-0.5 border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500/20 rounded"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
                       </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          I agree to the{" "}
-                          <Link
-                            href="/terms" // Make sure this page exists or remove link
-                            className="text-primary hover:text-primary/90"
-                          >
-                            terms and conditions
+                      <div className="leading-tight">
+                        <FormLabel className="text-sm font-normal text-slate-300">
+                          I accept the{" "}
+                          <Link href="/terms" className="text-emerald-400 hover:text-emerald-300">
+                            Terms and Conditions
+                          </Link>{" "}
+                          and{" "}
+                          <Link href="/privacy" className="text-emerald-400 hover:text-emerald-300">
+                            Privacy Policy
                           </Link>
                         </FormLabel>
-                        {/* Display Zod error message for terms directly if needed */}
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </div>
                     </FormItem>
                   )}
                 />
+              </motion.div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9, duration: 0.4 }}
+                className="pt-2"
+              >
+                <Button
+                  type="submit"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Creating account..." : "Create account"}
                 </Button>
-              </form>
-            </Form>
+              </motion.div>
 
-            {/* Social login buttons remain the same */}
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300 dark:border-gray-700" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
-                    Or sign up with
-                  </span>
-                </div>
+              <div className="mt-6 text-center">
+                <p className="text-sm text-slate-400">
+                  Already have an account?{" "}
+                  <Link href="/login" className="text-emerald-400 hover:text-emerald-300">
+                    Sign in instead
+                  </Link>
+                </p>
               </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() =>
-                    // Use signIn directly for OAuth registration/login
-                    signIn("google", { callbackUrl: "/dashboard" })
-                  }
-                  className="w-full"
-                  disabled={isLoading} // Disable while form is submitting
-                >
-                  {/* Google SVG */}
-                  <svg
-                    className="mr-2 h-4 w-4"
-                    aria-hidden="true"
-                    focusable="false"
-                    data-prefix="fab"
-                    data-icon="google"
-                    role="img"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 488 512"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-                    ></path>
-                  </svg>
-                  Google
-                </Button>
-
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() =>
-                    // Use signIn directly for OAuth registration/login
-                    signIn("github", { callbackUrl: "/dashboard" })
-                  }
-                  className="w-full"
-                  disabled={isLoading} // Disable while form is submitting
-                >
-                  {/* Github SVG */}
-                  <svg
-                    className="mr-2 h-4 w-4"
-                    aria-hidden="true"
-                    focusable="false"
-                    data-prefix="fab"
-                    data-icon="github"
-                    role="img"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 496 512"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"
-                    ></path>
-                  </svg>
-                  Github
-                </Button>
-              </div>
-            </div>
-          </div>
+            </form>
+          </Form>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
