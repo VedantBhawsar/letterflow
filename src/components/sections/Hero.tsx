@@ -45,17 +45,17 @@ export default function Hero() {
       </div>
 
       {/* Product of the day badge */}
-      <div className="container mx-auto px-4 mb-6 sm:mb-8 relative z-10">
+      <div className="hidden container mx-auto px-4 mb-6 sm:mb-8 relative z-10">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center lg:justify-start gap-2">
             <div className="relative inline-flex">
               <div className="flex items-center">
-                <div className="text-emerald-500 text-xs sm:text-sm font-medium border border-emerald-500/30 rounded-full px-2 sm:px-3 py-1 bg-emerald-500/10">
+                {/* <div className="text-emerald-500 text-xs sm:text-sm font-medium border border-emerald-500/30 rounded-full px-2 sm:px-3 py-1 bg-emerald-500/10">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     <span>Product of the day</span>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <div className="absolute -left-5 sm:-left-7 -right-5 sm:-right-7 -top-5 sm:-top-6 -bottom-5 sm:-bottom-6 flex justify-between pointer-events-none">
