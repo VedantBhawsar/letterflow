@@ -39,66 +39,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { formSchema, FormValues, FIELD_TYPES } from "@/lib/schemas/form-schema";
 
-// --- Zod Schema remains the same ---
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Form name is required" }),
-  description: z.string().optional(),
-  fields: z
-    .array(
-      z.object({
-        id: z.string(),
-        type: z.enum(["text", "email", "number", "checkbox", "select"]),
-        label: z.string().min(1, { message: "Field label is required" }), // Add validation
-        placeholder: z.string().optional(),
-        required: z.boolean(),
-        // Ensure options is required only for 'select' type (advanced refinement not shown here)
-        options: z.array(z.string()).optional(),
-      })
-    )
-    .min(1, { message: "At least one field is required" }), // Ensure at least one field
-  settings: z.object({
-    submitButtonText: z.string().min(1).default("Subscribe"),
-    successMessage: z.string().min(1).default("Thank you for subscribing!"),
-    doubleOptIn: z.boolean().default(false),
-    // Add URL validation if required
-    redirectUrl: z.string().url("Invalid URL format").optional().or(z.literal("")),
-    honeypotEnabled: z.boolean().default(true),
-    recaptchaEnabled: z.boolean().default(false),
-    // Ensure site key is required if recaptchaEnabled is true (advanced refinement not shown here)
-    recaptchaSiteKey: z.string().optional(),
-  }),
-  style: z.object({
-    // Add hex color validation
-    primaryColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
-      .default("#3b82f6"),
-    backgroundColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
-      .default("#ffffff"),
-    textColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
-      .default("#000000"),
-    fontFamily: z.string().default("Inter, sans-serif"),
-    // Use string representation of numbers for radius
-    borderRadius: z.string().default("4"),
-    buttonStyle: z.enum(["filled", "outline", "minimal"]).default("filled"),
-  }),
-});
-
-// --- Types remain the same ---
-export type FormValues = z.infer<typeof formSchema>;
-
-const FIELD_TYPES = [
-  { value: "text", label: "Text" },
-  { value: "email", label: "Email" },
-  { value: "number", label: "Number" },
-  { value: "checkbox", label: "Checkbox" },
-  { value: "select", label: "Dropdown" },
-] as const; // Use 'as const' for stricter typing if needed
+// Re-export FormValues for backward compatibility
+export type { FormValues };
 
 type FormBuilderProps = {
   initialValues?: Partial<FormValues>; // Allow partial initial values

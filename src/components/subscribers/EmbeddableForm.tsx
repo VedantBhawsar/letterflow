@@ -37,78 +37,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { formSchema, FormValues, FIELD_TYPES } from "@/lib/schemas/form-schema";
 
-// --- Zod Schema Definition ---
-// Defines the structure and validation rules for the form
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Form name is required" }),
-  description: z.string().optional(),
-  // Define the 'fields' array with nested object validation
-  fields: z
-    .array(
-      z.object({
-        id: z.string(), // Unique ID for each field (for keys and dnd)
-        type: z.enum(["text", "email", "number", "checkbox", "select"]), // Allowed field types
-        label: z.string().min(1, { message: "Field label is required" }), // Labels must not be empty
-        placeholder: z.string().optional(), // Placeholder text is optional
-        required: z.boolean(), // Whether the field is mandatory
-        options: z.array(z.string()).optional(), // Array of strings for 'select' options
-      })
-    )
-    .min(1, { message: "The form must have at least one field" }), // Ensure form is not empty
-  // Settings object with defaults
-  settings: z.object({
-    submitButtonText: z.string().min(1, "Submit text cannot be empty").default("Subscribe"),
-    successMessage: z
-      .string()
-      .min(1, "Success message cannot be empty")
-      .default("Thank you for subscribing!"),
-    doubleOptIn: z.boolean().default(false),
-    // Validate URL format if provided, allow empty string
-    redirectUrl: z
-      .string()
-      .url("Invalid URL format (e.g., https://example.com)")
-      .optional()
-      .or(z.literal("")),
-    honeypotEnabled: z.boolean().default(true),
-    recaptchaEnabled: z.boolean().default(false),
-    recaptchaSiteKey: z.string().optional(),
-    // Advanced: Add refinement to ensure recaptchaSiteKey exists if recaptchaEnabled is true
-  }),
-  // Style object with defaults and validation
-  style: z.object({
-    primaryColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color format (e.g., #RRGGBB)")
-      .default("#3b82f6"),
-    backgroundColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color format")
-      .default("#ffffff"),
-    textColor: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color format")
-      .default("#000000"),
-    fontFamily: z.string().default("Inter, sans-serif"),
-    borderRadius: z.string().default("4"), // Storing radius as string for selection mapping
-    buttonStyle: z.enum(["filled", "outline", "minimal"]).default("filled"),
-  }),
-  // Advanced: Add refinement for conditional logic (e.g., options required if type is 'select')
-  // .refine(...)
-});
-
-// --- TypeScript Type derived from the Zod schema ---
-export type FormValues = z.infer<typeof formSchema>;
-
-// --- Field Type Options ---
-// Use 'as const' for stricter type checking on values
-const FIELD_TYPES = [
-  { value: "text", label: "Text" },
-  { value: "email", label: "Email" },
-  { value: "number", label: "Number" },
-  { value: "checkbox", label: "Checkbox" },
-  { value: "select", label: "Dropdown" },
-] as const;
+// Re-export FormValues for backward compatibility
+export type { FormValues };
+// Re-export FormValues for backward compatibility
+export type { FormValues };
 
 // --- Component Props ---
 type FormBuilderProps = {
