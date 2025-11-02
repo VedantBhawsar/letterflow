@@ -41,8 +41,6 @@ import { formSchema, FormValues, FIELD_TYPES } from "@/lib/schemas/form-schema";
 
 // Re-export FormValues for backward compatibility
 export type { FormValues };
-// Re-export FormValues for backward compatibility
-export type { FormValues };
 
 // --- Component Props ---
 type FormBuilderProps = {

@@ -41,7 +41,7 @@ export function formatDate(
 }
 
 /**
- * Gets the status badge color class names for light mode
+ * Gets the status badge color class names (includes dark mode variants for some statuses)
  * @param status - The subscriber or campaign status
  * @returns Tailwind CSS class names for the badge
  */
@@ -69,8 +69,8 @@ export function getStatusBadgeColor(status: string): string {
 }
 
 /**
- * Gets the status badge color class names for dark mode (slate theme)
- * @param status - The subscriber status
+ * Gets the status badge color class names for dark mode styling
+ * @param status - The subscriber or campaign status
  * @returns Tailwind CSS class names for the badge in dark mode
  */
 export function getStatusBadgeDark(status: string): string {
