@@ -22,6 +22,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Campaign } from "@/lib/types";
+import { getStatusBadgeColor } from "@/lib/subscriber-utils";
 
 // --- Helper function to fetch data ---
 // We fetch directly server-side. API route handles authentication/ownership.
@@ -137,21 +138,6 @@ export default function CampaignDetailPage({
   // If campaign data exists (TS knows campaign is not null here)
   const { name, subject, status, content, createdAt, sentAt, scheduledAt, stats }: Campaign =
     campaign;
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "sent":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-      case "scheduled":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-      case "draft":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400";
-      case "archived":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400";
-    }
-  };
 
   const safeRate = (numerator: number | undefined, denominator: number | undefined): number => {
     const num = numerator ?? 0;

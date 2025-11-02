@@ -24,6 +24,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MoreHorizontal as DotsHorizontalIcon, Search as SearchIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatName, getStatusBadgeDark } from "@/lib/subscriber-utils";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -133,38 +134,6 @@ export function SubscriberList({
     router.push(`/dashboard/subscribers/${subscriber.id}`);
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return (
-          <Badge className="bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/40">
-            Active
-          </Badge>
-        );
-      case "unsubscribed":
-        return (
-          <Badge
-            variant="outline"
-            className="border-slate-700 text-slate-400 hover:border-slate-600"
-          >
-            Unsubscribed
-          </Badge>
-        );
-      case "bounced":
-        return (
-          <Badge variant="destructive" className="bg-red-900/30 text-red-400 hover:bg-red-900/40">
-            Bounced
-          </Badge>
-        );
-      case "complained":
-        return (
-          <Badge className="bg-amber-900/30 text-amber-400 hover:bg-amber-900/40">Complained</Badge>
-        );
-      default:
-        return <Badge className="bg-slate-800 text-slate-300 hover:bg-slate-700">{status}</Badge>;
-    }
-  };
-
   return (
     <motion.div className="space-y-4" initial="hidden" animate="visible" variants={itemVariants}>
       {loading ? (
@@ -219,11 +188,13 @@ export function SubscriberList({
                         {subscriber.email}
                       </TableCell>
                       <TableCell className="text-slate-400">
-                        {subscriber.firstName || subscriber.lastName
-                          ? `${subscriber.firstName || ""} ${subscriber.lastName || ""}`
-                          : "-"}
+                        {formatName(subscriber.firstName, subscriber.lastName)}
                       </TableCell>
-                      <TableCell>{getStatusBadge(subscriber.status)}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusBadgeDark(subscriber.status)}>
+                          {subscriber.status}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {subscriber.tags.slice(0, 3).map((tag: any, i: any) => (
