@@ -1,38 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Form name is required" }),
-  description: z.string().optional(),
-  fields: z.array(
-    z.object({
-      id: z.string(),
-      type: z.enum(["text", "email", "number", "checkbox", "select"]),
-      label: z.string(),
-      placeholder: z.string().optional(),
-      required: z.boolean(),
-      options: z.array(z.string()).optional(),
-    })
-  ),
-  settings: z.object({
-    submitButtonText: z.string().default("Subscribe"),
-    successMessage: z.string().default("Thank you for subscribing!"),
-    doubleOptIn: z.boolean().default(false),
-    redirectUrl: z.string().optional(),
-    honeypotEnabled: z.boolean().default(true),
-    recaptchaEnabled: z.boolean().default(false),
-    recaptchaSiteKey: z.string().optional(),
-  }),
-  style: z.object({
-    primaryColor: z.string().default("#3b82f6"),
-    backgroundColor: z.string().default("#ffffff"),
-    textColor: z.string().default("#000000"),
-    fontFamily: z.string().default("Inter, sans-serif"),
-    borderRadius: z.string().default("4"),
-    buttonStyle: z.enum(["filled", "outline", "minimal"]).default("filled"),
-  }),
-});
+import { formSchema } from "@/lib/schemas/form-schema";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

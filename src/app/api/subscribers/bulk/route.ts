@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAuth } from "@/lib/api-utils";
 
 // Bulk import subscribers
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireAuth();
+    if (authResult.error) return authResult.error;
+    const { userId } = authResult;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id;
     const { subscribers } = await req.json();
 
     if (!Array.isArray(subscribers) || subscribers.length === 0) {
@@ -84,13 +80,10 @@ export async function POST(req: NextRequest) {
 // Export all subscribers
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireAuth();
+    if (authResult.error) return authResult.error;
+    const { userId } = authResult;
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id;
     const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get("status");
     const tag = searchParams.get("tag");

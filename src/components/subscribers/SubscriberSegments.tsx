@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { TrendingUp, TrendingDown, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getStatusBadgeColor } from "@/lib/subscriber-utils";
 
 type StatusSegment = {
   status: string;
@@ -57,19 +58,6 @@ export function SubscriberSegments({ className }: SubscriberSegmentsProps) {
   }, []);
 
   const totalSubscribers = statusSegments.reduce((sum, segment) => sum + segment.count, 0);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "unsubscribed":
-        return "bg-yellow-100 text-yellow-800";
-      case "bounced":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   return (
     <Card className={cn("h-full", className)}>
@@ -127,7 +115,7 @@ export function SubscriberSegments({ className }: SubscriberSegmentsProps) {
                     className="flex items-center justify-between bg-white rounded-lg p-3 border"
                   >
                     <div className="flex items-center">
-                      <Badge className={getStatusColor(segment.status)}>{segment.status}</Badge>
+                      <Badge className={getStatusBadgeColor(segment.status)}>{segment.status}</Badge>
                     </div>
                     <div className="text-sm font-medium">
                       {segment.count}
